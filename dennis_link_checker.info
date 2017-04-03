@@ -1,0 +1,9 @@
+name = Dennis Link Checker
+description = Monitors links to reduce redirects
+core = 7.x
+package = SEO
+files[] = src/Dennis/Link/Checker/Stack.php
+files[] = src/Dennis/Link/Checker/ItemInterface.php
+files[] = src/Dennis/Link/Checker/ProcessorInterface.php
+files[] = src/Dennis/Link/Checker/Item.php
+files[] = src/Dennis/Link/Checker/Processor.php

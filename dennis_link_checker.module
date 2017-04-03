@@ -1,0 +1,24 @@
+<?php
+/**
+ * @file
+ */
+use Dennis\Link\Checker\Processor;
+use Dennis\Link\Checker\Stack as Queue;
+
+/**
+ * PSR-4 autoloader
+ * files[] in .info doesn't find them.
+ */
+spl_autoload_register(function ($class) {
+  if (strpos($class, 'Dennis\Link\Checker') === 0) {
+    if (file_exists((__DIR__ . '/src/' . str_replace('\\', '/', $class) . '.php'))) {
+      include(__DIR__ . '/src/' . str_replace('\\', '/', $class) . '.php');
+    }
+  }
+});
+
+function dennis_link_checker_run() {
+  $queue = new Queue('dennis_link_checker');
+  $processor = new Processor($queue);
+  $processor->run();
+}
