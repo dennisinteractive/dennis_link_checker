@@ -108,23 +108,16 @@ class Processor implements ProcessorInterface {
   public function enqueue() {
     // entities that have a text area field with a link.
 
-    /*
-     * SELECT * FROM field_config WHERE type IN ('text_long', 'text_with_summary')
-     */
-
-
-//    $query = db_select('node', 'n');
-//    $query->addField('n', 'nid');
-//    // Left join each tabel that could have html links.
-//    $query->leftJoin('field_data_body', 'body', "n.nid = body.entity_id");
-
-
-
-    // TODO: Implement enqueue() method.
-
-    // TEMPORARY!!
-    $this->addItem(new Item('node', 123));
-    $this->addItem(new Item('node', 456));
+    // Just the body text field for now.
+    $query = db_select('field_data_body', 'body');
+    $query->addField('body', 'entity_id');
+    $query->addField('body', 'entity_type');
+    // Crudely find things that could be links.
+    $query->condition('body_value', '%' . db_like('<a') . '%', 'LIKE');
+    $result = $query->execute();
+    foreach ($result as $record) {
+      $this->addItem(new Item($record->entity_type, $record->entity_id));
+    }
 
   }
 

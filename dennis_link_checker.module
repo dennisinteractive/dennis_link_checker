@@ -25,7 +25,9 @@ spl_autoload_register(function ($class) {
 function dennis_link_checker_run() {
   $queue = new Queue('dennis_link_checker');
   $entity_handler = new EntityHandler();
+  $entity_handler->setSiteHost(parse_url(dennis_ga_get_live_url(), PHP_URL_HOST));
   $corrector = new Corrector();
   $processor = new Processor($queue, $entity_handler, $corrector);
+  $processor->setTimeLimit(3); // temporarily low time limit.
   $processor->run();
 }
