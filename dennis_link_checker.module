@@ -3,6 +3,8 @@
  * @file
  */
 use Dennis\Link\Checker\Processor;
+use Dennis\Link\Checker\EntityHandler;
+use Dennis\Link\Checker\Corrector;
 use Dennis\Link\Checker\Stack as Queue;
 
 /**
@@ -17,8 +19,13 @@ spl_autoload_register(function ($class) {
   }
 });
 
+/**
+ * Run the link checker queue.
+ */
 function dennis_link_checker_run() {
   $queue = new Queue('dennis_link_checker');
-  $processor = new Processor($queue);
+  $entity_handler = new EntityHandler();
+  $corrector = new Corrector();
+  $processor = new Processor($queue, $entity_handler, $corrector);
   $processor->run();
 }

@@ -8,7 +8,7 @@ namespace Dennis\Link\Checker;
  * Class Item
  * @package Dennis\Link\Checker
  */
-class Item implements ItemInterface{
+class Item implements ItemInterface {
 
   protected $data = [];
 

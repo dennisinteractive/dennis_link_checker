@@ -16,24 +16,70 @@ interface ProcessorInterface {
    *
    * @param $queue
    *  The drupal queue.
+   *
+   */
+  public function __construct(DrupalReliableQueueInterface $queue, EntityHandlerInterface $entity_handler, Corrector $corrector);
+
+  /**
+   * Sets how long in seconds the processor is allowed to run.
+   *
    * @param int $time_limit
    *  Maximim number of seconds to allow the processor to run.
+   * @return ProcessorInterface
    */
-  public function __construct(DrupalReliableQueueInterface $queue, $time_limit = 1800);
+  public function setTimeLimit($time_limit);
+
+  /**
+   * Maximum number of seconds to allow the processor to run.
+   *
+   * @return integer
+   */
+  public function getTimeLimit();
 
   /**
    * Processes the queue.
-   *
    *
    * @return ProcessorInterface
    */
   public function run();
 
   /**
+   * The queue to process.
+   * @return ProcessorInterface
+   */
+  public function setQueue(DrupalReliableQueueInterface $queue);
+
+  /**
    * The drupal queue object.
    * @return DrupalReliableQueueInterface
    */
   public function getQueue();
+
+  /**
+   * The object that understands entities.
+   *
+   * @param EntityHandlerInterface $entityHandler
+   * @return ProcessorInterface
+   */
+  public function setEntityHandler(EntityHandlerInterface $entity_handler);
+
+  /**
+   * @return EntityHandlerInterface
+   */
+  public function getEntityHandler();
+
+  /**
+   * The object that does the actual fixing of the link.
+   *
+   * @param CorrectorInterface $corrector
+   * @return ProcessorInterface
+   */
+  public function setCorrector(CorrectorInterface $corrector);
+
+  /**
+   * @return CorrectorInterface
+   */
+  public function getCorrector();
 
   /**
    * Finds & adds items to the queue.
@@ -56,7 +102,6 @@ interface ProcessorInterface {
    */
   public function numberOfItems();
 
-
   /**
    * Process the next item.
    *
@@ -71,25 +116,18 @@ interface ProcessorInterface {
   public function getQueueItem();
 
   /**
-   * The textarea strings for the entity.
+   * Find links in the text.
    * @param ItemInterface $item
    * @return array
    */
-  public function getTexts(ItemInterface $item);
-
-  /**
-   * Find links in the text.
-   * @param $text
-   * @return array
-   */
-  public function findLinks($text);
+  public function findLinks(ItemInterface $item);
 
   /**
    * Checks and changes the url to be correct.
    * @param $url
-   * @return string
+   * @return array
    */
-  public function checkLink($url);
+  public function correctLinks($links);
 
   /**
    * Report on links that had too many redirects.

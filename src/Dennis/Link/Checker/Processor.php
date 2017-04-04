@@ -13,14 +13,19 @@ class Processor implements ProcessorInterface {
 
   protected $queue;
 
-  protected $timeLimit;
+  protected $entityHandeler;
+
+  protected $corrector;
+
+  protected $timeLimit = 1800;
 
   /**
    * @inheritDoc
    */
-  public function __construct(DrupalReliableQueueInterface $queue, $time_limit = 1800) {
-    $this->queue = $queue;
-    $this->timeLimit = $time_limit;
+  public function __construct(DrupalReliableQueueInterface $queue, EntityHandlerInterface $entity_handler, Corrector $corrector) {
+    $this->setQueue($queue);
+    $this->setEntityHandler($entity_handler);
+    $this->setCorrector($corrector);
   }
 
   /**
@@ -51,7 +56,70 @@ class Processor implements ProcessorInterface {
   /**
    * @inheritDoc
    */
+  public function setTimeLimit($time_limit) {
+    $this->timeLimit = $time_limit;
+  }
+
+  /**
+   * @inheritDoc
+   */
+  public function getTimeLimit() {
+    return $this->timeLimit;
+  }
+
+  /**
+   * @inheritDoc
+   */
+  public function setQueue(DrupalReliableQueueInterface $queue) {
+    $this->queue = $queue;
+  }
+
+  /**
+   * @inheritDoc
+   */
+  public function setEntityHandler(EntityHandlerInterface $entity_handler) {
+    $this->entityHandeler = $entity_handler;
+  }
+
+  /**
+   * @inheritDoc
+   */
+  public function setCorrector(CorrectorInterface $corrector) {
+    $this->corrector = $corrector;
+  }
+
+  /**
+   * @inheritDoc
+   */
+  public function getEntityHandler() {
+    return $this->entityHandeler;
+  }
+
+  /**
+   * @inheritDoc
+   */
+  public function getCorrector() {
+    return $this->corrector;
+  }
+
+  /**
+   * @inheritDoc
+   */
   public function enqueue() {
+    // entities that have a text area field with a link.
+
+    /*
+     * SELECT * FROM field_config WHERE type IN ('text_long', 'text_with_summary')
+     */
+
+
+//    $query = db_select('node', 'n');
+//    $query->addField('n', 'nid');
+//    // Left join each tabel that could have html links.
+//    $query->leftJoin('field_data_body', 'body', "n.nid = body.entity_id");
+
+
+
     // TODO: Implement enqueue() method.
 
     // TEMPORARY!!
@@ -84,21 +152,8 @@ class Processor implements ProcessorInterface {
     }
 
     $item = $queue_item->data;
-    $texts = $this->getTexts($item);
-    foreach ($texts as $text) {
-      // Find links in text area fields
-      $links = $this->findLinks($text);
-
-      // Check each one.
-      foreach ($links as $link) {
-        $checked = $this->checkLink($link);
-        // Re-save the field(s) that have changed links.
-        //@todo re save links.
-        if ($checked != $link) {
-
-        }
-      }
-    }
+    $links = $this->findLinks($item);
+    $this->correctLinks($links);
 
     // Remove it from the queue.
     $this->queue->deleteItem($queue_item);
@@ -130,31 +185,16 @@ class Processor implements ProcessorInterface {
   /**
    * @inheritDoc
    */
-  public function getTexts(ItemInterface $item) {
-    // TODO: Implement getTexts() method.
-
-    return ['body' => 'foo <a href="/bar">bar</a>'];
-  }
-
-
-  /**
-   * @inheritDoc
-   */
-  public function findLinks($text) {
-    // TODO: Implement findLinks() method.
-
-    return [];
+  public function findLinks(ItemInterface $item) {
+    return $this->getEntityHandler()->findLinks($item->entityType(), $item->entityId());
   }
 
   /**
    * @inheritDoc
    */
-  public function checkLink($url) {
-    // TODO: Implement checkLink() method.
-
-    return $url;
+  public function correctLinks($links) {
+    return $this->getCorrector()->multipleLinks($links);
   }
-
 
   /**
    * @inheritDoc
