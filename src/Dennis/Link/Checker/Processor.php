@@ -146,7 +146,7 @@ class Processor implements ProcessorInterface {
 
     $item = $queue_item->data;
     $links = $this->findLinks($item);
-    $this->correctLinks($links);
+    $this->correctLinks($item, $links);
 
     // Remove it from the queue.
     $this->queue->deleteItem($queue_item);
@@ -185,8 +185,9 @@ class Processor implements ProcessorInterface {
   /**
    * @inheritDoc
    */
-  public function correctLinks($links) {
-    return $this->getCorrector()->multipleLinks($links);
+  public function correctLinks(ItemInterface $item, $links) {
+    $links = $this->getCorrector()->multipleLinks($links);
+    print_r($links);
   }
 
   /**

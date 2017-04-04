@@ -1,6 +1,6 @@
 <?php
 /**
- * @file ItemInterface
+ * @file EntityHandlerInterface
  */
 namespace Dennis\Link\Checker;
 
@@ -12,7 +12,7 @@ interface EntityHandlerInterface {
 
   /**
    * The entity id & type.
-   * @return EntityHandlerInterface
+   * @return array of LinkInterface
    */
   public function findLinks($entity_type, $id);
 

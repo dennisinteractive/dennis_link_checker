@@ -52,7 +52,7 @@ class EntityHandler implements EntityHandlerInterface {
       if ($href = $link->attributes->getNamedItem("href")) {
         $host = parse_url($href->nodeValue, PHP_URL_HOST);
         if (empty($host) || $host == $site_host) {
-          $found[$value_field] = $href->nodeValue;
+          $found[] = new Link($entity_type, $entity_id, $field_name, $href->nodeValue);
         }
       }
     }

@@ -124,10 +124,12 @@ interface ProcessorInterface {
 
   /**
    * Checks and changes the url to be correct.
-   * @param $url
+   *
+   * @param ItemInterface $item
+   * @param array $links
    * @return array
    */
-  public function correctLinks($links);
+  public function correctLinks(ItemInterface $item, $links);
 
   /**
    * Report on links that had too many redirects.

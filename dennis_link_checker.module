@@ -23,11 +23,13 @@ spl_autoload_register(function ($class) {
  * Run the link checker queue.
  */
 function dennis_link_checker_run() {
+  $site_host = parse_url(dennis_ga_get_live_url(), PHP_URL_HOST);
   $queue = new Queue('dennis_link_checker');
   $entity_handler = new EntityHandler();
-  $entity_handler->setSiteHost(parse_url(dennis_ga_get_live_url(), PHP_URL_HOST));
+  $entity_handler->setSiteHost($site_host);
   $corrector = new Corrector();
+  $corrector->setSiteHost($site_host);
   $processor = new Processor($queue, $entity_handler, $corrector);
-  $processor->setTimeLimit(3); // temporarily low time limit.
+  $processor->setTimeLimit(10); // temporarily low time limit.
   $processor->run();
 }
