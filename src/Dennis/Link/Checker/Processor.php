@@ -19,6 +19,8 @@ class Processor implements ProcessorInterface {
 
   protected $timeLimit = 1800;
 
+  protected $excessiveRedirects = [];
+
   /**
    * @inheritDoc
    */
@@ -44,6 +46,7 @@ class Processor implements ProcessorInterface {
       $more = $this->doNextItem();
     }
 
+    $this->detectedExcessiveRedirects();
   }
 
   /**
@@ -186,8 +189,25 @@ class Processor implements ProcessorInterface {
    * @inheritDoc
    */
   public function correctLinks(ItemInterface $item, $links) {
-    $links = $this->getCorrector()->multipleLinks($links);
-    print_r($links);
+    if (count($links) > 0) {
+      $links = $this->getCorrector()->multipleLinks($links);
+      foreach ($links as $link) {
+        if ($err = $link->getError()) {
+          if ($link->hasTooManyRedirects()) {
+            $this->excessiveRedirects[] = $link;
+          }
+          echo "Error: " . $link->originalSrc();
+          print_r($err);
+        }
+        else {
+          echo $link->entityId() . ' : ' . $link->originalSrc() . "\n";
+          if ($link->corrected()) {
+            $this->getEntityHandler()->updateLink($link);
+          }
+        }
+      }
+
+    }
   }
 
   /**
@@ -195,6 +215,8 @@ class Processor implements ProcessorInterface {
    */
   public function detectedExcessiveRedirects() {
     // TODO: Implement detectedExcessiveRedirects() method.
+    print_r("excessive:");
+    print_r($this->excessiveRedirects);
   }
 
 }

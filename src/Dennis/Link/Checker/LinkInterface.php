@@ -13,6 +13,24 @@ interface LinkInterface {
   public function __construct($entity_type, $entity_id, $field, $src);
 
   /**
+   * The type of the entity.
+   * @return string
+   */
+  public function entityType();
+
+  /**
+   * The entity id.
+   * @return integer
+   */
+  public function entityId();
+
+  /**
+   * The field the link is in.
+   * @return string
+   */
+  public function entityField();
+
+  /**
    * The number of redirects needed to get to the corrected url.
    *
    * @return integer
@@ -26,6 +44,17 @@ interface LinkInterface {
    * @return LinkInterface
    */
   public function setNumberOfRedirects($int);
+
+  /**
+   * Marke the link has having too many redirects.
+   * @return LinkInterface
+   */
+  public function setTooManyRedirects();
+
+  /**
+   * @return boolean
+   */
+  public function hasTooManyRedirects();
 
   /**
    * Whether the link was corrected.
@@ -50,14 +79,6 @@ interface LinkInterface {
   public function originalSrc();
 
   /**
-   * Set the corrected $src.
-   *
-   * @param $url
-   * @return LinkInterface
-   */
-  public function setCorrectedSrc($src);
-
-  /**
    * The corrected $src.
    *
    * @return string
@@ -72,6 +93,8 @@ interface LinkInterface {
    */
   public function setFoundUrl($url);
 
+  public function getFoundUrl();
+
   /**
    * The httpd code.
    *
@@ -79,5 +102,19 @@ interface LinkInterface {
    * @return LinkInterface
    */
   public function setHttpCode($code);
+
+  /**
+   * The checker error.
+   *
+   * @param $code
+   * @param $msg
+   * @return LinkInterface
+   */
+  public function setError($code, $msg);
+
+  /**
+   * @return array
+   */
+  public function getError();
 
 }

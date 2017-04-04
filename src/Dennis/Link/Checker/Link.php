@@ -12,6 +12,8 @@ class Link implements LinkInterface {
 
   protected $data = [];
 
+  protected $tooManyRedirects = FALSE;
+
   /**
    * @inheritDoc
    */
@@ -20,6 +22,27 @@ class Link implements LinkInterface {
     $this->data['entity_type'] = $entity_type;
     $this->data['entity_id'] = $entity_id;
     $this->data['field'] = $field;
+  }
+
+  /**
+   * @inheritDoc
+   */
+  public function entityType() {
+    return $this->data['entity_type'];
+  }
+
+  /**
+   * @inheritDoc
+   */
+  public function entityId() {
+    return $this->data['entity_id'];
+  }
+
+  /**
+   * @inheritDoc
+   */
+  public function entityField() {
+    return $this->data['field'];
   }
 
   /**
@@ -41,15 +64,34 @@ class Link implements LinkInterface {
   /**
    * @inheritDoc
    */
+  public function setTooManyRedirects() {
+    $this->tooManyRedirects = TRUE;
+  }
+
+  /**
+   * @inheritDoc
+   */
+  public function hasTooManyRedirects() {
+    return $this->tooManyRedirects;
+  }
+
+
+  /**
+   * @inheritDoc
+   */
   public function corrected() {
-    // @todo
+    if ($this->getNumberOfRedirects() > 0) {
+      return TRUE;
+    }
+
+    return FALSE;
   }
 
   /**
    * @inheritDoc
    */
   public function setOriginalSrc($src) {
-    $this->data['original_src'] = trim($src);
+    $this->data['original_src'] = $src;
 
     return $this;
   }
@@ -64,17 +106,8 @@ class Link implements LinkInterface {
   /**
    * @inheritDoc
    */
-  public function setCorrectedSrc($src) {
-    $this->data['corrected_src'] = $src;
-
-    return $this;
-  }
-
-  /**
-   * @inheritDoc
-   */
   public function correctedSrc() {
-    return $this->data['corrected_src'];
+    return $this->data['found_url'];
   }
 
   /**
@@ -86,6 +119,10 @@ class Link implements LinkInterface {
     return $this;
   }
 
+  public function getFoundUrl() {
+    return $this->data['found_url'];
+  }
+
   /**
    * @inheritDoc
    */
@@ -93,6 +130,27 @@ class Link implements LinkInterface {
     $this->data['http_code'] = $code;
 
     return $this;
+  }
+
+  /**
+   * @inheritDoc
+   */
+  public function setError($code, $msg) {
+    $this->data['error']['code'] = $code;
+    $this->data['error']['msg'] = $msg;
+
+    return $this;
+  }
+
+  /**
+   * @inheritDoc
+   */
+  public function getError() {
+    if (isset($this->data['error'])) {
+      return $this->data['error'];
+    }
+
+    return FALSE;
   }
 
 

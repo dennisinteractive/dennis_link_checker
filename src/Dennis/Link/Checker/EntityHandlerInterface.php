@@ -12,12 +12,22 @@ interface EntityHandlerInterface {
 
   /**
    * The entity id & type.
+   *
    * @return array of LinkInterface
    */
-  public function findLinks($entity_type, $id);
+  public function findLinks($entity_type, $entity_id, $internal = TRUE);
+
+  /**
+   * Change the link on the entity.
+   *
+   * @param LinkInterface $link
+   * @return mixed
+   */
+  public function updateLink(LinkInterface $link);
 
   /**
    * The host domain of the site.
+   *
    * @param string $host
    * @return EntityHandlerInterface
    */

@@ -30,6 +30,6 @@ function dennis_link_checker_run() {
   $corrector = new Corrector();
   $corrector->setSiteHost($site_host);
   $processor = new Processor($queue, $entity_handler, $corrector);
-  $processor->setTimeLimit(10); // temporarily low time limit.
+  //$processor->setTimeLimit(20); // temporarily low time limit.
   $processor->run();
 }
