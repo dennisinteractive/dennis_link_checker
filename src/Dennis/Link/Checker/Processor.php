@@ -46,7 +46,8 @@ class Processor implements ProcessorInterface {
       $more = $this->doNextItem();
     }
 
-    $this->detectedExcessiveRedirects();
+    // Report on excessive redirects.
+    $this->excessiveRedirects();
   }
 
   /**
@@ -110,6 +111,8 @@ class Processor implements ProcessorInterface {
    */
   public function enqueue() {
     // entities that have a text area field with a link.
+
+    //@todo Only published content
 
     // Just the body text field for now.
     $query = db_select('field_data_body', 'body');
@@ -190,12 +193,14 @@ class Processor implements ProcessorInterface {
    */
   public function correctLinks(ItemInterface $item, $links) {
     if (count($links) > 0) {
+      // Check and correct all the links.
       $links = $this->getCorrector()->multipleLinks($links);
       foreach ($links as $link) {
         if ($err = $link->getError()) {
           if ($link->hasTooManyRedirects()) {
             $this->excessiveRedirects[] = $link;
           }
+          
           echo "Error: " . $link->originalSrc();
           print_r($err);
         }
@@ -213,10 +218,15 @@ class Processor implements ProcessorInterface {
   /**
    * @inheritDoc
    */
-  public function detectedExcessiveRedirects() {
-    // TODO: Implement detectedExcessiveRedirects() method.
-    print_r("excessive:");
-    print_r($this->excessiveRedirects);
+  public function excessiveRedirects() {
+    $msgs = [];
+    foreach ($this->excessiveRedirects as $link) {
+      $msgs[] = $link->entityType() . '/' . $link->entityId();
+    }
+    if (count($msgs) > 0) {
+      $msg = join(', ', $msgs);
+      watchdog('dennis_link-checker', 'Excessive redirects on: ' . $msg, NULL, WATCHDOG_ERROR);
+    }
   }
 
 }

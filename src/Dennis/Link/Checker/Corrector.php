@@ -15,12 +15,12 @@ class Corrector implements CorrectorInterface {
   /**
    * The number of seconds to wait while trying to connect.
    */
-  protected $connectionTimeout = 10;
+  protected $connectionTimeout = 5;
 
   /**
    * The maximum number of seconds to allow cURL functions to execute.
    */
-  protected $timeout = 30;
+  protected $timeout = 10;
 
   /**
    * @inheritDoc
@@ -42,8 +42,6 @@ class Corrector implements CorrectorInterface {
   public function link(LinkInterface $link) {
 
     $src = trim($link->originalSrc());
-    // Oddness fix.
-    $src = str_replace(array('%20http:', '%22http:'), 'http:', $src);
     if (!$host = parse_url($src, PHP_URL_HOST)) {
       $host = $this->getSiteHost();
       $url = $host . '/' . ltrim($src, '/');

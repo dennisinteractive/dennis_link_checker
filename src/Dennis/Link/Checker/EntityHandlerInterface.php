@@ -18,6 +18,14 @@ interface EntityHandlerInterface {
   public function findLinks($entity_type, $entity_id, $internal = TRUE);
 
   /**
+   * Gets the links from a string.
+   *
+   * @param $text
+   * @return array of LinkInterface
+   */
+  public function getLinksFromText($text, $entity_type, $entity_id, $field_name, $site_host = NULL);
+
+  /**
    * Change the link on the entity.
    *
    * @param LinkInterface $link

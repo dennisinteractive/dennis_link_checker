@@ -135,6 +135,6 @@ interface ProcessorInterface {
    * Report on links that had too many redirects.
    * @return array
    */
-  public function detectedExcessiveRedirects();
+  public function excessiveRedirects();
 
 }
