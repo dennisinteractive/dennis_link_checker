@@ -15,19 +15,24 @@ class Processor implements ProcessorInterface {
 
   protected $entityHandeler;
 
-  protected $corrector;
+  protected $analyzer;
 
   protected $timeLimit = 1800;
+
+  protected $localisation;
 
   protected $excessiveRedirects = [];
 
   /**
    * @inheritDoc
    */
-  public function __construct(DrupalReliableQueueInterface $queue, EntityHandlerInterface $entity_handler, Corrector $corrector) {
+  public function __construct(
+    DrupalReliableQueueInterface $queue,
+    EntityHandlerInterface $entity_handler,
+    AnalyzerInterface $analyzer) {
     $this->setQueue($queue);
     $this->setEntityHandler($entity_handler);
-    $this->setCorrector($corrector);
+    $this->setAnalyzer($analyzer);
   }
 
   /**
@@ -88,8 +93,8 @@ class Processor implements ProcessorInterface {
   /**
    * @inheritDoc
    */
-  public function setCorrector(CorrectorInterface $corrector) {
-    $this->corrector = $corrector;
+  public function setAnalyzer(AnalyzerInterface $analyzer) {
+    $this->analyzer = $analyzer;
   }
 
   /**
@@ -102,8 +107,24 @@ class Processor implements ProcessorInterface {
   /**
    * @inheritDoc
    */
-  public function getCorrector() {
-    return $this->corrector;
+  public function getAnalyzer() {
+    return $this->analyzer;
+  }
+
+  /**
+   * @inheritDoc
+   */
+  public function setLocalisation($localisation) {
+    $this->localisation = $localisation;
+
+    return $this;
+  }
+
+  /**
+   * @inheritDoc
+   */
+  public function localisation() {
+    return $this->localisation;
   }
 
   /**
@@ -112,14 +133,23 @@ class Processor implements ProcessorInterface {
   public function enqueue() {
     // entities that have a text area field with a link.
 
-    //@todo Only published content
 
     // Just the body text field for now.
-    $query = db_select('field_data_body', 'body');
-    $query->addField('body', 'entity_id');
-    $query->addField('body', 'entity_type');
+    $query = db_select('field_data_body', 'b');
+    // The entity may not be a node.
+    $query->leftJoin('node', 'n', 'n.nid = b.entity_id');
+    $query->addField('b', 'entity_id');
+    $query->addField('b', 'entity_type');
+    // Nodes only if they are published.
+    $or = db_or()->condition('n.status', 1)->isNull('n.status');
+    $query->condition($or);
+
     // Crudely find things that could be links.
+    // Accurate link finding happens when the queue is processed.
     $query->condition('body_value', '%' . db_like('<a') . '%', 'LIKE');
+
+    $query->orderBy('b.entity_id', 'DESC');
+
     $result = $query->execute();
     foreach ($result as $record) {
       $this->addItem(new Item($record->entity_type, $record->entity_id));
@@ -193,21 +223,20 @@ class Processor implements ProcessorInterface {
    */
   public function correctLinks(ItemInterface $item, $links) {
     if (count($links) > 0) {
-      // Check and correct all the links.
-      $links = $this->getCorrector()->multipleLinks($links);
+      // Check all the links.
+      $links = $this->getAnalyzer()->multipleLinks($links);
       foreach ($links as $link) {
         if ($err = $link->getError()) {
           if ($link->hasTooManyRedirects()) {
             $this->excessiveRedirects[] = $link;
           }
-          
-          echo "Error: " . $link->originalSrc();
+          echo "Error: " . $link->originalHref();
           print_r($err);
         }
         else {
-          echo $link->entityId() . ' : ' . $link->originalSrc() . "\n";
-          if ($link->corrected()) {
-            $this->getEntityHandler()->updateLink($link);
+          echo $link->entityId() . ' : ' . $link->originalHref() . "\n";
+          if ($link->corrected($this->getAnalyzer()->getSiteHost(), $this->localisation())) {
+            $this->getEntityHandler()->updateLink($link, $this->localisation());
           }
         }
       }

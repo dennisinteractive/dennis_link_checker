@@ -10,7 +10,7 @@ namespace Dennis\Link\Checker;
  */
 interface LinkInterface {
 
-  public function __construct($entity_type, $entity_id, $field, $src);
+  public function __construct($entity_type, $entity_id, $field, $href);
 
   /**
    * The type of the entity.
@@ -59,31 +59,37 @@ interface LinkInterface {
   /**
    * Whether the link was corrected.
    *
+   * @param string $site_host
+   * @param string $localisation
+   *  How the link should be changed for local links, if at all
    * @return boolean
    */
-  public function corrected();
+  public function corrected($site_host = NULL, $localisation = NULL);
 
   /**
-   * The src to check.
+   * The href to check.
    *
-   * @param $url
+   * @param $href
    * @return LinkInterface
    */
-  public function setOriginalSrc($src);
+  public function setOriginalHref($href);
 
   /**
-   * Gets the src to check.
+   * Gets the href to check.
    *
    * @return string
    */
-  public function originalSrc();
+  public function originalHref();
 
   /**
-   * The corrected $src.
+   * The corrected href.
    *
+   * @param string $site_host
+   * @param string $localisation
+   *  How the link should be changed for local links, if at all
    * @return string
    */
-  public function correctedSrc();
+  public function correctedHref($site_host = NULL, $localisation = NULL);
 
   /**
    * The url for this link that was found by the corrector.

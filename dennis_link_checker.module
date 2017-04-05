@@ -2,10 +2,11 @@
 /**
  * @file
  */
+
 use Dennis\Link\Checker\Processor;
 use Dennis\Link\Checker\EntityHandler;
-use Dennis\Link\Checker\Corrector;
-use Dennis\Link\Checker\Stack as Queue;
+use Dennis\Link\Checker\Analyzer;
+use SystemQueue as Queue;
 
 /**
  * PSR-4 autoloader
@@ -27,9 +28,9 @@ function dennis_link_checker_run() {
   $queue = new Queue('dennis_link_checker');
   $entity_handler = new EntityHandler();
   $entity_handler->setSiteHost($site_host);
-  $corrector = new Corrector();
-  $corrector->setSiteHost($site_host);
-  $processor = new Processor($queue, $entity_handler, $corrector);
+  $analyzer = new Analyzer();
+  $analyzer->setSiteHost($site_host);
+  $processor = new Processor($queue, $entity_handler, $analyzer);
   //$processor->setTimeLimit(20); // temporarily low time limit.
   $processor->run();
 }

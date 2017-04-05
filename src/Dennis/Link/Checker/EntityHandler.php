@@ -86,7 +86,7 @@ class EntityHandler implements EntityHandlerInterface {
   /**
    * @inheritDoc
    */
-  public function updateLink(LinkInterface $link) {
+  public function updateLink(LinkInterface $link, $localisation = NULL) {
 
     $value_field = 'body_value'; //@todo not hard coded
 
@@ -97,7 +97,8 @@ class EntityHandler implements EntityHandlerInterface {
 
     $result = $query->execute()->fetchObject();
     $text = $result->{$value_field};
-    $text = str_replace($link->originalSrc(), $link->correctedSrc(), $text);
+    $correction = $link->correctedHref($this->getSiteHost(), $localisation);
+    $text = str_replace($link->originalHref(), $correction, $text);
 
     db_update($link->entityField())
       ->fields(array(
@@ -107,7 +108,7 @@ class EntityHandler implements EntityHandlerInterface {
       ->condition('entity_type', $link->entityType())
       ->execute();
 
-    echo "  -- " . $link->correctedSrc() . "\n";
+    echo "  -- $correction\n";
   }
 
 }

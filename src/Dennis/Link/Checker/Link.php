@@ -17,8 +17,8 @@ class Link implements LinkInterface {
   /**
    * @inheritDoc
    */
-  public function __construct($entity_type, $entity_id, $field, $src) {
-    $this->setOriginalSrc($src);
+  public function __construct($entity_type, $entity_id, $field, $href) {
+    $this->setOriginalHref($href);
     $this->data['entity_type'] = $entity_type;
     $this->data['entity_id'] = $entity_id;
     $this->data['field'] = $field;
@@ -79,8 +79,13 @@ class Link implements LinkInterface {
   /**
    * @inheritDoc
    */
-  public function corrected() {
+  public function corrected($site_host = NULL, $localisation = NULL) {
     if ($this->getNumberOfRedirects() > 0) {
+      return TRUE;
+    }
+
+    // Check to see if the link as changed for another reason.
+    if ($this->correctedHref($site_host, $localisation) != $this->originalHref()) {
       return TRUE;
     }
 
@@ -90,8 +95,8 @@ class Link implements LinkInterface {
   /**
    * @inheritDoc
    */
-  public function setOriginalSrc($src) {
-    $this->data['original_src'] = $src;
+  public function setOriginalHref($href) {
+    $this->data['original_href'] = $href;
 
     return $this;
   }
@@ -99,15 +104,56 @@ class Link implements LinkInterface {
   /**
    * @inheritDoc
    */
-  public function originalSrc() {
-    return $this->data['original_src'];
+  public function originalHref() {
+    return $this->data['original_href'];
   }
 
   /**
    * @inheritDoc
    */
-  public function correctedSrc() {
-    return $this->data['found_url'];
+  public function correctedHref($site_host = NULL, $localisation = NULL) {
+    // The found link will be an absolute one.
+
+    // Keep links localised the way the editor saved them.
+    if (!empty($site_host) && empty($localisation)) {
+      // Save it the same way it was originally if a local link.
+      if ($parsed = parse_url($this->originalHref())) {
+        if (empty($parsed['host'])) {
+          if (!empty($parsed['path']) && $parsed['path'][0] == '/') {
+            // Was originally a relative link.
+            $path = isset($parsed['path']) ? $parsed['path'] : '';
+            $query = isset($parsed['query']) ? '?' . $parsed['query'] : '';
+            $fragment = isset($parsed['fragment']) ? '#' . $parsed['fragment'] : '';
+            return "$path$query$fragment";
+          }
+        }
+      }
+
+      return $this->getFoundUrl();
+    }
+
+    // Make all local links absolute.
+    if ($localisation == 'absolute') {
+      // Seo require local links to be absolute so if we get scrapped,
+      // they will link back to us.
+      return $this->getFoundUrl();
+    }
+
+    // Make all local links relative.
+    if (!empty($site_host) && $localisation == 'relative') {
+      // Check for a local link.
+      if ($parsed = parse_url($this->data['found_url'])) {
+        if (!empty($parsed['host']) && $site_host == $parsed['host']) {
+          // Make it relative.
+          $path = isset($parsed['path']) ? $parsed['path'] : '';
+          $query = isset($parsed['query']) ? '?' . $parsed['query'] : '';
+          $fragment = isset($parsed['fragment']) ? '#' . $parsed['fragment'] : '';
+          return "$path$query$fragment";
+        }
+      }
+    }
+
+    return $this->getFoundUrl();
   }
 
   /**
@@ -152,6 +198,5 @@ class Link implements LinkInterface {
 
     return FALSE;
   }
-
 
 }

@@ -1,17 +1,17 @@
 <?php
 /**
- * @file CorrectorInterface
+ * @file AnalyzerInterface
  */
 namespace Dennis\Link\Checker;
 
 /**
- * Interface CorrectorInterface
+ * Interface AnalyzeInterface
  * @package Dennis\Link\Checker
  */
-interface CorrectorInterface {
+interface AnalyzerInterface {
 
   /**
-   * Corrects the link.
+   * Checks the link.
    *
    * @param $link LinkInterface
    * @return string
@@ -19,7 +19,7 @@ interface CorrectorInterface {
   public function link(LinkInterface $link);
 
   /**
-   * Corrects an array of links.
+   * Checks an array of links.
    *
    * @param array $links
    *   An array of LinkInterface links

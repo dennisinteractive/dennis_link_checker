@@ -4,6 +4,7 @@
  */
 namespace Dennis\Link\Checker;
 use DrupalReliableQueueInterface;
+use Symfony\Component\DependencyInjection\Compiler\AnalyzeServiceReferencesPass;
 
 /**
  * Interface ProcessorInterface
@@ -18,7 +19,11 @@ interface ProcessorInterface {
    *  The drupal queue.
    *
    */
-  public function __construct(DrupalReliableQueueInterface $queue, EntityHandlerInterface $entity_handler, Corrector $corrector);
+  public function __construct(
+    DrupalReliableQueueInterface $queue,
+    EntityHandlerInterface $entity_handler,
+    AnalyzerInterface $analyzer
+  );
 
   /**
    * Sets how long in seconds the processor is allowed to run.
@@ -28,6 +33,23 @@ interface ProcessorInterface {
    * @return ProcessorInterface
    */
   public function setTimeLimit($time_limit);
+
+  /**
+   * How the link should be changed for local links, if at all
+   *
+   * either:
+   *
+   *
+   * @return ProcessorInterface
+   */
+  public function setLocalisation($localisation);
+
+  /**
+   * How the link should be changed for local links, if at all
+   *
+   * @return string
+   */
+  public function localisation();
 
   /**
    * Maximum number of seconds to allow the processor to run.
@@ -71,15 +93,15 @@ interface ProcessorInterface {
   /**
    * The object that does the actual fixing of the link.
    *
-   * @param CorrectorInterface $corrector
+   * @param AnalyzerInterface $analyzer
    * @return ProcessorInterface
    */
-  public function setCorrector(CorrectorInterface $corrector);
+  public function setAnalyzer(AnalyzerInterface $analyzer);
 
   /**
-   * @return CorrectorInterface
+   * @return AnalyzerInterface
    */
-  public function getCorrector();
+  public function getAnalyzer();
 
   /**
    * Finds & adds items to the queue.

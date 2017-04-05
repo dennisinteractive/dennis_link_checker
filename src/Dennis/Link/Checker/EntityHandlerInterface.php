@@ -29,9 +29,11 @@ interface EntityHandlerInterface {
    * Change the link on the entity.
    *
    * @param LinkInterface $link
+   * @param string $localisation
+   *  How the link should be changed for local links, if at all
    * @return mixed
    */
-  public function updateLink(LinkInterface $link);
+  public function updateLink(LinkInterface $link, $localisation = NULL);
 
   /**
    * The host domain of the site.

@@ -1,6 +1,6 @@
 <?php
 /**
- * @file Item
+ * @file Analyzer
  */
 namespace Dennis\Link\Checker;
 
@@ -8,7 +8,7 @@ namespace Dennis\Link\Checker;
  * Class Corrector
  * @package Dennis\Link\Checker
  */
-class Corrector implements CorrectorInterface {
+class Analyzer implements AnalyzerInterface {
 
   protected $host;
 
@@ -41,7 +41,7 @@ class Corrector implements CorrectorInterface {
    */
   public function link(LinkInterface $link) {
 
-    $src = trim($link->originalSrc());
+    $src = trim($link->originalHref());
     if (!$host = parse_url($src, PHP_URL_HOST)) {
       $host = $this->getSiteHost();
       $url = $host . '/' . ltrim($src, '/');
@@ -52,15 +52,17 @@ class Corrector implements CorrectorInterface {
 
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_URL, $url);
+    curl_setopt($ch, CURLOPT_USERAGENT, 'dennis_link_checker');
     curl_setopt($ch, CURLOPT_NOBODY, true);
     curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
     curl_setopt($ch, CURLOPT_MAXREDIRS, 10);
+
 
     curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $this->connectionTimeout);
     curl_setopt($ch, CURLOPT_TIMEOUT, $this->timeout);
 
     if (curl_exec($ch)) {
-      $info = curl_getinfo($ch);
+      $info = curl_getinfo($ch); //print_r($info);
       $link->setFoundUrl($info['url'])
         ->setHttpCode($info['http_code'])
         ->setNumberOfRedirects($info['redirect_count']);
