@@ -12,6 +12,15 @@ class Analyzer implements AnalyzerInterface {
 
   protected $host;
 
+  protected $config;
+
+  /**
+   * @inheritDoc
+   */
+  public function __construct(ConfigInterface $config) {
+    $this->config = $config;
+  }
+
   /**
    * The number of seconds to wait while trying to connect.
    */
@@ -25,15 +34,8 @@ class Analyzer implements AnalyzerInterface {
   /**
    * @inheritDoc
    */
-  public function setSiteHost($host) {
-    $this->host = $host;
-  }
-
-  /**
-   * @inheritDoc
-   */
   public function getSiteHost() {
-    return $this->host;
+    return $this->config->getSiteHost();
   }
 
   /**
@@ -54,15 +56,19 @@ class Analyzer implements AnalyzerInterface {
     curl_setopt($ch, CURLOPT_URL, $url);
     curl_setopt($ch, CURLOPT_USERAGENT, 'dennis_link_checker');
     curl_setopt($ch, CURLOPT_NOBODY, true);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+
     curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+    curl_setopt($ch, CURLOPT_HEADER, true);
+
     curl_setopt($ch, CURLOPT_MAXREDIRS, 10);
 
 
     curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $this->connectionTimeout);
     curl_setopt($ch, CURLOPT_TIMEOUT, $this->timeout);
 
-    if (curl_exec($ch)) {
-      $info = curl_getinfo($ch); //print_r($info);
+    if ($headers = curl_exec($ch)) {
+      $info = curl_getinfo($ch);
       $link->setFoundUrl($info['url'])
         ->setHttpCode($info['http_code'])
         ->setNumberOfRedirects($info['redirect_count']);

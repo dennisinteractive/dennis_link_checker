@@ -20,6 +20,7 @@ interface ProcessorInterface {
    *
    */
   public function __construct(
+    ConfigInterface $config,
     DrupalReliableQueueInterface $queue,
     EntityHandlerInterface $entity_handler,
     AnalyzerInterface $analyzer

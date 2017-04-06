@@ -10,26 +10,26 @@ namespace Dennis\Link\Checker;
  */
 class EntityHandler implements EntityHandlerInterface {
 
-  protected $host;
+  protected $config;
 
   /**
    * @inheritDoc
    */
-  public function setSiteHost($host) {
-    $this->host = $host;
+  public function __construct(ConfigInterface $config) {
+    $this->config = $config;
   }
 
   /**
    * @inheritDoc
    */
   public function getSiteHost() {
-    return $this->host;
+    return $this->config->getSiteHost();
   }
 
   /**
    * @inheritDoc
    */
-  public function findLinks($entity_type, $entity_id, $internal = TRUE) {
+  public function findLinks($entity_type, $entity_id) {
 
     $field_name = 'field_data_body';
     $value_field = 'body_value';
@@ -42,15 +42,13 @@ class EntityHandler implements EntityHandlerInterface {
     $result = $query->execute()->fetchObject();
     $text = $result->{$value_field};
 
-    $site_host = $this->getSiteHost();
-
-    return $this->getLinksFromText($text, $entity_type, $entity_id, $field_name, $site_host);
+    return $this->getLinksFromText($text, $entity_type, $entity_id, $field_name);
   }
 
   /**
    * @inheritDoc
    */
-  public function getLinksFromText($text, $entity_type, $entity_id, $field_name, $site_host = NULL) {
+  public function getLinksFromText($text, $entity_type, $entity_id, $field_name) {
     $found = [];
     $dom = filter_dom_load($text);
 
@@ -59,24 +57,24 @@ class EntityHandler implements EntityHandlerInterface {
     $links = $dom->getElementsByTagName('a');
     foreach ($links as $link) {
       $href = $link->getAttribute('href');
-      if (!empty($site_host)) {
+      if ($this->config->internalOnly()) {
         // Only get local links.
         if ($parsed = parse_url($href)) {
           if (empty($parsed['host'])) {
             if (!empty($parsed['path']) && $parsed['path'][0] == '/') {
               // A valid local link.
-              $found[] = new Link($entity_type, $entity_id, $field_name, $href);
+              $found[] = new Link($this->config, $entity_type, $entity_id, $field_name, $href);
             }
           }
-          elseif ($parsed['host'] == $site_host) {
+          elseif ($parsed['host'] == $this->getSiteHost()) {
             // A full url, but local
-            $found[] = new Link($entity_type, $entity_id, $field_name, $href);
+            $found[] = new Link($this->config, $entity_type, $entity_id, $field_name, $href);
           }
         }
       }
       else {
         // All links.
-        $found[] = new Link($entity_type, $entity_id, $field_name, $href);
+        $found[] = new Link($this->config, $entity_type, $entity_id, $field_name, $href);
       }
     }
 
@@ -86,7 +84,7 @@ class EntityHandler implements EntityHandlerInterface {
   /**
    * @inheritDoc
    */
-  public function updateLink(LinkInterface $link, $localisation = NULL) {
+  public function updateLink(LinkInterface $link) {
 
     $value_field = 'body_value'; //@todo not hard coded
 
@@ -97,7 +95,7 @@ class EntityHandler implements EntityHandlerInterface {
 
     $result = $query->execute()->fetchObject();
     $text = $result->{$value_field};
-    $correction = $link->correctedHref($this->getSiteHost(), $localisation);
+    $correction = $link->correctedHref();
     $text = str_replace($link->originalHref(), $correction, $text);
 
     db_update($link->entityField())

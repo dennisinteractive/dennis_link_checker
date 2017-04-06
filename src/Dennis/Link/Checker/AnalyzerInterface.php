@@ -11,6 +11,12 @@ namespace Dennis\Link\Checker;
 interface AnalyzerInterface {
 
   /**
+   * AnalyzerInterface constructor.
+   * @param ConfigInterface $config
+   */
+  public function __construct(ConfigInterface $config);
+
+  /**
    * Checks the link.
    *
    * @param $link LinkInterface
@@ -26,13 +32,6 @@ interface AnalyzerInterface {
    * @return array
    */
   public function multipleLinks($links);
-
-  /**
-   * The host domain of the site.
-   * @param string $host
-   * @return EntityHandlerInterface
-   */
-  public function setSiteHost($host);
 
   /**
    * Gets the host domain of the site.

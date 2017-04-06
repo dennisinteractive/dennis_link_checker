@@ -10,6 +10,8 @@ namespace Dennis\Link\Checker;
  */
 class Link implements LinkInterface {
 
+  protected $config;
+
   protected $data = [];
 
   protected $tooManyRedirects = FALSE;
@@ -17,7 +19,8 @@ class Link implements LinkInterface {
   /**
    * @inheritDoc
    */
-  public function __construct($entity_type, $entity_id, $field, $href) {
+  public function __construct(ConfigInterface $config, $entity_type, $entity_id, $field, $href) {
+    $this->config = $config;
     $this->setOriginalHref($href);
     $this->data['entity_type'] = $entity_type;
     $this->data['entity_id'] = $entity_id;
@@ -79,13 +82,13 @@ class Link implements LinkInterface {
   /**
    * @inheritDoc
    */
-  public function corrected($site_host = NULL, $localisation = NULL) {
+  public function corrected() {
     if ($this->getNumberOfRedirects() > 0) {
       return TRUE;
     }
 
     // Check to see if the link as changed for another reason.
-    if ($this->correctedHref($site_host, $localisation) != $this->originalHref()) {
+    if ($this->correctedHref() != $this->originalHref()) {
       return TRUE;
     }
 
@@ -111,11 +114,15 @@ class Link implements LinkInterface {
   /**
    * @inheritDoc
    */
-  public function correctedHref($site_host = NULL, $localisation = NULL) {
+  public function correctedHref() {
+    if (!empty($this->data['corrected_href'])) {
+      return $this->data['corrected_href'];
+    }
+
     // The found link will be an absolute one.
 
     // Keep links localised the way the editor saved them.
-    if (!empty($site_host) && empty($localisation)) {
+    if ($this->config->getLocalisation() == LinkLocalisation::ORIGINAL) {
       // Save it the same way it was originally if a local link.
       if ($parsed = parse_url($this->originalHref())) {
         if (empty($parsed['host'])) {
@@ -124,36 +131,57 @@ class Link implements LinkInterface {
             $path = isset($parsed['path']) ? $parsed['path'] : '';
             $query = isset($parsed['query']) ? '?' . $parsed['query'] : '';
             $fragment = isset($parsed['fragment']) ? '#' . $parsed['fragment'] : '';
-            return "$path$query$fragment";
+            $this->data['corrected_href'] = "$path$query$fragment";
           }
         }
       }
 
-      return $this->getFoundUrl();
+      $this->data['corrected_href'] = $this->getFoundUrl();
     }
 
     // Make all local links absolute.
-    if ($localisation == 'absolute') {
+    elseif ($this->config->getLocalisation() == LinkLocalisation::ABSOLUTE) {
       // Seo require local links to be absolute so if we get scrapped,
       // they will link back to us.
-      return $this->getFoundUrl();
+      $this->data['corrected_href'] = $this->getFoundUrl();
     }
 
     // Make all local links relative.
-    if (!empty($site_host) && $localisation == 'relative') {
+    elseif ($this->config->getLocalisation() == LinkLocalisation::RELATIVE
+      && !empty($this->config->getSiteHost())) {
       // Check for a local link.
       if ($parsed = parse_url($this->data['found_url'])) {
-        if (!empty($parsed['host']) && $site_host == $parsed['host']) {
+        if (!empty($parsed['host']) && $this->config->getSiteHost() == $parsed['host']) {
           // Make it relative.
           $path = isset($parsed['path']) ? $parsed['path'] : '';
           $query = isset($parsed['query']) ? '?' . $parsed['query'] : '';
           $fragment = isset($parsed['fragment']) ? '#' . $parsed['fragment'] : '';
-          return "$path$query$fragment";
+          $this->data['corrected_href'] = "$path$query$fragment";
         }
       }
     }
 
-    return $this->getFoundUrl();
+    // Make all local links protocol relative.
+    elseif ($this->config->getLocalisation() == LinkLocalisation::PROTOCOL_RELATIVE
+      && !empty($this->config->getSiteHost())) {
+      // Check for a local link.
+      if ($parsed = parse_url($this->data['found_url'])) {
+        if (!empty($parsed['host']) && $this->config->getSiteHost() == $parsed['host']) {
+          // Make it relative.
+          $path = isset($parsed['path']) ? $parsed['path'] : '';
+          $query = isset($parsed['query']) ? '?' . $parsed['query'] : '';
+          $fragment = isset($parsed['fragment']) ? '#' . $parsed['fragment'] : '';
+          $this->data['corrected_href'] = "$path$query$fragment";
+        }
+      }
+    }
+
+    // Default to the found url.
+    else {
+      $this->data['corrected_href'] = $this->getFoundUrl();
+    }
+
+    return $this->data['corrected_href'];
   }
 
   /**

@@ -11,6 +11,8 @@ use DrupalReliableQueueInterface;
  */
 class Processor implements ProcessorInterface {
 
+  protected $config;
+
   protected $queue;
 
   protected $entityHandeler;
@@ -27,9 +29,11 @@ class Processor implements ProcessorInterface {
    * @inheritDoc
    */
   public function __construct(
+    ConfigInterface $config,
     DrupalReliableQueueInterface $queue,
     EntityHandlerInterface $entity_handler,
     AnalyzerInterface $analyzer) {
+    $this->config = $config;
     $this->setQueue($queue);
     $this->setEntityHandler($entity_handler);
     $this->setAnalyzer($analyzer);
@@ -235,8 +239,8 @@ class Processor implements ProcessorInterface {
         }
         else {
           echo $link->entityId() . ' : ' . $link->originalHref() . "\n";
-          if ($link->corrected($this->getAnalyzer()->getSiteHost(), $this->localisation())) {
-            $this->getEntityHandler()->updateLink($link, $this->localisation());
+          if ($link->corrected()) {
+            $this->getEntityHandler()->updateLink($link);
           }
         }
       }
