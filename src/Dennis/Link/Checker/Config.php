@@ -14,7 +14,7 @@ class Config implements ConfigInterface {
 
   protected $maxRedirects;
 
-  protected $localisation;
+  protected $localisation = LinkLocalisation::ORIGINAL;
 
   protected $internalOnly = TRUE;
 

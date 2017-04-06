@@ -11,26 +11,28 @@ include 'global_functions.php';
 use PHPUnit\Framework\TestCase as PHPUnitTestCase;
 
 /**
- * Class ItemTest
+ * Class EntityHandlerTest
  * @package Dennis/Link/Checker
  */
-class ItemTest extends PHPUnitTestCase {
+class EntityHandlerTest extends PHPUnitTestCase {
 
   /**
    * @covers ::getLinksFromText
    * @dataProvider getLinksFromTextProvider
    */
   public function testGetLinksFromText($data) {
-    $handler = new EntityHandler();
-    $site_host = 'www.theweek.co.uk';
+    $config = (new Config())->setSiteHost('www.theweek.co.uk');
+
     $field_name = 'field_data_body';
+
+    $handler = new EntityHandler($config);
     $entity_type = 'node';
     $entity_id = 123;
 
-    $links = $handler->getLinksFromText($data['text'], $entity_type, $entity_id, $field_name, $site_host);
+    $links = $handler->getLinksFromText($data['text'], $entity_type, $entity_id, $field_name);
 
     foreach ($data['links'] as $k => $v) {
-      $this->assertEquals($v, $links[$k]->originalSrc());
+      $this->assertEquals($v, $links[$k]->originalHref());
     }
   }
 
@@ -58,13 +60,14 @@ class ItemTest extends PHPUnitTestCase {
    * @dataProvider getExternalLinksFromTextProvider
    */
   public function testExternalGetLinksFromText($data) {
-    $handler = new EntityHandler();
-    $site_host = 'www.theweek.co.uk';
+    $config = (new Config())->setSiteHost('www.theweek.co.uk');
+    $handler = new EntityHandler($config);
+
     $field_name = 'field_data_body';
     $entity_type = 'node';
     $entity_id = 123;
 
-    $links = $handler->getLinksFromText($data['text'], $entity_type, $entity_id, $field_name, $site_host);
+    $links = $handler->getLinksFromText($data['text'], $entity_type, $entity_id, $field_name);
     $this->assertEmpty($links);
   }
 

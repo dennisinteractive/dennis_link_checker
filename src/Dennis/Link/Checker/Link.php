@@ -124,6 +124,8 @@ class Link implements LinkInterface {
     }
 
     // The found link will be an absolute one.
+    // Default to the found url.
+    $this->data['corrected_href'] = $this->getFoundUrl();
 
     // Keep links localised the way the editor saved them.
     if ($this->config->getLocalisation() == LinkLocalisation::ORIGINAL) {
@@ -139,8 +141,9 @@ class Link implements LinkInterface {
           }
         }
       }
-
-      $this->data['corrected_href'] = $this->getFoundUrl();
+      else {
+        $this->data['corrected_href'] = $this->getFoundUrl();
+      }
     }
 
     // Make all local links absolute.
@@ -154,7 +157,7 @@ class Link implements LinkInterface {
     elseif ($this->config->getLocalisation() == LinkLocalisation::RELATIVE
       && !empty($this->config->getSiteHost())) {
       // Check for a local link.
-      if ($parsed = parse_url($this->data['found_url'])) {
+      if ($parsed = parse_url($this->getFoundUrl())) {
         if (!empty($parsed['host']) && $this->config->getSiteHost() == $parsed['host']) {
           // Make it relative.
           $path = isset($parsed['path']) ? $parsed['path'] : '';
@@ -169,20 +172,15 @@ class Link implements LinkInterface {
     elseif ($this->config->getLocalisation() == LinkLocalisation::PROTOCOL_RELATIVE
       && !empty($this->config->getSiteHost())) {
       // Check for a local link.
-      if ($parsed = parse_url($this->data['found_url'])) {
+      if ($parsed = parse_url($this->getFoundUrl())) {
         if (!empty($parsed['host']) && $this->config->getSiteHost() == $parsed['host']) {
           // Make it relative.
           $path = isset($parsed['path']) ? $parsed['path'] : '';
           $query = isset($parsed['query']) ? '?' . $parsed['query'] : '';
           $fragment = isset($parsed['fragment']) ? '#' . $parsed['fragment'] : '';
-          $this->data['corrected_href'] = "$path$query$fragment";
+          $this->data['corrected_href'] = "/$path$query$fragment";
         }
       }
-    }
-
-    // Default to the found url.
-    else {
-      $this->data['corrected_href'] = $this->getFoundUrl();
     }
 
     return $this->data['corrected_href'];
@@ -198,7 +196,7 @@ class Link implements LinkInterface {
   }
 
   public function getFoundUrl() {
-    return $this->data['found_url'];
+    return isset($this->data['found_url']) ? $this->data['found_url'] : '';
   }
 
   /**
