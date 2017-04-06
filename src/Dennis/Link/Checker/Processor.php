@@ -238,7 +238,7 @@ class Processor implements ProcessorInterface {
           print_r($err);
         }
         else {
-          echo $link->entityId() . ' : ' . $link->originalHref() . "\n";
+          echo $link->entityId() . ' : ' . $link->getNumberOfRedirects() . ' : ' . $link->originalHref() . "\n";
           if ($link->corrected()) {
             $this->getEntityHandler()->updateLink($link);
           }

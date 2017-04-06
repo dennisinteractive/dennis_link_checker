@@ -61,6 +61,10 @@ class Link implements LinkInterface {
   public function setNumberOfRedirects($int) {
     $this->data['redirect_count'] = (int) $int;
 
+    if ($int > $this->config->getMaxRedirects()) {
+      $this->setTooManyRedirects();
+    }
+
     return $this;
   }
 

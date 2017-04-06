@@ -12,6 +12,8 @@ class Config implements ConfigInterface {
 
   protected $host;
 
+  protected $maxRedirects;
+
   protected $localisation;
 
   protected $internalOnly = TRUE;
@@ -31,6 +33,23 @@ class Config implements ConfigInterface {
 
     return $this;
   }
+
+  /**
+   * @inheritDoc
+   */
+  public function setMaxRedirects($int) {
+    $this->maxRedirects = (int) $int;
+
+    return $this;
+  }
+
+  /**
+   * @inheritDoc
+   */
+  public function getMaxRedirects() {
+    return $this->maxRedirects;
+  }
+
 
   /**
    * @inheritDoc

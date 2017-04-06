@@ -26,6 +26,21 @@ interface ConfigInterface {
   public function setSiteHost($str);
 
   /**
+   * The maximum number of redirects to follow.
+   *
+   * @param $int
+   * @return ConfigInterface
+   */
+  public function setMaxRedirects($int);
+
+  /**
+   * The maximum number of redirects to follow.
+   *
+   * @return int
+   */
+  public function getMaxRedirects();
+
+  /**
    * Whether to check only local links
    *
    * @param $bool

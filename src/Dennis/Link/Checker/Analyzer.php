@@ -14,6 +14,8 @@ class Analyzer implements AnalyzerInterface {
 
   protected $config;
 
+  protected $redirectCount;
+
   /**
    * @inheritDoc
    */
@@ -41,7 +43,20 @@ class Analyzer implements AnalyzerInterface {
   /**
    * @inheritDoc
    */
+  public function multipleLinks($links) {
+    foreach ($links as &$link) {
+      $link = $this->link($link);
+    }
+
+    return $links;
+  }
+
+  /**
+   * @inheritDoc
+   */
   public function link(LinkInterface $link) {
+    // Only redirect 301's so cannot use CURLOPT_FOLLOWLOCATION
+    $this->redirectCount = 0;
 
     $src = trim($link->originalHref());
     if (!$host = parse_url($src, PHP_URL_HOST)) {
@@ -52,49 +67,59 @@ class Analyzer implements AnalyzerInterface {
       $url = $src;
     }
 
-    $ch = curl_init();
-    curl_setopt($ch, CURLOPT_URL, $url);
-    curl_setopt($ch, CURLOPT_USERAGENT, 'dennis_link_checker');
-    curl_setopt($ch, CURLOPT_NOBODY, true);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-
-    curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
-    curl_setopt($ch, CURLOPT_HEADER, true);
-
-    curl_setopt($ch, CURLOPT_MAXREDIRS, 10);
-
-
-    curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $this->connectionTimeout);
-    curl_setopt($ch, CURLOPT_TIMEOUT, $this->timeout);
-
-    if ($headers = curl_exec($ch)) {
-      $info = curl_getinfo($ch);
+    try {
+      $info = $this->followRedirects($url);
       $link->setFoundUrl($info['url'])
         ->setHttpCode($info['http_code'])
-        ->setNumberOfRedirects($info['redirect_count']);
+        ->setNumberOfRedirects($this->redirectCount);
 
+    } catch (ResourceFailException $e) {
+      $link->setError($e->getMessage(), $e->getCode());
     }
-    else {
-      if (curl_errno($ch) == CURLE_TOO_MANY_REDIRECTS) {
-        // Curl error: Maximum (10) redirects followed - number: 47
-        $link->setTooManyRedirects();
-      }
-      $link->setError(curl_error($ch), curl_errno($ch));
-    }
-    curl_close($ch);
 
     return $link;
   }
 
   /**
-   * @inheritDoc
+   * Recursively follow 301 redirects only.
+   *
+   * @param $url
+   * @return array
+   *   The curl_getinfo() array.
    */
-  public function multipleLinks($links) {
-    foreach ($links as &$link) {
-      $link = $this->link($link);
+  protected function followRedirects($url) {
+    $info = $this->getInfo($url);
+    if (!empty($info['redirect_url'])) {
+      if ($info['http_code'] == 301) {
+        // Do the redirect
+        $this->redirectCount++;
+        return $this->followRedirects($info['redirect_url']);
+      }
     }
 
-    return $links;
+    return $info;
+  }
+
+  protected function getInfo($url) {
+    // Only redirect 301's so cannot use CURLOPT_FOLLOWLOCATION
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, $url);
+    curl_setopt($ch, CURLOPT_USERAGENT, 'dennis_link_checker');
+    curl_setopt($ch, CURLOPT_NOBODY, true);
+    curl_setopt($ch, CURLOPT_FOLLOWLOCATION, FALSE);
+    curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $this->connectionTimeout);
+    curl_setopt($ch, CURLOPT_TIMEOUT, $this->timeout);
+
+    if (curl_exec($ch)) {
+      $info = curl_getinfo($ch);
+      curl_close($ch);
+      return $info;
+    }
+    else {
+      curl_close($ch);
+      throw new ResourceFailException(curl_error($ch), curl_errno($ch));
+    }
+
   }
 
 }
