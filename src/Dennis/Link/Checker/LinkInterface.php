@@ -105,6 +105,13 @@ interface LinkInterface {
   public function setHttpCode($code);
 
   /**
+   * The httpd code.
+   *
+   * @return int
+   */
+  public function getHttpCode();
+
+  /**
    * The checker error.
    *
    * @param $code

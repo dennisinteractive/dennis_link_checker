@@ -215,6 +215,13 @@ class Link implements LinkInterface {
   /**
    * @inheritDoc
    */
+  public function getHttpCode() {
+    return isset($this->data['http_code']) ? $this->data['http_code'] : '';
+  }
+
+  /**
+   * @inheritDoc
+   */
   public function setError($code, $msg) {
     $this->data['error']['code'] = $code;
     $this->data['error']['msg'] = $msg;

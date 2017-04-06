@@ -101,16 +101,25 @@ class Logger implements LoggerInterface {
     if ($this->verbose_level == self::VERBOSITY_DEBUG) {
       if ($level >= self::DEBUG) {
         print $message . "\n";
+        if (!empty($context)) {
+          print_r($context);
+        }
       }
     }
     elseif ($this->verbose_level == self::VERBOSITY_HIGH) {
       if ($level >= self::INFO) {
         print $message . "\n";
+        if (!empty($context)) {
+          print_r($context);
+        }
       }
     }
     elseif ($this->verbose_level == self::VERBOSITY_LOW) {
       if ($level >= self::WARNING) {
         print $message . "\n";
+        if (!empty($context)) {
+          print_r($context);
+        }
       }
     }
 

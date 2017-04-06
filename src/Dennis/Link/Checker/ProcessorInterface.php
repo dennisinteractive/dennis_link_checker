@@ -151,6 +151,9 @@ interface ProcessorInterface {
    */
   public function excessiveRedirects();
 
-  public function outputExcessiveRedirects();
+  /**
+   * Output the report.
+   */
+  public function outputReport();
 
 }

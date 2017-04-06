@@ -26,6 +26,8 @@ class Processor implements ProcessorInterface {
 
   protected $excessiveRedirects = [];
 
+  protected $notFounds = [];
+
   /**
    * @inheritDoc
    */
@@ -57,7 +59,7 @@ class Processor implements ProcessorInterface {
     }
 
     // Log & output excessive redirects.
-    $this->outputExcessiveRedirects();
+    $this->outputReport();
   }
 
   /**
@@ -238,14 +240,24 @@ class Processor implements ProcessorInterface {
           $this->config->getLogger()->error($link->originalHref(), $err);
         }
         else {
+
           $this->config->getLogger()->debug(
             $link->entityType() . '/' . $link->entityId()
             . ' : ' . $link->getNumberOfRedirects()
             . ' : ' . $link->originalHref()
           );
+
+          // SEO want a report of 404's.
+          if ($link->getHttpCode() == 404) {
+            $this->notFounds = $link;
+            $this->config->getLogger()->warning('Page Not Found: ' . $link->originalHref());
+          }
+
+          // Do the correction if needed.
           if ($link->corrected()) {
             $this->getEntityHandler()->updateLink($link);
           }
+
         }
       }
 
@@ -269,10 +281,14 @@ class Processor implements ProcessorInterface {
   /**
    * @inheritDoc
    */
-  public function outputExcessiveRedirects() {
+  public function outputReport() {
     $msgs = $this->excessiveRedirects();
     foreach ($msgs as $msg) {
       watchdog('dennis_link_checker', $msg);
+    }
+
+    foreach ($this->notFounds as $link) {
+      watchdog('dennis_link_checker', 'Page Not Found: ' . $link->originalHref());
     }
   }
 
