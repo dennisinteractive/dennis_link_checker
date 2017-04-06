@@ -72,4 +72,19 @@ interface ConfigInterface {
    */
   public function setLocalisation($int);
 
+  /**
+   * The logger to use.
+   *
+   * @param \Dennis\Link\Checker\LoggerInterface $logger
+   * @return ConfigInterface
+   */
+  public function setLogger(LoggerInterface $logger);
+
+  /**
+   * The logger.
+   *
+   * @return \Dennis\Link\Checker\LoggerInterface $logger
+   */
+  public function getLogger();
+
 }

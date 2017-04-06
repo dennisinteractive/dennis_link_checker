@@ -18,6 +18,8 @@ class Config implements ConfigInterface {
 
   protected $internalOnly = TRUE;
 
+  protected $logger;
+
   /**
    * @inheritDoc
    */
@@ -81,6 +83,22 @@ class Config implements ConfigInterface {
     $this->localisation = (int) $int;
 
     return $this;
+  }
+
+  /**
+   * @inheritDoc
+   */
+  public function setLogger(LoggerInterface $logger) {
+    $this->logger = $logger;
+
+    return $this;
+  }
+
+  /**
+   * @inheritDoc
+   */
+  public function getLogger() {
+    return $this->logger;
   }
 
 }

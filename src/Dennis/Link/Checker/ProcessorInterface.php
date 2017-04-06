@@ -155,9 +155,11 @@ interface ProcessorInterface {
   public function correctLinks(ItemInterface $item, $links);
 
   /**
-   * Report on links that had too many redirects.
+   * Log links that had too many redirects.
    * @return array
    */
   public function excessiveRedirects();
+
+  public function outputExcessiveRedirects();
 
 }

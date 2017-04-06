@@ -106,7 +106,7 @@ class EntityHandler implements EntityHandlerInterface {
       ->condition('entity_type', $link->entityType())
       ->execute();
 
-    echo "  -- $correction\n";
+    $this->config->getLogger()->info($link->originalHref() . " => $correction");
   }
 
 }
