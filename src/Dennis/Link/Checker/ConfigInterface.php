@@ -1,6 +1,7 @@
 <?php
 /**
- * @file ConfigInterface
+ * @file
+ * ConfigInterface
  */
 namespace Dennis\Link\Checker;
 

@@ -1,6 +1,7 @@
 <?php
 /**
- * @file Logger
+ * @file
+ * Logger
  */
 namespace Dennis\Link\Checker;
 
@@ -70,6 +71,12 @@ class Logger implements LoggerInterface {
 
   protected $verbose_level = self::VERBOSITY_LOW;
 
+  /**
+   * How much to output while logging.
+   *
+   * @param $level
+   * @return $this
+   */
   public function setVerbosity($level) {
     $this->verbose_level = (int) $level;
 

@@ -1,6 +1,7 @@
 <?php
 /**
- * @file Analyzer
+ * @file
+ * Analyzer
  */
 namespace Dennis\Link\Checker;
 
@@ -100,12 +101,18 @@ class Analyzer implements AnalyzerInterface {
     return $info;
   }
 
+  /**
+   * Makes an http call and returns info about what it found.
+   *
+   * @param $url
+   * @return array
+   */
   protected function getInfo($url) {
     // Only redirect 301's so cannot use CURLOPT_FOLLOWLOCATION
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_URL, $url);
     curl_setopt($ch, CURLOPT_USERAGENT, 'dennis_link_checker');
-    curl_setopt($ch, CURLOPT_NOBODY, true);
+    curl_setopt($ch, CURLOPT_NOBODY, TRUE);
     curl_setopt($ch, CURLOPT_FOLLOWLOCATION, FALSE);
     curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $this->connectionTimeout);
     curl_setopt($ch, CURLOPT_TIMEOUT, $this->timeout);

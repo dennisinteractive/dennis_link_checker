@@ -1,6 +1,7 @@
 <?php
 /**
- * @file ItemInterface
+ * @file
+ * ItemInterface
  */
 namespace Dennis\Link\Checker;
 

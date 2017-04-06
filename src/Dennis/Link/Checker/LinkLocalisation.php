@@ -1,6 +1,7 @@
 <?php
 /**
- * @file LinkLocalisation
+ * @file
+ * LinkLocalisation
  */
 namespace Dennis\Link\Checker;
 

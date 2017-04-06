@@ -1,10 +1,10 @@
 <?php
 /**
- * @file ProcessorInterface
+ * @file
+ * ProcessorInterface
  */
 namespace Dennis\Link\Checker;
 use DrupalReliableQueueInterface;
-use Symfony\Component\DependencyInjection\Compiler\AnalyzeServiceReferencesPass;
 
 /**
  * Interface ProcessorInterface
@@ -17,14 +17,8 @@ interface ProcessorInterface {
    *
    * @param $queue
    *  The drupal queue.
-   *
    */
-  public function __construct(
-    ConfigInterface $config,
-    DrupalReliableQueueInterface $queue,
-    EntityHandlerInterface $entity_handler,
-    AnalyzerInterface $analyzer
-  );
+  public function __construct(ConfigInterface $config, DrupalReliableQueueInterface $queue, EntityHandlerInterface $entity_handler, AnalyzerInterface $analyzer);
 
   /**
    * Sets how long in seconds the processor is allowed to run.
@@ -37,9 +31,6 @@ interface ProcessorInterface {
 
   /**
    * How the link should be changed for local links, if at all
-   *
-   * either:
-   *
    *
    * @return ProcessorInterface
    */

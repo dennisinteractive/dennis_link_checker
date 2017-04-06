@@ -1,6 +1,7 @@
 <?php
 /**
- * @file EntityHandlerInterface
+ * @file
+ * EntityHandlerInterface
  */
 namespace Dennis\Link\Checker;
 

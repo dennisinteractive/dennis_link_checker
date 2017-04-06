@@ -1,6 +1,7 @@
 <?php
 /**
- * @file Link
+ * @file
+ * Link
  */
 namespace Dennis\Link\Checker;
 
@@ -195,6 +196,9 @@ class Link implements LinkInterface {
     return $this;
   }
 
+  /**
+   * @inheritDoc
+   */
   public function getFoundUrl() {
     return isset($this->data['found_url']) ? $this->data['found_url'] : '';
   }

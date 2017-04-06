@@ -1,6 +1,7 @@
 <?php
 /**
- * @file Item
+ * @file
+ * EntityHandler
  */
 namespace Dennis\Link\Checker;
 
@@ -52,8 +53,6 @@ class EntityHandler implements EntityHandlerInterface {
     $found = [];
     $dom = filter_dom_load($text);
 
-    // Internal links: the number of manually-entered links in text fields to pages on the same site.
-    // Note, some teams use absolute hrefs, some relative and some use node ids (eg: <a href="node/1404137">).
     $links = $dom->getElementsByTagName('a');
     foreach ($links as $link) {
       $href = $link->getAttribute('href');

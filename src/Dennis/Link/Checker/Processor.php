@@ -1,6 +1,7 @@
 <?php
 /**
- * @file Processor
+ * @file
+ * Processor
  */
 namespace Dennis\Link\Checker;
 use DrupalReliableQueueInterface;

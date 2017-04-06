@@ -1,6 +1,7 @@
 <?php
 /**
- * @file Stack.php
+ * @file
+ * Stack.php
  */
 namespace Dennis\Link\Checker;
 use SystemQueue;
@@ -12,6 +13,9 @@ use SystemQueue;
  */
 class Stack extends SystemQueue {
 
+  /**
+   * @inheritdoc
+   */
   public function claimItem($lease_time = 30) {
     while (TRUE) {
       $item = db_query_range('SELECT data, item_id FROM {queue} q WHERE 
