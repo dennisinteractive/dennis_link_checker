@@ -24,8 +24,6 @@ class Processor implements ProcessorInterface {
 
   protected $localisation;
 
-  protected $excessiveRedirects = [];
-
   protected $notFounds = [];
 
   /**
@@ -56,8 +54,6 @@ class Processor implements ProcessorInterface {
       $more = $this->doNextItem();
     }
 
-    // Log & output excessive redirects.
-    $this->outputReport();
   }
 
   /**
@@ -252,9 +248,14 @@ class Processor implements ProcessorInterface {
       foreach ($links as $link) {
         if ($err = $link->getError()) {
           if ($link->hasTooManyRedirects()) {
-            $this->excessiveRedirects[] = $link;
+            $msg = 'Excessive redirects on: '
+              . $link->entityType() . '/' . $link->entityId()
+              . ' to ' . $link->originalHref();
+            $this->config->getLogger()->warning($msg);
           }
-          $this->config->getLogger()->error($link->originalHref(), $err);
+          else {
+            $this->config->getLogger()->error($link->originalHref(), $err);
+          }
         }
         else {
 
@@ -278,34 +279,6 @@ class Processor implements ProcessorInterface {
         }
       }
 
-    }
-  }
-
-  /**
-   * @inheritDoc
-   */
-  public function excessiveRedirects() {
-    $msgs = [];
-    foreach ($this->excessiveRedirects as $link) {
-      $msg = 'Excessive redirects on: ' . $link->entityType() . '/' . $link->entityId();
-      $msgs[] = $msg;
-      $this->config->getLogger()->warning($msg);
-    }
-
-    return $msgs;
-  }
-
-  /**
-   * @inheritDoc
-   */
-  public function outputReport() {
-    $msgs = $this->excessiveRedirects();
-    foreach ($msgs as $msg) {
-      watchdog('dennis_link_checker', $msg);
-    }
-
-    foreach ($this->notFounds as $link) {
-      watchdog('dennis_link_checker', 'Page Not Found: ' . $link->originalHref());
     }
   }
 

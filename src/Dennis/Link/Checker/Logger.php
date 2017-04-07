@@ -67,8 +67,6 @@ class Logger implements LoggerInterface {
    */
   const EMERGENCY = 600;
 
-  protected $records = [];
-
   protected $verbose_level = self::VERBOSITY_LOW;
 
   /**
@@ -92,11 +90,6 @@ class Logger implements LoggerInterface {
    * @return LoggerInterface
    */
   public function addRecord($level, $message, $context = []) {
-    $this->records[] = [
-      'level' => $level,
-      'message' => $message,
-      'context' => $context,
-    ];
 
     if ($this->verbose_level == self::VERBOSITY_DEBUG) {
       if ($level >= self::DEBUG) {
@@ -159,6 +152,8 @@ class Logger implements LoggerInterface {
    */
   public function warning($message, array $context = array()) {
     $this->addRecord(self::WARNING, (string) $message, $context);
+    // Special watchdog so the message can be automatically send to Slack.
+    watchdog('dennis_link_checker_seo', $message);
   }
 
   /**

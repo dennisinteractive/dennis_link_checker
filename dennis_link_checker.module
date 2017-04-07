@@ -77,6 +77,6 @@ function dennis_link_checker_setup() {
  */
 function dennis_link_checker_run() {
   $processor = dennis_link_checker_setup();
-  $processor->setTimeLimit(20); // temporarily low time limit.
+  //$processor->setTimeLimit(20); // temporarily low time limit.
   $processor->run();
 }
