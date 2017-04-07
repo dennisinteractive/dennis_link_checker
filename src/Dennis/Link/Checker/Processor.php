@@ -248,7 +248,7 @@ class Processor implements ProcessorInterface {
       foreach ($links as $link) {
         if ($err = $link->getError()) {
           if ($link->hasTooManyRedirects()) {
-            $msg = 'Excessive redirects on: '
+            $msg = 'Excessive Redirects on: '
               . $link->entityType() . '/' . $link->entityId()
               . ' to ' . $link->originalHref();
             $this->config->getLogger()->warning($msg);
@@ -268,7 +268,9 @@ class Processor implements ProcessorInterface {
           // SEO want a report of 404's.
           if ($link->getHttpCode() == 404) {
             $this->notFounds = $link;
-            $this->config->getLogger()->warning('Page Not Found: ' . $link->originalHref());
+            $this->config->getLogger()->warning('Page Not Found on: '
+              . $link->entityType() . '/' . $link->entityId()
+              . ' to '. $link->originalHref());
           }
 
           // Do the correction if needed.
