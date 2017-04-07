@@ -24,9 +24,40 @@ spl_autoload_register(function ($class) {
 });
 
 /**
- * Run the link checker queue.
+ * Implements hook_cron().
  */
-function dennis_link_checker_run() {
+function dennis_link_checker_cron() {
+  // Make sure there is always something in the queue.
+  $processor = dennis_link_checker_setup();
+  $processor->ensureEnqueued();
+}
+
+/**
+ * Implements hook_cron_queue_info().
+ */
+function dennis_link_checker_cron_queue_info() {
+  $queues['dennis_link_checker'] = array(
+    'worker callback' => 'dennis_link_checker_worker',
+    'time' => 60,
+  );
+  return $queues;
+}
+
+/**
+ * Callback for hook_cron_queue_info().
+ */
+function dennis_link_checker_worker($queue_item_data) {
+  // NB this will take a long time to get through the whole queue as we only have a minute or two.
+  $processor = dennis_link_checker_setup();
+  $processor->queueWorker($queue_item_data);
+}
+
+/**
+ * Setup the link processor.
+ *
+ * @return \Dennis\Link\Checker\ProcessorInterface
+ */
+function dennis_link_checker_setup() {
   $site_host = parse_url(dennis_ga_get_live_url(), PHP_URL_HOST);
   $config = (new Config())
     ->setLogger((new Logger())->setVerbosity(Logger::VERBOSITY_HIGH))
@@ -38,7 +69,14 @@ function dennis_link_checker_run() {
   $queue = new Queue('dennis_link_checker');
   $entity_handler = new EntityHandler($config);
   $analyzer = new Analyzer($config);
-  $processor = new Processor($config, $queue, $entity_handler, $analyzer);
-  //$processor->setTimeLimit(20); // temporarily low time limit.
+  return new Processor($config, $queue, $entity_handler, $analyzer);
+}
+
+/**
+ * Run the link checker queue.
+ */
+function dennis_link_checker_run() {
+  $processor = dennis_link_checker_setup();
+  $processor->setTimeLimit(20); // temporarily low time limit.
   $processor->run();
 }

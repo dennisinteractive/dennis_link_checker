@@ -48,10 +48,8 @@ class Processor implements ProcessorInterface {
   public function run() {
     $end = time() + $this->timeLimit;
 
-    // Check for anything in the queue to process.
-    if ($this->numberOfItems() == 0) {
-      $this->enqueue();
-    }
+    // Make sure there is something to do.
+    $this->ensureEnqueued();
 
     $more = TRUE;
     while ($more && time() < $end) {
@@ -137,6 +135,16 @@ class Processor implements ProcessorInterface {
   /**
    * @inheritDoc
    */
+  public function ensureEnqueued() {
+    // Check for anything in the queue to process.
+    if ($this->numberOfItems() == 0) {
+      $this->enqueue();
+    }
+  }
+
+  /**
+   * @inheritDoc
+   */
   public function enqueue() {
     // entities that have a text area field with a link.
 
@@ -187,13 +195,22 @@ class Processor implements ProcessorInterface {
       return FALSE;
     }
 
-    $item = $queue_item->data;
-    $links = $this->findLinks($item);
-    $this->correctLinks($item, $links);
+    $this->queueWorker($queue_item->data);
 
     // Remove it from the queue.
     $this->queue->deleteItem($queue_item);
     return TRUE;
+  }
+
+  /**
+   * @inheritDoc
+   */
+  public function queueWorker($item) {
+    // Not forcing the instance on the function param so that it can fail silently.
+    if ($item instanceof Item) {
+      $links = $this->findLinks($item);
+      $this->correctLinks($item, $links);
+    }
   }
 
   /**

@@ -102,6 +102,11 @@ interface ProcessorInterface {
   public function enqueue();
 
   /**
+   * Ensures there is always something in the queue.
+   */
+  public function ensureEnqueued();
+
+  /**
    * Add an item to the queue.
    *
    * @param ItemInterface $item
@@ -122,6 +127,16 @@ interface ProcessorInterface {
    * @return ProcessorInterface
    */
   public function doNextItem();
+
+  /**
+   * Process a single queue item's data.
+   *
+   * Can be used by callback_queue_worker($queue_item_data)
+   *
+   * @param Item $item
+   *  The data that was passed to DrupalQueueInterface::createItem() when the item was queued.
+   */
+  public function queueWorker($item);
 
   /**
    * The next item to be processed.
