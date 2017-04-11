@@ -88,6 +88,10 @@ class Link implements LinkInterface {
    * @inheritDoc
    */
   public function corrected() {
+    if ($this->getHttpCode() != 200) {
+      return FALSE;
+    }
+
     if ($this->getNumberOfRedirects() > 0) {
       return TRUE;
     }
