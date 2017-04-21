@@ -125,4 +125,11 @@ interface LinkInterface {
    */
   public function getError();
 
+  /**
+   * Check if the href redirects to a taxonomy term.
+   *
+   * @return bool
+   */
+  public function redirectsToTerm();
+
 }

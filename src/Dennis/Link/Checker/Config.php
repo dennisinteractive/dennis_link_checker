@@ -21,6 +21,8 @@ class Config implements ConfigInterface {
 
   protected $logger;
 
+  protected $removeTermLinks = TRUE;
+
   /**
    * @inheritDoc
    */
@@ -102,4 +104,17 @@ class Config implements ConfigInterface {
     return $this->logger;
   }
 
+  /**
+   * @inheritDoc
+   */
+  public function setRemoveTermLinks($remove) {
+    $this->removeTermLinks = $remove;
+  }
+
+  /**
+   * @inheritDoc
+   */
+  public function removeTermLinks() {
+    return $this->removeTermLinks;
+  }
 }

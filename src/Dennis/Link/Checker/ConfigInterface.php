@@ -88,4 +88,19 @@ interface ConfigInterface {
    */
   public function getLogger();
 
+  /**
+   * Set if term links should be removed.
+   *
+   * @param $remove
+   * @return mixed
+   */
+  public function setRemoveTermLinks($remove);
+
+  /**
+   * Check if term links should be removed.
+   *
+   * @return boolean
+   */
+  public function removeTermLinks();
+
 }

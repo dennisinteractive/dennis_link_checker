@@ -109,7 +109,6 @@ class Link implements LinkInterface {
    */
   public function setOriginalHref($href) {
     $this->data['original_href'] = $href;
-
     return $this;
   }
 
@@ -139,10 +138,7 @@ class Link implements LinkInterface {
         if (empty($parsed['host'])) {
           if (!empty($parsed['path']) && $parsed['path'][0] == '/') {
             // Was originally a relative link.
-            $path = isset($parsed['path']) ? $parsed['path'] : '';
-            $query = isset($parsed['query']) ? '?' . $parsed['query'] : '';
-            $fragment = isset($parsed['fragment']) ? '#' . $parsed['fragment'] : '';
-            $this->data['corrected_href'] = "$path$query$fragment";
+            $this->data['corrected_href'] = $this->relativePath($parsed);
           }
         }
       }
@@ -165,10 +161,7 @@ class Link implements LinkInterface {
       if ($parsed = parse_url($this->getFoundUrl())) {
         if (!empty($parsed['host']) && $this->config->getSiteHost() == $parsed['host']) {
           // Make it relative.
-          $path = isset($parsed['path']) ? $parsed['path'] : '';
-          $query = isset($parsed['query']) ? '?' . $parsed['query'] : '';
-          $fragment = isset($parsed['fragment']) ? '#' . $parsed['fragment'] : '';
-          $this->data['corrected_href'] = "$path$query$fragment";
+          $this->data['corrected_href'] = $this->relativePath($parsed);;
         }
       }
     }
@@ -180,10 +173,7 @@ class Link implements LinkInterface {
       if ($parsed = parse_url($this->getFoundUrl())) {
         if (!empty($parsed['host']) && $this->config->getSiteHost() == $parsed['host']) {
           // Make it relative.
-          $path = isset($parsed['path']) ? $parsed['path'] : '';
-          $query = isset($parsed['query']) ? '?' . $parsed['query'] : '';
-          $fragment = isset($parsed['fragment']) ? '#' . $parsed['fragment'] : '';
-          $this->data['corrected_href'] = "/$path$query$fragment";
+          $this->data['corrected_href'] = '/' . $this->relativePath($parsed);
         }
       }
     }
@@ -192,11 +182,23 @@ class Link implements LinkInterface {
   }
 
   /**
+   * Helper to build the relative path of a parsed href.
+   *
+   * @param $parsed
+   * @return string
+   */
+  private function relativePath($parsed) {
+    $path = isset($parsed['path']) ? $parsed['path'] : '';
+    $query = isset($parsed['query']) ? '?' . $parsed['query'] : '';
+    $fragment = isset($parsed['fragment']) ? '#' . $parsed['fragment'] : '';
+    return "$path$query$fragment";
+  }
+
+  /**
    * @inheritDoc
    */
   public function setFoundUrl($url) {
     $this->data['found_url'] = $url;
-
     return $this;
   }
 
@@ -244,4 +246,90 @@ class Link implements LinkInterface {
     return FALSE;
   }
 
+  /**
+   * Check of the href redirects to a taxonomy term.
+   *
+   * @return bool
+   */
+  public function redirectsToTerm() {
+    if ($this->data['redirects_to_term']) {
+      return $this->data['redirects_to_term'];
+    }
+
+    $this->data['redirects_to_term'] = FALSE;
+    if ($this->correctedHref() != $this->originalHref()) {
+      // This is definitely a redirected href
+      // So the original href will either have a redirect record, or an alias
+      $parsed = parse_url($this->originalHref());
+      $original_path = ltrim($this->relativePath($parsed), '/');
+      $internal_path = $this->getInternalPath($original_path);
+
+      // If we found a internal path, try and get the entity type
+      if (!empty($internal_path)) {
+        if ($this->typeFromPath($internal_path) == 'node') {
+
+          // Check the corrected path entity type
+          $parsed = parse_url($this->correctedHref());
+          $corrected_path = ltrim($this->relativePath($parsed), '/');
+
+          // Corrected path should be a current alias
+          $internal_path = $this->getInternalPath($corrected_path);
+          if (!empty($internal_path)) {
+            if ($this->typeFromPath($internal_path) == 'taxonomy_term') {
+              $this->data['redirects_to_term'] = TRUE;
+            }
+          }
+        }
+      }
+    }
+
+    return $this->data['redirects_to_term'];
+  }
+
+  /**
+   * Helper function to try find a record for a given path.
+   *
+   * @param $path
+   * @return bool|mixed
+   */
+  private function getInternalPath($path) {
+    $internal_path = FALSE;
+    // Check for redirect
+    $redirect = redirect_load_by_source($path);
+    if (!empty($redirect)) {
+      $internal_path = $redirect->redirect;
+    }
+
+    // Check for alias
+    if (empty($internal_path)) {
+      $internal_path = drupal_get_normal_path($path);
+    }
+
+    return $internal_path;
+  }
+
+    /**
+   * @inheritDoc
+   */
+  private function typeFromPath($path) {
+
+    $entity_type = FALSE;
+
+    // Strip off leading /
+    $path = ltrim($path, '/');
+    // Grab the first element of path to determine entity type (no need to load the whole entity)
+    $parts = explode('/', $path);
+    if (!empty($parts)) {
+      $entity_type = reset($parts);
+      // Special handling for taxonomy terms
+      if ($entity_type == 'taxonomy') {
+        $bundle = isset($parts[1]) ? $parts[1] : FALSE;
+        if ($bundle == 'term') {
+          $entity_type = $entity_type . '_' . $bundle;
+        }
+      }
+    }
+
+    return $entity_type;
+  }
 }

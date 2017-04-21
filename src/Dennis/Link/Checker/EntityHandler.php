@@ -94,8 +94,25 @@ class EntityHandler implements EntityHandlerInterface {
 
     $result = $query->execute()->fetchObject();
     $text = $result->{$value_field};
+
     $correction = $link->correctedHref();
-    $text = str_replace($link->originalHref(), $correction, $text);
+
+    // Before doing the replacement, check if the link originally pointed to a node, and
+    // now points to a term, and if so then remove the link altogether. See case 27710.
+    if ($this->config->removeTermLinks() && $link->redirectsToTerm()) {
+      // Strip link and keep the text part
+      $text = $this->stripLink($link->originalHref(), $text);
+      $this->config->getLogger()->warning('LINK REMOVED : '
+        . $link->entityType() . '/' . $link->entityId()
+        . ' : ' . $link->originalHref() . " => $correction");
+    }
+    else {
+      $text = str_replace($link->originalHref(), $correction, $text);
+
+      $this->config->getLogger()->info('Link corrected : '
+        . $link->entityType() . '/' . $link->entityId()
+        . ' : ' . $link->originalHref() . " => $correction");
+    }
 
     db_update($link->entityField())
       ->fields(array(
@@ -104,8 +121,46 @@ class EntityHandler implements EntityHandlerInterface {
       ->condition('entity_id', $link->entityId())
       ->condition('entity_type', $link->entityType())
       ->execute();
-
-    $this->config->getLogger()->info($link->originalHref() . " => $correction");
   }
 
+  /**
+   * Helper function to remove a link from text and return the text.
+   *
+   * Default behavior is to keep the link text.
+   *
+   * @param $href
+   * @param $text
+   * @return mixed
+   */
+  private function stripLink($href, $text, $keep_link_text=TRUE) {
+    // Approach is to find the href, then get the first instance of '<a' before
+    // and the first instance of '/a>' after, and remove/replace the in-between.
+    $offset = 0;
+    // It's possible that the link could appear multiple times in the text
+    while ($pos = strpos($text, $href, $offset)) {
+      // Strip the link only if we can find the full opening and closing tag
+      // Find start of opening tag
+      $start = strrpos($text, '<a', ($pos - strlen($text)));
+      if ($start !== FALSE) {
+        // Find end of opening tag
+        $end = strpos($text, '>', $pos);
+        if (!empty($end) && ($end > $start)) {
+          // Find closing tag position
+          $closing = strpos($text, '</a>', $pos);
+          if (!empty($closing) && ($closing > $end)) {
+            $snippit =  substr($text, $start, ($closing - $start) + 4);
+            $replace = '';
+            if ($keep_link_text) {
+              $replace = substr($text, $end + 1, ($closing - $end - 1));
+            }
+            $text = str_replace($snippit, $replace, $text);
+          }
+        }
+      }
+
+      $offset = $pos + 1;
+    }
+
+    return $text;
+  }
 }
