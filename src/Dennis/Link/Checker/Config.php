@@ -109,6 +109,8 @@ class Config implements ConfigInterface {
    */
   public function setRemoveTermLinks($remove) {
     $this->removeTermLinks = $remove;
+
+    return $this;
   }
 
   /**

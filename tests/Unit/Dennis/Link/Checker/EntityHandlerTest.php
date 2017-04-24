@@ -84,4 +84,49 @@ class EntityHandlerTest extends PHPUnitTestCase {
     ];
   }
 
+  /**
+   * @covers ::stripLinks
+   * @dataProvider getStripLinksProvider
+   */
+  public function testStripLinks($data) {
+    $config = $this->getMockBuilder(ConfigInterface::class)->getMock();
+    $handler = new EntityHandler($config);
+
+    $out = $handler->stripLink($data['href'], $data['text']);
+    $this->assertEquals($data['out'], $out);
+  }
+
+  /**
+   * Data provider for testStripLinks();
+   */
+  public function getStripLinksProvider() {
+    return [
+      // Standard link replacement.
+      [['text' => 'Foo <a href="http://example.com">example</a> bar',
+        'href' => 'http://example.com',
+        'out' => 'Foo example bar']],
+      // Link with multiple lines.
+      [['text' => 'Foo <a 
+        href="http://example.com"
+        >example
+        </a> bar',
+        'href' => 'http://example.com',
+        'out' => 'Foo example
+         bar']],
+      // Multiple links with the same href.
+      [['text' => 'Foo <a href="http://example.com">example 1</a> bar <a href="http://example.com">example 2</a> foo',
+        'href' => 'http://example.com',
+        'out' => 'Foo example 1 bar example 2 foo']],
+      // Multiple links with the same href on multiple lines.
+      [['text' => 'Foo <a href="http://example.com">example 1</a> bar 
+        new line <a href="http://example.com">example 
+        another new line</a> foo',
+        'href' => 'http://example.com',
+        'out' => 'Foo example 1 bar 
+        new line example 
+        another new line foo']],
+      ];
+
+  }
+
 }

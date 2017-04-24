@@ -182,12 +182,12 @@ class Link implements LinkInterface {
   }
 
   /**
-   * Helper to build the relative path of a parsed href.
+   * Build the relative path from the output of parse_url().
    *
-   * @param $parsed
+   * @param array $parsed
    * @return string
    */
-  private function relativePath($parsed) {
+  public function relativePath($parsed) {
     $path = isset($parsed['path']) ? $parsed['path'] : '';
     $query = isset($parsed['query']) ? '?' . $parsed['query'] : '';
     $fragment = isset($parsed['fragment']) ? '#' . $parsed['fragment'] : '';
@@ -308,9 +308,7 @@ class Link implements LinkInterface {
     return $internal_path;
   }
 
-    /**
-   * @inheritDoc
-   */
+
   private function typeFromPath($path) {
 
     $entity_type = FALSE;

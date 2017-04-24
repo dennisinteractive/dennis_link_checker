@@ -12,10 +12,12 @@ namespace Dennis\Link\Checker;
 interface EntityHandlerInterface {
 
   /**
-   * EntityHandlerInterface constructor.
+   * The configuration object.
+   *
    * @param ConfigInterface $config
+   * @return self
    */
-  public function __construct(ConfigInterface $config);
+  public function setConfig(ConfigInterface $config);
 
   /**
    * The entity id & type.

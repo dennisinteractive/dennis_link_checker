@@ -23,6 +23,15 @@ class EntityHandler implements EntityHandlerInterface {
   /**
    * @inheritDoc
    */
+  public function setConfig(ConfigInterface $config) {
+    $this->config = $config;
+
+    return $this;
+  }
+
+  /**
+   * @inheritDoc
+   */
   public function getSiteHost() {
     return $this->config->getSiteHost();
   }
@@ -132,7 +141,7 @@ class EntityHandler implements EntityHandlerInterface {
    * @param $text
    * @return mixed
    */
-  private function stripLink($href, $text, $keep_link_text=TRUE) {
+  public function stripLink($href, $text, $keep_link_text = TRUE) {
     // Approach is to find the href, then get the first instance of '<a' before
     // and the first instance of '/a>' after, and remove/replace the in-between.
     $offset = 0;

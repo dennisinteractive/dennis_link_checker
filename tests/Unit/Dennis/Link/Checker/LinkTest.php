@@ -165,4 +165,33 @@ class LinkTest extends PHPUnitTestCase {
     ];
   }
 
+  /**
+   * @covers ::relativePath
+   * @dataProvider getRelativePathProvider
+   */
+  public function testRelativePath($data) {
+    $config = $this->getMockBuilder(ConfigInterface::class)->getMock();
+    $link = new Link($config, 'foo', 123, 'foo', 'foo');
+
+    $this->assertEquals($data['out'], $link->relativePath($data['in']));
+  }
+
+  /**
+   * Data provider for testRelativePath();
+   */
+  public function getRelativePathProvider() {
+    return [
+      [['in' => ['path' => '/foo', 'query' => 'a=b', 'fragment' => 'bar'],
+        'out' => '/foo?a=b#bar']],
+      [['in' => ['path' => '/foo', 'query' => 'a=b'],
+        'out' => '/foo?a=b']],
+      [['in' => ['path' => '/foo'],
+        'out' => '/foo']],
+      [['in' => ['host' => 'example.com', 'path' => '/foo'],
+        'out' => '/foo']],
+      [['in' => ['query' => 'a=b'],
+        'out' => '?a=b']],
+    ];
+  }
+
 }

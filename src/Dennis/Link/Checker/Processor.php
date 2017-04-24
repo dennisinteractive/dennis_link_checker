@@ -34,10 +34,10 @@ class Processor implements ProcessorInterface {
     DrupalReliableQueueInterface $queue,
     EntityHandlerInterface $entity_handler,
     AnalyzerInterface $analyzer) {
-    $this->config = $config;
-    $this->setQueue($queue);
-    $this->setEntityHandler($entity_handler);
-    $this->setAnalyzer($analyzer);
+      $this->config = $config;
+      $this->setQueue($queue);
+      $this->setEntityHandler($entity_handler);
+      $this->setAnalyzer($analyzer);
   }
 
   /**
