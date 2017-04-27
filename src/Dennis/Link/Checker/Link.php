@@ -348,12 +348,15 @@ class Link implements LinkInterface {
     $parsed = parse_url($href);
     $path = ltrim($this->relativePath($parsed), '/');
     // The href passed in is a 404, so we can't lookup the alias.
-    // instead, we will look at the first component of the path,
-    // and get the active alias for that node.
-    // Note that we assume node here.
+    // instead, we will look at the first component of the path that is a number,
+    // and get the active alias for that node. Note that we assume node here.
     $parts = explode('/', $path);
-    if (count($parts) && is_numeric($parts[0])) {
-      return drupal_get_path_alias('node/' . $parts[0]);
+    if (count($parts)) {
+      foreach ($parts as $part) {
+        if (is_numeric($part)) {
+          return drupal_get_path_alias('node/' . $part);
+        }
+      }
     }
 
     return FALSE;
