@@ -37,14 +37,14 @@ class LinkTest extends PHPUnitTestCase {
   public function getCorrectedHrefOriginalProvider() {
     return [
       [['in' => 'http://example.com/foo',
-        'found' => 'http://example.com/foo',
-        'out' => 'http://example.com/foo']],
+        'found' => 'http://example.com/bar',
+        'out' => 'http://example.com/bar']],
       [['in' => 'https://example.com/foo',
         'found' => 'https://example.com/foo',
         'out' => 'https://example.com/foo']],
       [['in' => '/foo',
-        'found' => 'http://example.com/foo',
-        'out' => '/foo']],
+        'found' => 'http://example.com/bar',
+        'out' => '/bar']],
     ];
   }
 

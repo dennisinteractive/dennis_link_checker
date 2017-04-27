@@ -89,10 +89,18 @@ class EntityHandlerTest extends PHPUnitTestCase {
    * @dataProvider getStripLinksProvider
    */
   public function testStripLinks($data) {
-    $config = $this->getMockBuilder(ConfigInterface::class)->getMock();
+    //$config = $this->getMockBuilder(ConfigInterface::class)->getMock();
+    $config = (new Config())
+      ->setSiteHost('www.theweek.co.uk')
+      ->setLogger((new Logger())->setVerbosity(Logger::VERBOSITY_DEBUG));
     $handler = new EntityHandler($config);
 
-    $out = $handler->stripLink($data['href'], $data['text']);
+    $entity_type = 'node';
+    $entity_id = 123;
+    $field = 'foo';
+    $link = new Link($config, $entity_type, $entity_id, $field, $data['href']);
+
+    $out = $handler->stripLink($link, $data['text']);
     $this->assertEquals($data['out'], $out);
   }
 
@@ -125,6 +133,14 @@ class EntityHandlerTest extends PHPUnitTestCase {
         'out' => 'Foo example 1 bar 
         new line example 
         another new line foo']],
+      //Href on invalid element.
+      [['text' => 'Foo <p href="http://example.com">example</p> bar',
+        'href' => 'http://example.com',
+        'out' => 'Foo <p href="http://example.com">example</p> bar']],
+      // Multiple links with the same href.
+      [['text' => 'Foo <a href="http://example.com">example 1</a> bar <a href="http://example.com/foo">example 2</a> foo',
+        'href' => 'http://example.com',
+        'out' => 'Foo example 1 bar example 2 foo']],
       ];
 
   }
