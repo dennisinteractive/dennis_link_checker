@@ -15,6 +15,10 @@ function dennis_link_checker_drush_command() {
 
   $items['dennis_link_checker'] = array(
     'description' => "Checks & fixes links that redirect.",
+    'aliases' => array('dlc'),
+    'options' => array(
+      'nids' => 'The comma-separated list of nids to check',
+    )
   );
 
   return $items;
@@ -25,6 +29,9 @@ function dennis_link_checker_drush_command() {
  */
 function drush_dennis_link_checker() {
   drush_print('Starting drush dennis_link_checker: ' . date(DATE_RFC2822));
-  dennis_link_checker_run();
+  // Option
+  $nid = drush_get_option('nids', '');
+  $nids = !empty($nid) ? explode(',', $nid) : array();
+  dennis_link_checker_run($nids);
   drush_print('Finished drush dennis_link_checker: ' . date(DATE_RFC2822));
 }

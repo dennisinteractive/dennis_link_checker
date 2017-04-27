@@ -55,16 +55,18 @@ function dennis_link_checker_worker($queue_item_data) {
 /**
  * Setup the link processor.
  *
+ * @param array $nids
  * @return \Dennis\Link\Checker\ProcessorInterface
  */
-function dennis_link_checker_setup() {
+function dennis_link_checker_setup(array $nids) {
   $site_host = parse_url(dennis_ga_get_live_url(), PHP_URL_HOST);
   $config = (new Config())
     ->setLogger((new Logger())->setVerbosity(Logger::VERBOSITY_HIGH))
     ->setSiteHost($site_host)
     ->setMaxRedirects(10)
     ->setInternalOnly(TRUE)
-    ->setLocalisation(LinkLocalisation::ORIGINAL);
+    ->setLocalisation(LinkLocalisation::ORIGINAL)
+    ->setNodeList($nids);
 
   $queue = new Queue('dennis_link_checker');
   $entity_handler = new EntityHandler($config);
@@ -74,9 +76,11 @@ function dennis_link_checker_setup() {
 
 /**
  * Run the link checker queue.
+ *
+ * @param array $nids
  */
-function dennis_link_checker_run() {
-  $processor = dennis_link_checker_setup();
+function dennis_link_checker_run(array $nids) {
+  $processor = dennis_link_checker_setup($nids);
   //$processor->setTimeLimit(20); // temporarily low time limit.
   $processor->run();
 }
