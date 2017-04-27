@@ -103,4 +103,18 @@ interface ConfigInterface {
    */
   public function removeTermLinks();
 
+  /**
+   * Only Process the given nodes.
+   *
+   * @param array $nids
+   * @return ConfigInterface
+   */
+  public function setNodeList(array $nids);
+
+  /**
+   * Return the list of nodes to limit to.
+   *
+   * @return array
+   */
+  public function getNodeList();
 }

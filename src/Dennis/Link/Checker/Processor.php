@@ -159,9 +159,16 @@ class Processor implements ProcessorInterface {
     // Accurate link finding happens when the queue is processed.
     $query->condition('body_value', '%' . db_like('<a') . '%', 'LIKE');
 
+    // Optionally limit the result set
+    $nids = $this->config->getNodeList();
+    if (!empty($nids)) {
+      $query->condition('n.nid', $nids, 'IN');
+    }
+
     $query->orderBy('b.entity_id', 'DESC');
 
     $result = $query->execute();
+
     foreach ($result as $record) {
       $this->addItem(new Item($record->entity_type, $record->entity_id));
     }
@@ -267,10 +274,13 @@ class Processor implements ProcessorInterface {
 
           // SEO want a report of 404's.
           if ($link->getHttpCode() == 404) {
+            $suggested = $link->suggestLink($link->originalHref());
+            $suggested = empty($suggested) ? 'No suggestion' : 'Suggest : ' . $suggested;
             $this->notFounds = $link;
-            $this->config->getLogger()->warning('Page Not Found on: '
+            $this->config->getLogger()->warning('Page Not Found : '
               . $link->entityType() . '/' . $link->entityId()
-              . ' to '. $link->originalHref());
+              . ' : '. $link->originalHref()
+              . ' => ' . $suggested);
           }
 
           // Do the correction if needed.

@@ -138,6 +138,7 @@ class Link implements LinkInterface {
         if (empty($parsed['host'])) {
           if (!empty($parsed['path']) && $parsed['path'][0] == '/') {
             // Was originally a relative link.
+            $parsed = parse_url($this->getFoundUrl());
             $this->data['corrected_href'] = $this->relativePath($parsed);
           }
         }
@@ -161,7 +162,7 @@ class Link implements LinkInterface {
       if ($parsed = parse_url($this->getFoundUrl())) {
         if (!empty($parsed['host']) && $this->config->getSiteHost() == $parsed['host']) {
           // Make it relative.
-          $this->data['corrected_href'] = $this->relativePath($parsed);;
+          $this->data['corrected_href'] = $this->relativePath($parsed);
         }
       }
     }
@@ -309,6 +310,12 @@ class Link implements LinkInterface {
   }
 
 
+  /**
+   * Helper function to try work out the entity type from the first component of a path.
+   *
+   * @param $path
+   * @return bool|mixed|string
+   */
   private function typeFromPath($path) {
 
     $entity_type = FALSE;
@@ -329,5 +336,26 @@ class Link implements LinkInterface {
     }
 
     return $entity_type;
+  }
+
+  /**
+   * Suggest a possible alternative to the given href.
+   *
+   * @param $href
+   * @return bool|string
+   */
+  public function suggestLink($href) {
+    $parsed = parse_url($href);
+    $path = ltrim($this->relativePath($parsed), '/');
+    // The href passed in is a 404, so we can't lookup the alias.
+    // instead, we will look at the first component of the path,
+    // and get the active alias for that node.
+    // Note that we assume node here.
+    $parts = explode('/', $path);
+    if (count($parts) && is_numeric($parts[0])) {
+      return drupal_get_path_alias('node/' . $parts[0]);
+    }
+
+    return FALSE;
   }
 }

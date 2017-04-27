@@ -23,6 +23,8 @@ class Config implements ConfigInterface {
 
   protected $removeTermLinks = TRUE;
 
+  protected $nids = FALSE;
+
   /**
    * @inheritDoc
    */
@@ -118,5 +120,20 @@ class Config implements ConfigInterface {
    */
   public function removeTermLinks() {
     return $this->removeTermLinks;
+  }
+
+  /**
+   * @inheritDoc
+   */
+  public function setNodeList(array $nids) {
+    $this->nids = $nids;
+    return $this;
+  }
+
+  /**
+   * @inheritDoc
+   */
+  public function getNodeList() {
+    return $this->nids;
   }
 }
