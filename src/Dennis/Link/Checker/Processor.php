@@ -52,6 +52,7 @@ class Processor implements ProcessorInterface {
     $more = TRUE;
     while ($more && time() < $end) {
       $more = $this->doNextItem();
+      sleep(1);
     }
 
   }
