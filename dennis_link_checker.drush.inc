@@ -25,7 +25,7 @@ function dennis_link_checker_drush_command() {
 }
 
 /**
- * Callback for drush vehicles_update_taxonomies.
+ * Callback for dennis_link_checker_drush_command().
  */
 function drush_dennis_link_checker() {
   drush_print('Starting drush dennis_link_checker: ' . date(DATE_RFC2822));

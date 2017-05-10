@@ -212,7 +212,8 @@ class EntityHandler implements EntityHandlerInterface {
    * @return string
    */
   public function replaceLink($text, $find, $replace) {
-    $dom = filter_dom_load($text);
+    $dom = new DOMDocument();
+    $dom->loadHTML($text, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
 
     $links = $dom->getElementsByTagName('a');
     foreach ($links as $link) {
