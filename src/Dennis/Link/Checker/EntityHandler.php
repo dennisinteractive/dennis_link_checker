@@ -213,10 +213,9 @@ class EntityHandler implements EntityHandlerInterface {
    */
   public function replaceLink($text, $find, $replace) {
     $dom = new \DOMDocument();
-    @$dom->loadHTML($text, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
+    @$dom->loadHTML($text);
 
-    $links = $dom->getElementsByTagName('a');
-    foreach ($links as $link) {
+    foreach ($dom->getElementsByTagName('a') as $link) {
       $href = $link->getAttribute('href');
       if (strcmp($find, $href) === 0) {
         $link->setAttribute('href', $replace);
