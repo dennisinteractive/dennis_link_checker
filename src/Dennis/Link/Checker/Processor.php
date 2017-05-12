@@ -278,9 +278,9 @@ class Processor implements ProcessorInterface {
             $suggested = $link->suggestLink($link->originalHref());
             $suggested = empty($suggested) ? 'No suggestion' : 'Suggest : ' . $suggested;
             $this->notFounds = $link;
-            $this->config->getLogger()->warning('Page Not Found : '
+            $this->config->getLogger()->warning('Page Not Found | '
               . $link->entityType() . '/' . $link->entityId()
-              . ' : '. $link->originalHref()
+              . ' | '. $link->originalHref()
               . ' => ' . $suggested);
           }
 
