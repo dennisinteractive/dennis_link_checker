@@ -272,7 +272,7 @@ class Link implements LinkInterface {
           // Check the corrected path entity type
           $parsed = parse_url($this->correctedHref());
           $corrected_path = ltrim($this->relativePath($parsed), '/');
-
+          
           // Corrected path should be a current alias
           $internal_path = $this->getInternalPath($corrected_path);
           if (!empty($internal_path)) {
@@ -304,6 +304,12 @@ class Link implements LinkInterface {
     // Check for alias
     if (empty($internal_path)) {
       $internal_path = drupal_get_normal_path($path);
+    }
+
+    // If not determined if nid or tid, just report.
+    if (empty($redirect)) {
+      $this->config->getLogger()->warning('LINK NOT FOUND : '
+        . $path);
     }
 
     return $internal_path;
