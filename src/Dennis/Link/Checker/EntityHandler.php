@@ -127,14 +127,14 @@ class EntityHandler implements EntityHandlerInterface {
       //$updated_text = str_replace($link->originalHref(), $correction, $text);
       $updated_text = $this->replaceLink($text, $link->originalHref(), $correction);
       if (strcmp($updated_text, $text) != 0) {
-        $this->config->getLogger()->info('Link corrected : '
+        $this->config->getLogger()->info('Link corrected | '
           . $link->entityType() . '/' . $link->entityId()
-          . ' : ' . $link->originalHref() . " => $correction");
+          . ' | ' . $link->originalHref() . " => $correction");
       }
       else {
-        $this->config->getLogger()->info('Link NOT corrected : '
+        $this->config->getLogger()->info('Link NOT corrected | '
           . $link->entityType() . '/' . $link->entityId()
-          . ' : ' . $link->originalHref() . " => $correction");
+          . ' | ' . $link->originalHref() . " => $correction");
         return FALSE;
       }
     }
@@ -211,6 +211,8 @@ class EntityHandler implements EntityHandlerInterface {
    * @return string
    */
   public function replaceLink($text, $find, $replace) {
+    // Create Dom Document object.
+    // Pass it the html from the body field.
     $dom = filter_dom_load($text);
 
     foreach ($dom->getElementsByTagName('a') as $link) {
