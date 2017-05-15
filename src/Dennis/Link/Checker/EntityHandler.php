@@ -211,12 +211,7 @@ class EntityHandler implements EntityHandlerInterface {
    * @return string
    */
   public function replaceLink($text, $find, $replace) {
-    // Do not throw errors when parsing the html.
-    libxml_use_internal_errors(TRUE);
-
-    $dom = new \DOMDocument();
-    // Load html with full tags all around.
-    $dom->loadHTML($text);
+    $dom = filter_dom_load($text);
 
     foreach ($dom->getElementsByTagName('a') as $link) {
       $href = $link->getAttribute('href');
@@ -228,11 +223,7 @@ class EntityHandler implements EntityHandlerInterface {
     $output = $dom->saveHTML();
 
     // Remove the tags we added.
-    $output = str_replace(array(
-      '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-       <html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"></head><body>',
-      '</body></html>',
-    ), array('', ''), $output);
+    $output = preg_replace('~<(?:!DOCTYPE|/?(?:html|head|meta|body))[^>]*>\s*~i', '', $output);
 
     // Clear any errors.
     libxml_clear_errors();
