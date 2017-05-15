@@ -113,9 +113,9 @@ class EntityHandler implements EntityHandlerInterface {
       $updated_text = $this->stripLink($link, $text);
       // If the updated text is different to the original, then the link was removed.
       if (strcmp($updated_text, $text) != 0) {
-        $this->config->getLogger()->warning('LINK REMOVED : '
+        $this->config->getLogger()->warning('LINK REMOVED | '
           . $link->entityType() . '/' . $link->entityId()
-          . ' : ' . $link->originalHref() . " => $correction");
+          . ' | ' . $link->originalHref() . " => $correction");
       }
       else {
         // Something went wrong, we could do more logging here
