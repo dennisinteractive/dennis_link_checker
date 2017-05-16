@@ -190,9 +190,9 @@ class EntityHandler implements EntityHandlerInterface {
           }
         }
         else {
-          $this->config->getLogger()->notice('BAD TAG : '
+          $this->config->getLogger()->notice('BAD TAG | '
             . $link->entityType() . '/' . $link->entityId()
-            . ' : ' . $link->originalHref() . " => " . $text[$start + 1]);
+            . ' | ' . $link->originalHref() . " => " . $text[$start + 1]);
         }
       }
 
