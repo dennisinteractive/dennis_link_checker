@@ -92,7 +92,7 @@ class EntityHandlerTest extends PHPUnitTestCase {
     //$config = $this->getMockBuilder(ConfigInterface::class)->getMock();
     $config = (new Config())
       ->setSiteHost('www.theweek.co.uk')
-      ->setLogger((new Logger())->setVerbosity(Logger::VERBOSITY_DEBUG));
+      ->setLogger((new Logger())->setVerbosity(Logger::VERBOSITY_LOW));
     $handler = new EntityHandler($config);
 
     $entity_type = 'node';
