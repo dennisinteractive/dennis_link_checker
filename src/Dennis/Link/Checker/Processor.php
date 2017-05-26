@@ -54,7 +54,6 @@ class Processor implements ProcessorInterface {
       $more = $this->doNextItem();
       sleep(1);
     }
-
   }
 
   /**
@@ -144,8 +143,6 @@ class Processor implements ProcessorInterface {
    */
   public function enqueue() {
     // entities that have a text area field with a link.
-
-
     // Just the body text field for now.
     $query = db_select('field_data_body', 'b');
     // The entity may not be a node.

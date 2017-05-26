@@ -24,35 +24,6 @@ spl_autoload_register(function ($class) {
 });
 
 /**
- * Implements hook_cron().
- */
-function dennis_link_checker_cron() {
-  // Make sure there is always something in the queue.
-  $processor = dennis_link_checker_setup();
-  $processor->ensureEnqueued();
-}
-
-/**
- * Implements hook_cron_queue_info().
- */
-function dennis_link_checker_cron_queue_info() {
-  $queues['dennis_link_checker'] = array(
-    'worker callback' => 'dennis_link_checker_worker',
-    'time' => 60,
-  );
-  return $queues;
-}
-
-/**
- * Callback for hook_cron_queue_info().
- */
-function dennis_link_checker_worker($queue_item_data) {
-  // NB this will take a long time to get through the whole queue as we only have a minute or two.
-  $processor = dennis_link_checker_setup();
-  $processor->queueWorker($queue_item_data);
-}
-
-/**
  * Setup the link processor.
  *
  * @param array $nids
