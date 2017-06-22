@@ -18,10 +18,16 @@ class Analyzer implements AnalyzerInterface {
   protected $redirectCount;
 
   /**
+   * @var Throttler
+   */
+  protected $throttler;
+
+  /**
    * @inheritDoc
    */
   public function __construct(ConfigInterface $config) {
     $this->config = $config;
+    $this->throttler = new Throttler();
   }
 
   /**
@@ -108,6 +114,9 @@ class Analyzer implements AnalyzerInterface {
    * @return array
    */
   protected function getInfo($url) {
+    // Make sure we don't request more than one page per second.
+    $this->throttler->throttle(1);
+
     // Only redirect 301's so cannot use CURLOPT_FOLLOWLOCATION
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_URL, $url);
