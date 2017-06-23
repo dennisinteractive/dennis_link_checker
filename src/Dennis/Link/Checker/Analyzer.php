@@ -18,16 +18,27 @@ class Analyzer implements AnalyzerInterface {
   protected $redirectCount;
 
   /**
+   * @var int maximum number of seconds to spend resolving links.
+   */
+  protected $maxLinkExecution = 300;
+
+  /**
    * @var Throttler
    */
-  protected $throttler;
+  protected $curlThrottler;
+
+  /**
+   * @var Database
+   */
+  protected $database;
 
   /**
    * @inheritDoc
    */
-  public function __construct(ConfigInterface $config) {
+  public function __construct(ConfigInterface $config, Throttler $curl_throttler, Database $database) {
     $this->config = $config;
-    $this->throttler = new Throttler();
+    $this->curlThrottler = $curl_throttler;
+    $this->database = $database;
   }
 
   /**
@@ -51,8 +62,18 @@ class Analyzer implements AnalyzerInterface {
    * @inheritDoc
    */
   public function multipleLinks($links) {
-    foreach ($links as &$link) {
-      $link = $this->link($link);
+    $timeout = $this->maxLinkExecution + time();
+
+    $processed = 0;
+    while ((time() < $timeout) && ($link = next($links))) {
+      $this->link($link);
+      $processed++;
+      // Keep the DB connection alive whilst we are processing external links.
+      $this->database->keepConnectionAlive();
+    }
+
+    if ($processed < count($links)) {
+      throw new TimeoutException(sprintf('Could not process links within %s seconds', $this->maxLinkExecution));
     }
 
     return $links;
@@ -81,7 +102,8 @@ class Analyzer implements AnalyzerInterface {
         ->setNumberOfRedirects($this->redirectCount);
 
     } catch (ResourceFailException $e) {
-      $link->setError($e->getMessage(), $e->getCode());
+      $link->setNumberOfRedirects($this->redirectCount)
+        ->setError($e->getMessage(), $e->getCode());
     }
 
     return $link;
@@ -96,8 +118,13 @@ class Analyzer implements AnalyzerInterface {
    */
   protected function followRedirects($url) {
     $info = $this->getInfo($url);
+
     if (!empty($info['redirect_url'])) {
       if ($info['http_code'] == 301) {
+        // Throw exception if we have reached our redirect limit.
+        if ($this->redirectCount > $this->config->getMaxRedirects()) {
+          throw new ResourceFailException(sprintf('Maximum of %s redirects reached.', $this->config->getMaxRedirects()));
+        }
         // Do the redirect
         $this->redirectCount++;
         return $this->followRedirects($info['redirect_url']);
@@ -114,8 +141,8 @@ class Analyzer implements AnalyzerInterface {
    * @return array
    */
   protected function getInfo($url) {
-    // Make sure we don't request more than one page per second.
-    $this->throttler->throttle(1);
+    // Make sure we don't request more more than configured number of seconds.
+    $this->curlThrottler->throttle();
 
     // Only redirect 301's so cannot use CURLOPT_FOLLOWLOCATION
     $ch = curl_init();

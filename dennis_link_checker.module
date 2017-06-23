@@ -9,6 +9,8 @@ use Dennis\Link\Checker\LinkLocalisation;
 use Dennis\Link\Checker\Processor;
 use Dennis\Link\Checker\EntityHandler;
 use Dennis\Link\Checker\Analyzer;
+use Dennis\Link\Checker\Throttler;
+use Dennis\Link\Checker\Database;
 use SystemQueue as Queue;
 
 /**
@@ -41,7 +43,14 @@ function dennis_link_checker_setup(array $nids) {
 
   $queue = new Queue('dennis_link_checker');
   $entity_handler = new EntityHandler($config);
-  $analyzer = new Analyzer($config);
+
+  // Make sure we don't request more than one page per second.
+  $curl_throttler = new Throttler(1);
+
+  // Database object that allows interaction with the DB.
+  $database = new Database();
+
+  $analyzer = new Analyzer($config, $curl_throttler, $database);
   return new Processor($config, $queue, $entity_handler, $analyzer);
 }
 

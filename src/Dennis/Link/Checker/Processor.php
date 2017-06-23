@@ -248,7 +248,16 @@ class Processor implements ProcessorInterface {
   public function correctLinks(ItemInterface $item, $links) {
     if (count($links) > 0) {
       // Check all the links.
-      $links = $this->getAnalyzer()->multipleLinks($links);
+      try {
+        $links = $this->getAnalyzer()->multipleLinks($links);
+      }
+      catch (TimeoutException $e) {
+        // Log timeout and stop processing this item so that it gets deleted from the queue.
+        $this->config->getLogger()->warning($e->getMessage() . ' | '
+          . $item->entityType() . '/' . $item->entityId());
+        return;
+      }
+
       foreach ($links as $link) {
         if ($err = $link->getError()) {
           if ($link->hasTooManyRedirects()) {

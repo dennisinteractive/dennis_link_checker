@@ -63,6 +63,7 @@ class EntityHandler implements EntityHandlerInterface {
     $dom = filter_dom_load($text);
 
     $links = $dom->getElementsByTagName('a');
+
     foreach ($links as $link) {
       $href = $link->getAttribute('href');
       if ($this->config->internalOnly()) {

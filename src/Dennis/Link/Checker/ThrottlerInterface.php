@@ -12,8 +12,6 @@ namespace Dennis\Link\Checker;
 interface ThrottlerInterface {
   /**
    * Waits until throttle period has passed.
-   *
-   * @param int $seconds
    */
-  public function throttle($seconds);
+  public function throttle();
 }
