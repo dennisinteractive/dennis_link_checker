@@ -17,10 +17,11 @@ class Analyzer implements AnalyzerInterface {
 
   protected $redirectCount;
 
+
   /**
    * @var int maximum number of seconds to spend resolving links.
    */
-  protected $maxLinkExecution = 300;
+  protected $linkTimeLimit = 300;
 
   /**
    * @var Throttler
@@ -62,18 +63,17 @@ class Analyzer implements AnalyzerInterface {
    * @inheritDoc
    */
   public function multipleLinks($links) {
-    $timeout = $this->maxLinkExecution + time();
+    $timeout = $this->linkTimeLimit + time();
 
-    $processed = 0;
-    while ((time() < $timeout) && ($link = next($links))) {
+    foreach ($links as $link) {
+      if (time() >= $timeout) {
+        throw new TimeoutException(sprintf('Could not process %s links within %s seconds',
+          count($links),
+          $this->linkTimeLimit));
+      }
       $this->link($link);
-      $processed++;
       // Keep the DB connection alive whilst we are processing external links.
       $this->database->keepConnectionAlive();
-    }
-
-    if ($processed < count($links)) {
-      throw new TimeoutException(sprintf('Could not process links within %s seconds', $this->maxLinkExecution));
     }
 
     return $links;

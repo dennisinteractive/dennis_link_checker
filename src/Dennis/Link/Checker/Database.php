@@ -27,7 +27,6 @@ class Database implements DatabaseInterface {
     $now = time();
     // If it's been more than 15 seconds... Ping!
     if (($now - $this->pingTime) > self::interval) {
-      echo 'Keeping DB connection alive';
       db_query('SELECT CURTIME()');
       // Set the ping time.
       $this->pingTime = $now;
