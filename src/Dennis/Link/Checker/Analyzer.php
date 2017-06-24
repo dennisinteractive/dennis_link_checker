@@ -21,7 +21,7 @@ class Analyzer implements AnalyzerInterface {
   /**
    * @var int maximum number of seconds to spend resolving links.
    */
-  protected $linkTimeLimit = 300;
+  protected $linkTimeLimit = 480;
 
   /**
    * @var Throttler
@@ -83,6 +83,9 @@ class Analyzer implements AnalyzerInterface {
    * @inheritDoc
    */
   public function link(LinkInterface $link) {
+    // Make sure we only process one link per configured number of seconds.
+    $this->curlThrottler->throttle();
+
     // Only redirect 301's so cannot use CURLOPT_FOLLOWLOCATION
     $this->redirectCount = 0;
 
@@ -141,9 +144,6 @@ class Analyzer implements AnalyzerInterface {
    * @return array
    */
   protected function getInfo($url) {
-    // Make sure we don't request more more than configured number of seconds.
-    $this->curlThrottler->throttle();
-
     // Only redirect 301's so cannot use CURLOPT_FOLLOWLOCATION
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_URL, $url);
