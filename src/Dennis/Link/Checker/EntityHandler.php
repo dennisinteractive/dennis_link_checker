@@ -99,11 +99,13 @@ class EntityHandler implements EntityHandlerInterface {
 
     $query = db_select('field_data_' . $link->entityField(), 't');
     $query->addField('t', $value_field);
+    $query->addField('t', 'revision_id');
     $query->condition('entity_id', $link->entityId());
     $query->condition('entity_type', $link->entityType());
 
     $result = $query->execute()->fetchObject();
     $text = $result->{$value_field};
+    $revision_id = $result->revision_id;
 
     $correction = $link->correctedHref();
 
@@ -140,13 +142,16 @@ class EntityHandler implements EntityHandlerInterface {
       }
     }
 
-    db_update('field_data_' . $link->entityField())
-      ->fields(array(
-        $value_field => $updated_text
-      ))
-      ->condition('entity_id', $link->entityId())
-      ->condition('entity_type', $link->entityType())
-      ->execute();
+    foreach (array('data', 'revision') as $table_type) {
+      $rows = db_update('field_' . $table_type . '_' . $link->entityField())
+        ->fields(array(
+          $value_field => $updated_text
+        ))
+        ->condition('entity_id', $link->entityId())
+        ->condition('entity_type', $link->entityType())
+        ->condition('revision_id', $revision_id)
+        ->execute();
+    }
   }
 
   /**
