@@ -46,6 +46,9 @@ class Processor implements ProcessorInterface {
   public function run() {
     $end = time() + $this->timeLimit;
 
+    // Remove any old items from the queue.
+    $this->queue->prune();
+
     // Make sure there is something to do.
     $this->ensureEnqueued();
 

@@ -7,7 +7,7 @@ namespace Dennis\Link\Checker;
 
 /**
  * Class Throttler
- * @package Dennis\Link\Throttler
+ * @package Dennis\Link\Checker
  */
 class Throttler implements ThrottlerInterface {
   /**
