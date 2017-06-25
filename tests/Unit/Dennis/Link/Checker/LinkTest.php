@@ -5,6 +5,9 @@
  */
 namespace Dennis\Link\Checker;
 
+// Use our mocked versions of some global functions.
+include_once 'global_functions.php';
+
 use PHPUnit\Framework\TestCase as PHPUnitTestCase;
 
 /**
@@ -22,10 +25,17 @@ class LinkTest extends PHPUnitTestCase {
       ->setSiteHost('www.theweek.co.uk')
       ->setLocalisation(LinkLocalisation::ORIGINAL);
 
-    $entity_type = 'node';
-    $entity_id = 123;
-    $field = 'foo';
-    $link = new Link($config, $entity_type, $entity_id, $field, $data['in']);
+    $field = $this->getMockBuilder('Dennis\Link\Checker\Field')
+      ->disableOriginalConstructor()
+      ->getMock();
+    $field->method('getConfig')->willReturn($config);
+
+    $element = $this->getMockBuilder('\DOMElement')
+      ->disableOriginalConstructor()
+      ->getMock();
+
+    $link = new Link($field, $data['in'], $element);
+
     $link->setFoundUrl($data['found']);
     $this->assertEquals($data['in'], $link->originalHref());
     $this->assertEquals($data['out'], $link->correctedHref());
@@ -57,10 +67,16 @@ class LinkTest extends PHPUnitTestCase {
       ->setSiteHost('www.theweek.co.uk')
       ->setLocalisation(LinkLocalisation::ABSOLUTE);
 
-    $entity_type = 'node';
-    $entity_id = 123;
-    $field = 'foo';
-    $link = new Link($config, $entity_type, $entity_id, $field, $data['in']);
+    $field = $this->getMockBuilder('Dennis\Link\Checker\Field')
+      ->disableOriginalConstructor()
+      ->getMock();
+    $field->method('getConfig')->willReturn($config);
+
+    $element = $this->getMockBuilder('\DOMElement')
+      ->disableOriginalConstructor()
+      ->getMock();
+
+    $link = new Link($field, $data['in'], $element);
     $link->setFoundUrl($data['found']);
     $this->assertEquals($data['in'], $link->originalHref());
     $this->assertEquals($data['out'], $link->correctedHref());
@@ -92,10 +108,16 @@ class LinkTest extends PHPUnitTestCase {
       ->setSiteHost('www.theweek.co.uk')
       ->setLocalisation(LinkLocalisation::RELATIVE);
 
-    $entity_type = 'node';
-    $entity_id = 123;
-    $field = 'foo';
-    $link = new Link($config, $entity_type, $entity_id, $field, $data['in']);
+    $field = $this->getMockBuilder('Dennis\Link\Checker\Field')
+      ->disableOriginalConstructor()
+      ->getMock();
+    $field->method('getConfig')->willReturn($config);
+
+    $element = $this->getMockBuilder('\DOMElement')
+      ->disableOriginalConstructor()
+      ->getMock();
+
+    $link = new Link($field, $data['in'], $element);
     $link->setFoundUrl($data['found']);
     $this->assertEquals($data['in'], $link->originalHref());
     $this->assertEquals($data['out'], $link->correctedHref());
@@ -133,10 +155,17 @@ class LinkTest extends PHPUnitTestCase {
       ->setSiteHost('www.theweek.co.uk')
       ->setLocalisation(LinkLocalisation::PROTOCOL_RELATIVE);
 
-    $entity_type = 'node';
-    $entity_id = 123;
-    $field = 'foo';
-    $link = new Link($config, $entity_type, $entity_id, $field, $data['in']);
+    $field = $this->getMockBuilder('Dennis\Link\Checker\Field')
+      ->disableOriginalConstructor()
+      ->getMock();
+    $field->method('getConfig')->willReturn($config);
+
+    $element = $this->getMockBuilder('\DOMElement')
+      ->disableOriginalConstructor()
+      ->getMock();
+
+    $link = new Link($field, $data['in'], $element);
+
     $link->setFoundUrl($data['found']);
     $this->assertEquals($data['in'], $link->originalHref());
     $this->assertEquals($data['out'], $link->correctedHref());
@@ -170,8 +199,20 @@ class LinkTest extends PHPUnitTestCase {
    * @dataProvider getRelativePathProvider
    */
   public function testRelativePath($data) {
-    $config = $this->getMockBuilder(ConfigInterface::class)->getMock();
-    $link = new Link($config, 'foo', 123, 'foo', 'foo');
+    $config = (new Config())
+      ->setSiteHost('www.theweek.co.uk')
+      ->setLocalisation(LinkLocalisation::ORIGINAL);
+
+    $field = $this->getMockBuilder('Dennis\Link\Checker\Field')
+      ->disableOriginalConstructor()
+      ->getMock();
+    $field->method('getConfig')->willReturn($config);
+
+    $element = $this->getMockBuilder('\DOMElement')
+      ->disableOriginalConstructor()
+      ->getMock();
+
+    $link = new Link($field, 'foo', $element);
 
     $this->assertEquals($data['out'], $link->relativePath($data['in']));
   }
@@ -192,6 +233,75 @@ class LinkTest extends PHPUnitTestCase {
       [['in' => ['query' => 'a=b'],
         'out' => '?a=b']],
     ];
+  }
+
+
+  /**
+   * @covers ::strip
+   * @dataProvider getStripProvider
+   */
+  public function testStripLinks($data) {
+    $config = (new Config())
+      ->setSiteHost('www.theweek.co.uk')
+      ->setLogger((new Logger())->setVerbosity(Logger::VERBOSITY_LOW));
+
+    $entity = $this->getMockBuilder('Dennis\Link\Checker\Entity')
+      ->disableOriginalConstructor()
+      ->getMock();
+    $entity->method('getConfig')->willReturn($config);
+
+    $field = $this->getMockBuilder('Dennis\Link\Checker\Field')
+      ->setConstructorArgs(array($entity, 'body'))
+      ->setMethods(array('getDOM'))
+      ->getMock();
+
+    // Test DOM to manipulate.
+    $dom = filter_dom_load($data['text']);
+
+    $field->method('getDOM')->willReturn($dom);
+    $field->getConfig()->setSiteHost('example.com');
+    $links = $field->getLinks();
+
+    foreach ($links as $link) {
+      $link->strip();
+    }
+
+    $this->assertEquals($data['out'], filter_dom_serialize($dom));
+  }
+
+  /**
+   * Data provider for testStrip();
+   */
+  public function getStripProvider() {
+    return [
+      // Standard link replacement.
+      [['text' => 'Foo <a href="http://example.com">example</a> bar',
+        'out' => 'Foo example bar']],
+      // Link with multiple lines.
+      [['text' => 'Foo <a 
+        href="http://example.com"
+        >example
+        </a> bar',
+        'out' => 'Foo example
+         bar']],
+      // Multiple links with the same href.
+      [['text' => 'Foo <a href="http://example.com">example 1</a> bar <a href="http://example.com">example 2</a> foo',
+        'out' => 'Foo example 1 bar example 2 foo']],
+      // Multiple links with the same href on multiple lines.
+      [['text' => 'Foo <a href="http://example.com">example 1</a> bar 
+        new line <a href="http://example.com">example 
+        another new line</a> foo',
+        'out' => 'Foo example 1 bar 
+        new line example 
+        another new line foo']],
+      //Href on invalid element.
+      [['text' => 'Foo <p href="http://example.com">example</p> bar',
+        'out' => 'Foo <p href="http://example.com">example</p> bar']],
+      // Multiple links with the same href.
+      [['text' => 'Foo <a href="http://example.com">example 1</a> bar <a href="http://example.com/foo">example 2</a> foo',
+        'out' => 'Foo example 1 bar example 2 foo']],
+    ];
+
   }
 
 }

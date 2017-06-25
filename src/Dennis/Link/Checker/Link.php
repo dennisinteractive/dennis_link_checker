@@ -11,8 +11,6 @@ namespace Dennis\Link\Checker;
  */
 class Link implements LinkInterface {
 
-  protected $config;
-
   protected $data = [];
 
   protected $tooManyRedirects = FALSE;
@@ -21,10 +19,7 @@ class Link implements LinkInterface {
    * @inheritDoc
    */
   public function __construct(FieldInterface $field, $href, \DOMElement $element) {
-    $this->config = $field->getEntity()->getConfig();
     $this->setOriginalHref($href);
-    $this->data['entity_type'] = $field->getEntity()->entityType();
-    $this->data['entity_id'] = $field->getEntity()->entityId();
     $this->data['field'] = $field;
     $this->data['element'] = $element;
   }
@@ -32,15 +27,29 @@ class Link implements LinkInterface {
   /**
    * @inheritDoc
    */
+  public function getField() {
+    return $this->data['field'];
+  }
+
+  /**
+   * @inheritDoc
+   */
+  public function getConfig() {
+    return $this->getField()->getConfig();
+  }
+
+  /**
+   * @inheritDoc
+   */
   public function entityType() {
-    return $this->data['entity_type'];
+    return $this->getField()->getEntity()->entityType();
   }
 
   /**
    * @inheritDoc
    */
   public function entityId() {
-    return $this->data['entity_id'];
+    return $this->getField()->getEntity()->entityId();
   }
 
   /**
@@ -70,7 +79,7 @@ class Link implements LinkInterface {
   public function setNumberOfRedirects($int) {
     $this->data['redirect_count'] = (int) $int;
 
-    if ($int > $this->config->getMaxRedirects()) {
+    if ($int > $this->getConfig()->getMaxRedirects()) {
       $this->setTooManyRedirects();
     }
 
@@ -140,7 +149,7 @@ class Link implements LinkInterface {
     $this->data['corrected_href'] = $this->getFoundUrl();
 
     // Keep links localised the way the editor saved them.
-    if ($this->config->getLocalisation() == LinkLocalisation::ORIGINAL) {
+    if ($this->getConfig()->getLocalisation() == LinkLocalisation::ORIGINAL) {
       // Save it the same way it was originally if a local link.
       if ($parsed = parse_url($this->originalHref())) {
         if (empty($parsed['host'])) {
@@ -157,18 +166,18 @@ class Link implements LinkInterface {
     }
 
     // Make all local links absolute.
-    elseif ($this->config->getLocalisation() == LinkLocalisation::ABSOLUTE) {
+    elseif ($this->getConfig()->getLocalisation() == LinkLocalisation::ABSOLUTE) {
       // Seo require local links to be absolute so if we get scrapped,
       // they will link back to us.
       $this->data['corrected_href'] = $this->getFoundUrl();
     }
 
     // Make all local links relative.
-    elseif ($this->config->getLocalisation() == LinkLocalisation::RELATIVE
-      && !empty($this->config->getSiteHost())) {
+    elseif ($this->getConfig()->getLocalisation() == LinkLocalisation::RELATIVE
+      && !empty($this->getConfig()->getSiteHost())) {
       // Check for a local link.
       if ($parsed = parse_url($this->getFoundUrl())) {
-        if (!empty($parsed['host']) && $this->config->getSiteHost() == $parsed['host']) {
+        if (!empty($parsed['host']) && $this->getConfig()->getSiteHost() == $parsed['host']) {
           // Make it relative.
           $this->data['corrected_href'] = $this->relativePath($parsed);
         }
@@ -176,11 +185,11 @@ class Link implements LinkInterface {
     }
 
     // Make all local links protocol relative.
-    elseif ($this->config->getLocalisation() == LinkLocalisation::PROTOCOL_RELATIVE
-      && !empty($this->config->getSiteHost())) {
+    elseif ($this->getConfig()->getLocalisation() == LinkLocalisation::PROTOCOL_RELATIVE
+      && !empty($this->getConfig()->getSiteHost())) {
       // Check for a local link.
       if ($parsed = parse_url($this->getFoundUrl())) {
-        if (!empty($parsed['host']) && $this->config->getSiteHost() == $parsed['host']) {
+        if (!empty($parsed['host']) && $this->getConfig()->getSiteHost() == $parsed['host']) {
           // Make it relative.
           $this->data['corrected_href'] = '/' . $this->relativePath($parsed);
         }
@@ -290,7 +299,7 @@ class Link implements LinkInterface {
           }
         } else {
           // Alias entity type can not be established.
-          $this->config->getLogger()->warning('ENTITY TYPE COULD NOT BE DETERMINED: ' . $internal_path);
+          $this->getConfig()->getLogger()->warning('ENTITY TYPE COULD NOT BE DETERMINED: ' . $internal_path);
         }
       }
     }
@@ -379,21 +388,21 @@ class Link implements LinkInterface {
   public function update() {
     // Before doing the replacement, check if the link originally pointed to a node, and
     // now points to a term, and if so then remove the link altogether. See case 27710.
-    if ($this->config->removeTermLinks() && $this->redirectsToTerm()) {
+    if ($this->getConfig()->removeTermLinks() && $this->redirectsToTerm()) {
       // Strip link and keep the text part
       $this->strip();
-      $this->config->getLogger()->warning('LINK REMOVED | '
+      $this->getConfig()->getLogger()->warning('LINK REMOVED | '
         . $this->entityType() . '/' . $this->entityId()
         . ' | ' . $this->originalHref() . " => " . $this->correctedHref());
     }
     else {
       if ($this->replace()) {
-        $this->config->getLogger()->info('Link corrected | '
+        $this->getConfig()->getLogger()->info('Link corrected | '
           . $this->entityType() . '/' . $this->entityId()
           . ' | ' . $this->originalHref() . " => " . $this->correctedHref());
       }
       else {
-        $this->config->getLogger()->info('Link NOT corrected | '
+        $this->getConfig()->getLogger()->info('Link NOT corrected | '
           . $this->entityType() . '/' . $this->entityId()
           . ' | ' . $this->originalHref() . " => " . $this->correctedHref());
         return FALSE;
@@ -403,12 +412,9 @@ class Link implements LinkInterface {
   }
 
   /**
-   * Strip link.
-   *
-   * @param bool $keep_link_text
-   * @return bool
+   * @inheritDoc
    */
-  protected function strip($keep_link_text = TRUE) {
+  public function strip($keep_link_text = TRUE) {
     if ($keep_link_text) {
       if ($this->element()->hasChildNodes()) {
         foreach ($this->element()->childNodes as $childNode) {
@@ -422,11 +428,9 @@ class Link implements LinkInterface {
   }
 
   /**
-   * Replace link.
-   *
-   * @return bool
+   * @inheritDoc
    */
-  protected function replace() {
+  public function replace() {
     if ($this->correctedHref() != $this->originalHref()) {
       $this->element()->setAttribute('href', $this->correctedHref());
       return TRUE;

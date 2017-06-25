@@ -136,7 +136,32 @@ interface LinkInterface {
   public function update();
 
   /**
+   * Strip link.
+   *
+   * @param bool $keep_link_text
+   * @return bool
+   */
+  public function strip($keep_link_text = TRUE);
+
+  /**
+   * Replace link.
+   *
+   * @return bool
+   */
+  public function replace();
+
+  /**
    * @return \DOMElement
    */
   public function element();
+
+  /**
+   * @return Field
+   */
+  public function getField();
+
+  /**
+   * @return Config
+   */
+  public function getConfig();
 }

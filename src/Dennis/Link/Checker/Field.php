@@ -46,7 +46,6 @@ class Field implements FieldInterface {
   public function __construct(EntityInterface $entity, $field_name) {
     $this->entity = $entity;
     $this->field_name = $field_name;
-    $this->config = $entity->getConfig();
   }
 
   /**
@@ -59,7 +58,7 @@ class Field implements FieldInterface {
   /**
    * @inheritDoc
    */
-  protected function getDom() {
+  protected function getDOM() {
     if (!isset($this->dom)) {
       $value_field = $this->field_name . '_value';
 
@@ -84,11 +83,11 @@ class Field implements FieldInterface {
   public function getLinks() {
     $found = [];
 
-    $links = $this->getDom()->getElementsByTagName('a');
+    $links = $this->getDOM()->getElementsByTagName('a');
 
     foreach ($links as $linkElement) {
       $href = $linkElement->getAttribute('href');
-      if ($this->config->internalOnly()) {
+      if ($this->getConfig()->internalOnly()) {
         // Only get local links.
         if ($parsed = parse_url($href)) {
           if (empty($parsed['host'])) {
@@ -97,7 +96,7 @@ class Field implements FieldInterface {
               $found[] = new Link($this, $href, $linkElement);
             }
           }
-          elseif ($parsed['host'] == $this->config->getSiteHost()) {
+          elseif ($parsed['host'] == $this->getConfig()->getSiteHost()) {
             // A full url, but local
             $found[] = new Link($this, $href, $linkElement);
           }
@@ -118,7 +117,7 @@ class Field implements FieldInterface {
   public function save() {
     $updated = 0;
 
-    $updated_text = filter_dom_serialize($this->getDom());
+    $updated_text = filter_dom_serialize($this->getDOM());
     if ($updated_text === $this->text) {
       return $updated;
     }
@@ -137,4 +136,10 @@ class Field implements FieldInterface {
     return $updated;
   }
 
+  /**
+   * @inheritDoc
+   */
+  public function getConfig() {
+    return $this->entity->getConfig();
+  }
 }

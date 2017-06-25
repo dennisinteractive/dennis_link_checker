@@ -15,3 +15,29 @@ function filter_dom_load($text) {
 
   return $dom_document;
 }
+
+/**
+ * Copy of the drupal function in filter.module
+ */
+function filter_dom_serialize($dom_document) {
+  $body_node = $dom_document->getElementsByTagName('body')->item(0);
+  $body_content = '';
+
+  if ($body_node !== NULL) {
+    foreach ($body_node->getElementsByTagName('script') as $node) {
+      filter_dom_serialize_escape_cdata_element($dom_document, $node);
+    }
+
+    foreach ($body_node->getElementsByTagName('style') as $node) {
+      filter_dom_serialize_escape_cdata_element($dom_document, $node, '/*', '*/');
+    }
+
+    foreach ($body_node->childNodes as $child_node) {
+      $body_content .= $dom_document->saveXML($child_node);
+    }
+    return preg_replace('|<([^> ]*)/>|i', '<$1 />', $body_content);
+  }
+  else {
+    return $body_content;
+  }
+}

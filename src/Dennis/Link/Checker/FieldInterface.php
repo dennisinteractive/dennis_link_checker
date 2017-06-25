@@ -26,4 +26,8 @@ interface FieldInterface {
    */
   public function save();
 
+  /**
+   * @return Config
+   */
+  public function getConfig();
 }
