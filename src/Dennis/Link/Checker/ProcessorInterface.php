@@ -145,13 +145,6 @@ interface ProcessorInterface {
   public function getQueueItem();
 
   /**
-   * Find links in the text.
-   * @param ItemInterface $item
-   * @return array
-   */
-  public function findLinks(ItemInterface $item);
-
-  /**
    * Checks and changes the url to be correct.
    *
    * @param ItemInterface $item

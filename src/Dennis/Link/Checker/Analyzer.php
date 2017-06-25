@@ -10,13 +10,15 @@ namespace Dennis\Link\Checker;
  * @package Dennis\Link\Checker
  */
 class Analyzer implements AnalyzerInterface {
-
-  protected $host;
-
+  /**
+   * @var ConfigInterface
+   */
   protected $config;
 
+  /**
+   * @var number of redirects in current chain.
+   */
   protected $redirectCount;
-
 
   /**
    * @var int maximum number of seconds to spend resolving links.

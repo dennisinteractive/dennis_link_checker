@@ -10,9 +10,6 @@ namespace Dennis\Link\Checker;
  * @package Dennis\Link\Checker
  */
 interface LinkInterface {
-
-  public function __construct(ConfigInterface $config, $entity_type, $entity_id, $field, $href);
-
   /**
    * The type of the entity.
    * @return string
@@ -132,4 +129,14 @@ interface LinkInterface {
    */
   public function redirectsToTerm();
 
+  /**
+   * Updates link if possible.
+   * @return bool
+   */
+  public function update();
+
+  /**
+   * @return \DOMElement
+   */
+  public function element();
 }

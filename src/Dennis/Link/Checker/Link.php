@@ -20,12 +20,13 @@ class Link implements LinkInterface {
   /**
    * @inheritDoc
    */
-  public function __construct(ConfigInterface $config, $entity_type, $entity_id, $field, $href) {
-    $this->config = $config;
+  public function __construct(FieldInterface $field, $href, \DOMElement $element) {
+    $this->config = $field->getEntity()->getConfig();
     $this->setOriginalHref($href);
-    $this->data['entity_type'] = $entity_type;
-    $this->data['entity_id'] = $entity_id;
+    $this->data['entity_type'] = $field->getEntity()->entityType();
+    $this->data['entity_id'] = $field->getEntity()->entityId();
     $this->data['field'] = $field;
+    $this->data['element'] = $element;
   }
 
   /**
@@ -54,6 +55,13 @@ class Link implements LinkInterface {
    */
   public function getNumberOfRedirects() {
     return $this->data['redirect_count'];
+  }
+
+  /**
+   * @inheritDoc
+   */
+  public function element() {
+    return $this->data['element'];
   }
 
   /**
@@ -362,6 +370,67 @@ class Link implements LinkInterface {
       }
     }
 
+    return FALSE;
+  }
+
+  /**
+   * @inheritDoc
+   */
+  public function update() {
+    // Before doing the replacement, check if the link originally pointed to a node, and
+    // now points to a term, and if so then remove the link altogether. See case 27710.
+    if ($this->config->removeTermLinks() && $this->redirectsToTerm()) {
+      // Strip link and keep the text part
+      $this->strip();
+      $this->config->getLogger()->warning('LINK REMOVED | '
+        . $this->entityType() . '/' . $this->entityId()
+        . ' | ' . $this->originalHref() . " => " . $this->correctedHref());
+    }
+    else {
+      if ($this->replace()) {
+        $this->config->getLogger()->info('Link corrected | '
+          . $this->entityType() . '/' . $this->entityId()
+          . ' | ' . $this->originalHref() . " => " . $this->correctedHref());
+      }
+      else {
+        $this->config->getLogger()->info('Link NOT corrected | '
+          . $this->entityType() . '/' . $this->entityId()
+          . ' | ' . $this->originalHref() . " => " . $this->correctedHref());
+        return FALSE;
+      }
+    }
+    return TRUE;
+  }
+
+  /**
+   * Strip link.
+   *
+   * @param bool $keep_link_text
+   * @return bool
+   */
+  protected function strip($keep_link_text = TRUE) {
+    if ($keep_link_text) {
+      if ($this->element()->hasChildNodes()) {
+        foreach ($this->element()->childNodes as $childNode) {
+          $newChild = clone $childNode;
+          $this->element()->parentNode->insertBefore($newChild, $this->element());
+        }
+      }
+    }
+    $this->element()->parentNode->removeChild($this->element());
+    return TRUE;
+  }
+
+  /**
+   * Replace link.
+   *
+   * @return bool
+   */
+  protected function replace() {
+    if ($this->correctedHref() != $this->originalHref()) {
+      $this->element()->setAttribute('href', $this->correctedHref());
+      return TRUE;
+    }
     return FALSE;
   }
 }
