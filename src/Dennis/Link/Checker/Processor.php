@@ -48,6 +48,12 @@ class Processor implements ProcessorInterface {
    * @inheritDoc
    */
   public function run() {
+    // Prevent processing of links when site is in maintenance mode.
+    if (variable_get('maintenance_mode', 0)) {
+      $this->config->getLogger()->info('Links cannot be processed when the site is in maintenance mode.');
+      return;
+    }
+
     $end = time() + $this->timeLimit;
 
     // Remove any old items from the queue.
