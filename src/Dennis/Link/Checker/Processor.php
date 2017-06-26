@@ -26,6 +26,8 @@ class Processor implements ProcessorInterface {
 
   protected $notFounds = [];
 
+  protected $fields = [];
+
   /**
    * @inheritDoc
    */
@@ -33,11 +35,13 @@ class Processor implements ProcessorInterface {
     ConfigInterface $config,
     DrupalReliableQueueInterface $queue,
     EntityHandlerInterface $entity_handler,
-    AnalyzerInterface $analyzer) {
+    AnalyzerInterface $analyzer,
+    $fields) {
       $this->config = $config;
       $this->setQueue($queue);
       $this->setEntityHandler($entity_handler);
       $this->setAnalyzer($analyzer);
+      $this->fields = $fields;
   }
 
   /**
@@ -136,17 +140,19 @@ class Processor implements ProcessorInterface {
   public function ensureEnqueued() {
     // Check for anything in the queue to process.
     if ($this->numberOfItems() == 0) {
-      $this->enqueue();
+      foreach ($this->fields as $field_name) {
+        $this->enqueue($field_name);
+      }
     }
   }
 
   /**
    * @inheritDoc
    */
-  public function enqueue() {
+  public function enqueue($field_name) {
     // entities that have a text area field with a link.
     // Just the body text field for now.
-    $query = db_select('field_data_body', 'b');
+    $query = db_select('field_data_' . $field_name, 'b');
     // The entity may not be a node.
     $query->leftJoin('node', 'n', 'n.nid = b.entity_id');
     $query->addField('b', 'entity_id');
@@ -157,7 +163,7 @@ class Processor implements ProcessorInterface {
 
     // Crudely find things that could be links.
     // Accurate link finding happens when the queue is processed.
-    $query->condition('body_value', '%' . db_like('<a') . '%', 'LIKE');
+    $query->condition($field_name . '_value', '%' . db_like('<a') . '%', 'LIKE');
 
     // Optionally limit the result set
     $nids = $this->config->getNodeList();
@@ -170,7 +176,7 @@ class Processor implements ProcessorInterface {
     $result = $query->execute();
 
     foreach ($result as $record) {
-      $this->addItem(new Item($record->entity_type, $record->entity_id));
+      $this->addItem(new Item($record->entity_type, $record->entity_id, $field_name));
     }
 
   }
@@ -213,7 +219,7 @@ class Processor implements ProcessorInterface {
     if ($item instanceof Item) {
       $field = $this->getEntityHandler($this->config)
         ->getEntity($item->entityType(), $item->entityId())
-        ->getField('body');
+        ->getField($item->fieldName());
       $this->correctLinks($item, $field);
     }
   }

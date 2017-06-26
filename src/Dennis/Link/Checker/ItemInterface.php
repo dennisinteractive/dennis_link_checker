@@ -13,10 +13,12 @@ interface ItemInterface {
 
   /**
    * ItemInterface constructor.
+   *
    * @param $entity_type
    * @param $entity_id
+   * @param $field_name
    */
-  public function __construct($entity_type, $entity_id);
+  public function __construct($entity_type, $entity_id, $field_name);
 
   /**
    * The type of the entity.
@@ -30,4 +32,9 @@ interface ItemInterface {
    */
   public function entityId();
 
+  /**
+   * The field name.
+   * @return string
+   */
+  public function fieldName();
 }

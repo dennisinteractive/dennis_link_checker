@@ -16,9 +16,10 @@ class Item implements ItemInterface {
   /**
    * @inheritDoc
    */
-  public function __construct($entity_type, $entity_id) {
+  public function __construct($entity_type, $entity_id, $field_name) {
     $this->data['entity_id'] = $entity_id;
     $this->data['entity_type'] = $entity_type;
+    $this->data['field_name'] = $field_name;
   }
 
   /**
@@ -35,4 +36,11 @@ class Item implements ItemInterface {
     return $this->data['entity_id'];
   }
 
+  /**
+   * @inheritDoc
+   */
+  public function fieldName() {
+    // Return field name if specified, or body by default.
+    return !empty($this->data['field_name']) ? $this->data['field_name'] : 'body';
+  }
 }

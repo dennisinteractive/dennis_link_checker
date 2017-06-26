@@ -15,10 +15,13 @@ interface ProcessorInterface {
   /**
    * ProcessorInterface constructor.
    *
-   * @param $queue
-   *  The drupal queue.
+   * @param ConfigInterface $config
+   * @param DrupalReliableQueueInterface $queue
+   * @param EntityHandlerInterface $entity_handler
+   * @param AnalyzerInterface $analyzer
+   * @param array $fields
    */
-  public function __construct(ConfigInterface $config, DrupalReliableQueueInterface $queue, EntityHandlerInterface $entity_handler, AnalyzerInterface $analyzer);
+  public function __construct(ConfigInterface $config, DrupalReliableQueueInterface $queue, EntityHandlerInterface $entity_handler, AnalyzerInterface $analyzer, $fields);
 
   /**
    * Sets how long in seconds the processor is allowed to run.
@@ -32,6 +35,7 @@ interface ProcessorInterface {
   /**
    * How the link should be changed for local links, if at all
    *
+   * @param $localisation
    * @return ProcessorInterface
    */
   public function setLocalisation($localisation);
@@ -59,6 +63,8 @@ interface ProcessorInterface {
 
   /**
    * The queue to process.
+   *
+   * @param DrupalReliableQueueInterface $queue
    * @return ProcessorInterface
    */
   public function setQueue(DrupalReliableQueueInterface $queue);
@@ -72,7 +78,7 @@ interface ProcessorInterface {
   /**
    * The object that understands entities.
    *
-   * @param EntityHandlerInterface $entityHandler
+   * @param EntityHandlerInterface $entity_handler
    * @return ProcessorInterface
    */
   public function setEntityHandler(EntityHandlerInterface $entity_handler);
@@ -97,9 +103,11 @@ interface ProcessorInterface {
 
   /**
    * Finds & adds items to the queue.
+   *
+   * @param string $field_name
    * @return ProcessorInterface
    */
-  public function enqueue();
+  public function enqueue($field_name);
 
   /**
    * Ensures there is always something in the queue.

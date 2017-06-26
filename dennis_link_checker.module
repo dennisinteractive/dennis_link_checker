@@ -50,8 +50,12 @@ function dennis_link_checker_setup(array $nids) {
   // Database object that allows interaction with the DB.
   $database = new Database();
 
+  // Get list of fields to process from variable so that sites can override.
+  $fields = variable_get('dennis_link_checker_fields', array('body'));
+
   $analyzer = new Analyzer($config, $curl_throttler, $database);
-  return new Processor($config, $queue, $entity_handler, $analyzer);
+
+  return new Processor($config, $queue, $entity_handler, $analyzer, $fields);
 }
 
 /**
