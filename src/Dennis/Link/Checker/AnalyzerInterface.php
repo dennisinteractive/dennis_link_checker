@@ -13,9 +13,12 @@ interface AnalyzerInterface {
 
   /**
    * AnalyzerInterface constructor.
+   *
    * @param ConfigInterface $config
+   * @param Throttler $curl_throttler
+   * @param Database $database
    */
-  public function __construct(ConfigInterface $config);
+  public function __construct(ConfigInterface $config, Throttler $curl_throttler, Database $database);
 
   /**
    * Checks the link.

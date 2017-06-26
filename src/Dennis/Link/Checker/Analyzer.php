@@ -17,11 +17,29 @@ class Analyzer implements AnalyzerInterface {
 
   protected $redirectCount;
 
+
+  /**
+   * @var int maximum number of seconds to spend resolving links.
+   */
+  protected $linkTimeLimit = 480;
+
+  /**
+   * @var Throttler
+   */
+  protected $curlThrottler;
+
+  /**
+   * @var Database
+   */
+  protected $database;
+
   /**
    * @inheritDoc
    */
-  public function __construct(ConfigInterface $config) {
+  public function __construct(ConfigInterface $config, Throttler $curl_throttler, Database $database) {
     $this->config = $config;
+    $this->curlThrottler = $curl_throttler;
+    $this->database = $database;
   }
 
   /**
@@ -45,8 +63,17 @@ class Analyzer implements AnalyzerInterface {
    * @inheritDoc
    */
   public function multipleLinks($links) {
-    foreach ($links as &$link) {
-      $link = $this->link($link);
+    $timeout = $this->linkTimeLimit + time();
+
+    foreach ($links as $link) {
+      if (time() >= $timeout) {
+        throw new TimeoutException(sprintf('Could not process %s links within %s seconds',
+          count($links),
+          $this->linkTimeLimit));
+      }
+      $this->link($link);
+      // Keep the DB connection alive whilst we are processing external links.
+      $this->database->keepConnectionAlive();
     }
 
     return $links;
@@ -56,6 +83,9 @@ class Analyzer implements AnalyzerInterface {
    * @inheritDoc
    */
   public function link(LinkInterface $link) {
+    // Make sure we only process one link per configured number of seconds.
+    $this->curlThrottler->throttle();
+
     // Only redirect 301's so cannot use CURLOPT_FOLLOWLOCATION
     $this->redirectCount = 0;
 
@@ -75,7 +105,8 @@ class Analyzer implements AnalyzerInterface {
         ->setNumberOfRedirects($this->redirectCount);
 
     } catch (ResourceFailException $e) {
-      $link->setError($e->getMessage(), $e->getCode());
+      $link->setNumberOfRedirects($this->redirectCount)
+        ->setError($e->getMessage(), $e->getCode());
     }
 
     return $link;
@@ -90,8 +121,13 @@ class Analyzer implements AnalyzerInterface {
    */
   protected function followRedirects($url) {
     $info = $this->getInfo($url);
+
     if (!empty($info['redirect_url'])) {
       if ($info['http_code'] == 301) {
+        // Throw exception if we have reached our redirect limit.
+        if ($this->redirectCount > $this->config->getMaxRedirects()) {
+          throw new ResourceFailException(sprintf('Maximum of %s redirects reached.', $this->config->getMaxRedirects()));
+        }
         // Do the redirect
         $this->redirectCount++;
         return $this->followRedirects($info['redirect_url']);

@@ -44,7 +44,16 @@ class Processor implements ProcessorInterface {
    * @inheritDoc
    */
   public function run() {
+    // Prevent processing of links when site is in maintenance mode.
+    if (variable_get('maintenance_mode', 0)) {
+      $this->config->getLogger()->info('Links cannot be processed when the site is in maintenance mode.');
+      return;
+    }
+
     $end = time() + $this->timeLimit;
+
+    // Remove any old items from the queue.
+    $this->queue->prune();
 
     // Make sure there is something to do.
     $this->ensureEnqueued();
@@ -52,7 +61,6 @@ class Processor implements ProcessorInterface {
     $more = TRUE;
     while ($more && time() < $end) {
       $more = $this->doNextItem();
-      sleep(1);
     }
   }
 
@@ -249,7 +257,16 @@ class Processor implements ProcessorInterface {
   public function correctLinks(ItemInterface $item, $links) {
     if (count($links) > 0) {
       // Check all the links.
-      $links = $this->getAnalyzer()->multipleLinks($links);
+      try {
+        $links = $this->getAnalyzer()->multipleLinks($links);
+      }
+      catch (TimeoutException $e) {
+        // Log timeout and stop processing this item so that it gets deleted from the queue.
+        $this->config->getLogger()->warning($e->getMessage() . ' | '
+          . $item->entityType() . '/' . $item->entityId());
+        return;
+      }
+
       foreach ($links as $link) {
         if ($err = $link->getError()) {
           if ($link->hasTooManyRedirects()) {
