@@ -283,7 +283,7 @@ class Processor implements ProcessorInterface {
             $this->config->getLogger()->warning($msg);
           }
           else {
-            $this->config->getLogger()->error($link->originalHref(), $err);
+            $this->config->getLogger()->error('Error when visiting: ' . $link->originalHref(), $err);
           }
         }
         else {
