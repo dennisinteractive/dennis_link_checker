@@ -67,6 +67,8 @@ class Field implements FieldInterface {
       $query->addField('t', 'revision_id');
       $query->condition('entity_id', $this->getEntity()->entityId());
       $query->condition('entity_type', $this->getEntity()->entityType());
+      // Hardcoded delta so only the first value of a multivalue field is used.
+      $query->condition('delta', 0);
       $result = $query->execute()->fetchObject();
 
       $this->revision_id = $result->revision_id;
@@ -130,6 +132,8 @@ class Field implements FieldInterface {
         ->condition('entity_id', $this->getEntity()->entityId())
         ->condition('entity_type', $this->getEntity()->entityType())
         ->condition('revision_id', $this->revision_id)
+        // Hardcoded delta so only the first value of a multivalue field is used.
+        ->condition('delta', 0)
         ->execute();
     }
 
