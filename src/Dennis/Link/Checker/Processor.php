@@ -268,11 +268,13 @@ class Processor implements ProcessorInterface {
         return;
       }
 
+      $entity = $field->getEntity();
+
       foreach ($links as $link) {
         if ($err = $link->getError()) {
-          if ($link->hasTooManyRedirects()) {
+          if ($link->getNumberOfRedirects() > $this->config->getMaxRedirects()) {
             $msg = 'Excessive Redirects on: '
-              . $link->entityType() . '/' . $link->entityId()
+              . $entity->entityType() . '/' . $entity->entityId()
               . ' to ' . $link->originalHref();
             $this->config->getLogger()->warning($msg);
           }
@@ -283,7 +285,7 @@ class Processor implements ProcessorInterface {
         else {
 
           $this->config->getLogger()->debug(
-            $link->entityType() . '/' . $link->entityId()
+            $entity->entityType() . '/' . $entity->entityId()
             . ' : ' . $link->getNumberOfRedirects()
             . ' : ' . $link->originalHref()
           );
@@ -294,20 +296,49 @@ class Processor implements ProcessorInterface {
             $suggested = empty($suggested) ? 'No suggestion' : 'Suggest : ' . $suggested;
             $this->notFounds = $link;
             $this->config->getLogger()->warning('Page Not Found | '
-              . $link->entityType() . '/' . $link->entityId()
+              . $entity->entityType() . '/' . $entity->entityId()
               . ' | '. $link->originalHref()
               . ' => ' . $suggested);
           }
 
           // Do the correction if needed.
           if ($link->corrected()) {
-            $link->update();
+            $this->updateLink($entity, $link);
           }
 
         }
       }
       $field->save();
     }
+  }
+
+  /**
+   * Updates a link.
+   */
+  public function updateLink(Entity $entity, Link $link) {
+    // Before doing the replacement, check if the link originally pointed to a node, and
+    // now points to a term, and if so then remove the link altogether. See case 27710.
+    if ($this->config->removeTermLinks() && $link->redirectsToTerm()) {
+      // Strip link and keep the text part
+      $link->strip();
+      $this->config->getLogger()->warning('LINK REMOVED | '
+        . $entity->entityType() . '/' . $entity->entityId()
+        . ' | ' . $link->originalHref() . " => " . $link->correctedHref());
+    }
+    else {
+      if ($link->replace()) {
+        $this->config->getLogger()->info('Link corrected | '
+          . $entity->entityType() . '/' . $entity->entityId()
+          . ' | ' . $link->originalHref() . " => " . $link->correctedHref());
+      }
+      else {
+        $this->config->getLogger()->info('Link NOT corrected | '
+          . $entity->entityType() . '/' . $entity->entityId()
+          . ' | ' . $link->originalHref() . " => " . $link->correctedHref());
+        return FALSE;
+      }
+    }
+    return TRUE;
   }
 
 }

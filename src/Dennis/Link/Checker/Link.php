@@ -13,50 +13,20 @@ class Link implements LinkInterface {
 
   protected $data = [];
 
-  protected $tooManyRedirects = FALSE;
-
   /**
    * @inheritDoc
    */
-  public function __construct(FieldInterface $field, $href, \DOMElement $element) {
+  public function __construct(ConfigInterface $config, $href, \DOMElement $element) {
     $this->setOriginalHref($href);
-    $this->data['field'] = $field;
+    $this->config = $config;
     $this->data['element'] = $element;
   }
 
   /**
    * @inheritDoc
    */
-  public function getField() {
-    return $this->data['field'];
-  }
-
-  /**
-   * @inheritDoc
-   */
   public function getConfig() {
-    return $this->getField()->getConfig();
-  }
-
-  /**
-   * @inheritDoc
-   */
-  public function entityType() {
-    return $this->getField()->getEntity()->entityType();
-  }
-
-  /**
-   * @inheritDoc
-   */
-  public function entityId() {
-    return $this->getField()->getEntity()->entityId();
-  }
-
-  /**
-   * @inheritDoc
-   */
-  public function entityField() {
-    return $this->data['field'];
+    return $this->config;
   }
 
   /**
@@ -79,27 +49,8 @@ class Link implements LinkInterface {
   public function setNumberOfRedirects($int) {
     $this->data['redirect_count'] = (int) $int;
 
-    if ($int > $this->getConfig()->getMaxRedirects()) {
-      $this->setTooManyRedirects();
-    }
-
     return $this;
   }
-
-  /**
-   * @inheritDoc
-   */
-  public function setTooManyRedirects() {
-    $this->tooManyRedirects = TRUE;
-  }
-
-  /**
-   * @inheritDoc
-   */
-  public function hasTooManyRedirects() {
-    return $this->tooManyRedirects;
-  }
-
 
   /**
    * @inheritDoc
@@ -380,35 +331,6 @@ class Link implements LinkInterface {
     }
 
     return FALSE;
-  }
-
-  /**
-   * @inheritDoc
-   */
-  public function update() {
-    // Before doing the replacement, check if the link originally pointed to a node, and
-    // now points to a term, and if so then remove the link altogether. See case 27710.
-    if ($this->getConfig()->removeTermLinks() && $this->redirectsToTerm()) {
-      // Strip link and keep the text part
-      $this->strip();
-      $this->getConfig()->getLogger()->warning('LINK REMOVED | '
-        . $this->entityType() . '/' . $this->entityId()
-        . ' | ' . $this->originalHref() . " => " . $this->correctedHref());
-    }
-    else {
-      if ($this->replace()) {
-        $this->getConfig()->getLogger()->info('Link corrected | '
-          . $this->entityType() . '/' . $this->entityId()
-          . ' | ' . $this->originalHref() . " => " . $this->correctedHref());
-      }
-      else {
-        $this->getConfig()->getLogger()->info('Link NOT corrected | '
-          . $this->entityType() . '/' . $this->entityId()
-          . ' | ' . $this->originalHref() . " => " . $this->correctedHref());
-        return FALSE;
-      }
-    }
-    return TRUE;
   }
 
   /**

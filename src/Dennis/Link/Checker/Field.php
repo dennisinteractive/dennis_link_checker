@@ -93,18 +93,18 @@ class Field implements FieldInterface {
           if (empty($parsed['host'])) {
             if (!empty($parsed['path']) && $parsed['path'][0] == '/') {
               // A valid local link.
-              $found[] = new Link($this, $href, $linkElement);
+              $found[] = new Link($this->getConfig(), $href, $linkElement);
             }
           }
           elseif ($parsed['host'] == $this->getConfig()->getSiteHost()) {
             // A full url, but local
-            $found[] = new Link($this, $href, $linkElement);
+            $found[] = new Link($this->getConfig(), $href, $linkElement);
           }
         }
       }
       else {
         // All links.
-        $found[] = new Link($this, $href, $linkElement);
+        $found[] = new Link($this->getConfig(), $href, $linkElement);
       }
     }
 
