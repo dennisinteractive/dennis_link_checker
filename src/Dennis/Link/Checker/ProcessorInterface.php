@@ -13,17 +13,6 @@ use DrupalReliableQueueInterface;
 interface ProcessorInterface {
 
   /**
-   * ProcessorInterface constructor.
-   *
-   * @param ConfigInterface $config
-   * @param DrupalReliableQueueInterface $queue
-   * @param EntityHandlerInterface $entity_handler
-   * @param AnalyzerInterface $analyzer
-   * @param array $fields
-   */
-  public function __construct(ConfigInterface $config, DrupalReliableQueueInterface $queue, EntityHandlerInterface $entity_handler, AnalyzerInterface $analyzer, $fields);
-
-  /**
    * Sets how long in seconds the processor is allowed to run.
    *
    * @param int $time_limit

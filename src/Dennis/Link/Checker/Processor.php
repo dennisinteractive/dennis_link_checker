@@ -26,22 +26,24 @@ class Processor implements ProcessorInterface {
 
   protected $notFounds = [];
 
-  protected $fields = [];
 
   /**
-   * @inheritDoc
+   * ProcessorInterface constructor.
+   *
+   * @param ConfigInterface $config
+   * @param DrupalReliableQueueInterface $queue
+   * @param EntityHandlerInterface $entity_handler
+   * @param AnalyzerInterface $analyzer
    */
   public function __construct(
     ConfigInterface $config,
     DrupalReliableQueueInterface $queue,
     EntityHandlerInterface $entity_handler,
-    AnalyzerInterface $analyzer,
-    $fields) {
+    AnalyzerInterface $analyzer) {
       $this->config = $config;
       $this->setQueue($queue);
       $this->setEntityHandler($entity_handler);
       $this->setAnalyzer($analyzer);
-      $this->fields = $fields;
   }
 
   /**
@@ -146,7 +148,8 @@ class Processor implements ProcessorInterface {
   public function ensureEnqueued() {
     // Check for anything in the queue to process.
     if ($this->numberOfItems() == 0) {
-      foreach ($this->fields as $field_name) {
+      $field_names = $this->config->getFieldNames();
+      foreach ($field_names as $field_name) {
         $this->enqueue($field_name);
       }
     }

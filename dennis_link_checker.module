@@ -39,6 +39,7 @@ function dennis_link_checker_setup(array $nids) {
     ->setMaxRedirects(10)
     ->setInternalOnly(TRUE)
     ->setLocalisation(LinkLocalisation::ORIGINAL)
+    ->setFieldNames(variable_get('dennis_link_checker_fields', array('body')))
     ->setNodeList($nids);
 
   $queue = new Queue('dennis_link_checker');
@@ -50,12 +51,9 @@ function dennis_link_checker_setup(array $nids) {
   // Database object that allows interaction with the DB.
   $database = new Database();
 
-  // Get list of fields to process from variable so that sites can override.
-  $fields = variable_get('dennis_link_checker_fields', array('body'));
-
   $analyzer = new Analyzer($config, $curl_throttler, $database);
 
-  return new Processor($config, $queue, $entity_handler, $analyzer, $fields);
+  return new Processor($config, $queue, $entity_handler, $analyzer);
 }
 
 /**
