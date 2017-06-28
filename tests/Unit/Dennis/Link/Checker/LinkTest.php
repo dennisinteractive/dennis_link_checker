@@ -22,19 +22,13 @@ class LinkTest extends PHPUnitTestCase {
    */
   public function testCorrectedHrefOriginal($data) {
     $config = (new Config())
-      ->setSiteHost('www.theweek.co.uk')
       ->setLocalisation(LinkLocalisation::ORIGINAL);
-
-    $field = $this->getMockBuilder('Dennis\Link\Checker\Field')
-      ->disableOriginalConstructor()
-      ->getMock();
-    $field->method('getConfig')->willReturn($config);
 
     $element = $this->getMockBuilder('\DOMElement')
       ->disableOriginalConstructor()
       ->getMock();
 
-    $link = new Link($field, $data['in'], $element);
+    $link = new Link($config, $data['in'], $element);
 
     $link->setFoundUrl($data['found']);
     $this->assertEquals($data['in'], $link->originalHref());
@@ -67,16 +61,11 @@ class LinkTest extends PHPUnitTestCase {
       ->setSiteHost('www.theweek.co.uk')
       ->setLocalisation(LinkLocalisation::ABSOLUTE);
 
-    $field = $this->getMockBuilder('Dennis\Link\Checker\Field')
-      ->disableOriginalConstructor()
-      ->getMock();
-    $field->method('getConfig')->willReturn($config);
-
     $element = $this->getMockBuilder('\DOMElement')
       ->disableOriginalConstructor()
       ->getMock();
 
-    $link = new Link($field, $data['in'], $element);
+    $link = new Link($config, $data['in'], $element);
     $link->setFoundUrl($data['found']);
     $this->assertEquals($data['in'], $link->originalHref());
     $this->assertEquals($data['out'], $link->correctedHref());
@@ -108,16 +97,11 @@ class LinkTest extends PHPUnitTestCase {
       ->setSiteHost('www.theweek.co.uk')
       ->setLocalisation(LinkLocalisation::RELATIVE);
 
-    $field = $this->getMockBuilder('Dennis\Link\Checker\Field')
-      ->disableOriginalConstructor()
-      ->getMock();
-    $field->method('getConfig')->willReturn($config);
-
     $element = $this->getMockBuilder('\DOMElement')
       ->disableOriginalConstructor()
       ->getMock();
 
-    $link = new Link($field, $data['in'], $element);
+    $link = new Link($config, $data['in'], $element);
     $link->setFoundUrl($data['found']);
     $this->assertEquals($data['in'], $link->originalHref());
     $this->assertEquals($data['out'], $link->correctedHref());
@@ -155,16 +139,11 @@ class LinkTest extends PHPUnitTestCase {
       ->setSiteHost('www.theweek.co.uk')
       ->setLocalisation(LinkLocalisation::PROTOCOL_RELATIVE);
 
-    $field = $this->getMockBuilder('Dennis\Link\Checker\Field')
-      ->disableOriginalConstructor()
-      ->getMock();
-    $field->method('getConfig')->willReturn($config);
-
     $element = $this->getMockBuilder('\DOMElement')
       ->disableOriginalConstructor()
       ->getMock();
 
-    $link = new Link($field, $data['in'], $element);
+    $link = new Link($config, $data['in'], $element);
 
     $link->setFoundUrl($data['found']);
     $this->assertEquals($data['in'], $link->originalHref());
@@ -201,7 +180,7 @@ class LinkTest extends PHPUnitTestCase {
   public function testRelativePath($data) {
     $config = (new Config())
       ->setSiteHost('www.theweek.co.uk')
-      ->setLocalisation(LinkLocalisation::ORIGINAL);
+      ->setLocalisation(LinkLocalisation::RELATIVE);
 
     $field = $this->getMockBuilder('Dennis\Link\Checker\Field')
       ->disableOriginalConstructor()
@@ -212,7 +191,7 @@ class LinkTest extends PHPUnitTestCase {
       ->disableOriginalConstructor()
       ->getMock();
 
-    $link = new Link($field, 'foo', $element);
+    $link = new Link($config, 'foo', $element);
 
     $this->assertEquals($data['out'], $link->relativePath($data['in']));
   }
@@ -240,27 +219,15 @@ class LinkTest extends PHPUnitTestCase {
    * @covers ::strip
    * @dataProvider getStripProvider
    */
-  public function testStripLinks($data) {
-    $config = (new Config())
-      ->setSiteHost('www.theweek.co.uk')
-      ->setLogger((new Logger())->setVerbosity(Logger::VERBOSITY_LOW));
-
-    $entity = $this->getMockBuilder('Dennis\Link\Checker\Entity')
-      ->disableOriginalConstructor()
-      ->getMock();
-    $entity->method('getConfig')->willReturn($config);
-
-    $field = $this->getMockBuilder('Dennis\Link\Checker\Field')
-      ->setConstructorArgs(array($entity, 'body'))
-      ->setMethods(array('getDOM'))
-      ->getMock();
-
-    // Test DOM to manipulate.
+  public function testStrip($data) {
+    // Get all the links from the text and strip 'em.
     $dom = filter_dom_load($data['text']);
-
-    $field->method('getDOM')->willReturn($dom);
-    $field->getConfig()->setSiteHost('example.com');
-    $links = $field->getLinks();
+    $els = $dom->getElementsByTagName('a');
+    $links = [];
+    foreach ($els as $linkElement) {
+      $links[] = new Link($this->getMock(Config::class), $linkElement->getAttribute('href'), $linkElement);
+      // Do not strip yet as php gets lost when deletions happen in foreach
+    }
 
     foreach ($links as $link) {
       $link->strip();
@@ -300,6 +267,9 @@ class LinkTest extends PHPUnitTestCase {
       // Multiple links with the same href.
       [['text' => 'Foo <a href="http://example.com">example 1</a> bar <a href="http://example.com/foo">example 2</a> foo',
         'out' => 'Foo example 1 bar example 2 foo']],
+      // Child elements are kept.
+      [['text' => 'Foo <a href="http://example.com"><span>An image <img src="image.png" /></span></a> bar',
+        'out' => 'Foo <span>An image <img src="image.png" /></span> bar']],
     ];
 
   }
