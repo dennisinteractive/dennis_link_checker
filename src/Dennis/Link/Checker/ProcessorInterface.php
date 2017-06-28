@@ -156,9 +156,9 @@ interface ProcessorInterface {
    * Checks and changes the url to be correct.
    *
    * @param ItemInterface $item
-   * @param array $links
+   * @param Field $field
    * @return array
    */
-  public function correctLinks(ItemInterface $item, $links);
+  public function correctLinks(ItemInterface $item, Field $field);
 
 }

@@ -223,7 +223,7 @@ class Processor implements ProcessorInterface {
   public function queueWorker($item) {
     // Not forcing the instance on the function param so that it can fail silently.
     if ($item instanceof Item) {
-      $field = $this->getEntityHandler($this->config)
+      $field = $this->getEntityHandler()
         ->getEntity($item->entityType(), $item->entityId())
         ->getField($item->fieldName());
       $this->correctLinks($item, $field);
@@ -255,7 +255,7 @@ class Processor implements ProcessorInterface {
   /**
    * @inheritDoc
    */
-  public function correctLinks(ItemInterface $item, $field) {
+  public function correctLinks(ItemInterface $item, Field $field) {
     if ($links = $field->getLinks()) {
       // Check all the links.
       try {
