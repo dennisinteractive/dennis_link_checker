@@ -161,8 +161,10 @@ class Analyzer implements AnalyzerInterface {
       return $info;
     }
     else {
+      $errno = curl_errno($ch);
+      $error = curl_error($ch);
       curl_close($ch);
-      throw new ResourceFailException(curl_error($ch), curl_errno($ch));
+      throw new ResourceFailException($error, $errno);
     }
 
   }
