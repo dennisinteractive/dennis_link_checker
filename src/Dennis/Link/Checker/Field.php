@@ -31,11 +31,6 @@ class Field implements FieldInterface {
   protected $dom;
 
   /**
-   * @var string original text.
-   */
-  protected $text;
-
-  /**
    * @var ConfigInterface
    */
   protected $config;
@@ -73,7 +68,6 @@ class Field implements FieldInterface {
 
       $this->revision_id = $result->revision_id;
       $this->dom = filter_dom_load($result->{$value_field});
-      $this->text = filter_dom_serialize($this->dom);
     }
 
     return $this->dom;
@@ -120,10 +114,6 @@ class Field implements FieldInterface {
     $updated = 0;
 
     $updated_text = filter_dom_serialize($this->getDOM());
-    if ($updated_text === $this->text) {
-      return $updated;
-    }
-
     foreach (array('data', 'revision') as $table_type) {
       $updated += db_update('field_' . $table_type . '_' . $this->field_name)
         ->fields(array(

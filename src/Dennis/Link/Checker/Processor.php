@@ -271,6 +271,7 @@ class Processor implements ProcessorInterface {
         return;
       }
 
+      $do_field_save = FALSE;
       $entity = $field->getEntity();
 
       foreach ($links as $link) {
@@ -305,13 +306,15 @@ class Processor implements ProcessorInterface {
           }
 
           // Do the correction if needed.
-          if ($link->corrected()) {
-            $this->updateLink($entity, $link);
+          if ($link->corrected() && $this->updateLink($entity, $link)) {
+            $do_field_save = TRUE;
           }
 
         }
       }
-      $field->save();
+      if ($do_field_save) {
+        $field->save();
+      }
     }
   }
 
