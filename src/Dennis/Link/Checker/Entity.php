@@ -26,11 +26,6 @@ class Entity implements EntityInterface {
   protected $config;
 
   /**
-   * @var array text fields
-   */
-  protected $textFields = array();
-
-  /**
    * @inheritDoc
    */
   public function __construct($config, $entity_type, $entity_id) {
