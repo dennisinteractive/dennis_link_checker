@@ -225,7 +225,7 @@ class Processor implements ProcessorInterface {
    */
   public function queueWorker($item) {
     // Not forcing the instance on the function param so that it can fail silently.
-    if ($item instanceof Item) {
+    if ($item instanceof ItemInterface) {
       $field = $this->getEntityHandler()
         ->getEntity($item->entityType(), $item->entityId())
         ->getField($item->fieldName());
@@ -258,7 +258,7 @@ class Processor implements ProcessorInterface {
   /**
    * @inheritDoc
    */
-  public function correctLinks(ItemInterface $item, Field $field) {
+  public function correctLinks(ItemInterface $item, FieldInterface $field) {
     if ($links = $field->getLinks()) {
       // Check all the links.
       try {
@@ -321,7 +321,7 @@ class Processor implements ProcessorInterface {
   /**
    * Updates a link.
    */
-  public function updateLink(Entity $entity, Link $link) {
+  public function updateLink(EntityInterface $entity, LinkInterface $link) {
     // Before doing the replacement, check if the link originally pointed to a node, and
     // now points to a term, and if so then remove the link altogether. See case 27710.
     if ($this->config->removeTermLinks() && $link->redirectsToTerm()) {

@@ -148,6 +148,6 @@ interface ProcessorInterface {
    * @param Field $field
    * @return array
    */
-  public function correctLinks(ItemInterface $item, Field $field);
+  public function correctLinks(ItemInterface $item, FieldInterface $field);
 
 }
