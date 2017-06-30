@@ -13,14 +13,6 @@ use DrupalReliableQueueInterface;
 interface ProcessorInterface {
 
   /**
-   * ProcessorInterface constructor.
-   *
-   * @param $queue
-   *  The drupal queue.
-   */
-  public function __construct(ConfigInterface $config, DrupalReliableQueueInterface $queue, EntityHandlerInterface $entity_handler, AnalyzerInterface $analyzer);
-
-  /**
    * Sets how long in seconds the processor is allowed to run.
    *
    * @param int $time_limit
@@ -32,6 +24,7 @@ interface ProcessorInterface {
   /**
    * How the link should be changed for local links, if at all
    *
+   * @param $localisation
    * @return ProcessorInterface
    */
   public function setLocalisation($localisation);
@@ -59,6 +52,8 @@ interface ProcessorInterface {
 
   /**
    * The queue to process.
+   *
+   * @param DrupalReliableQueueInterface $queue
    * @return ProcessorInterface
    */
   public function setQueue(DrupalReliableQueueInterface $queue);
@@ -72,7 +67,7 @@ interface ProcessorInterface {
   /**
    * The object that understands entities.
    *
-   * @param EntityHandlerInterface $entityHandler
+   * @param EntityHandlerInterface $entity_handler
    * @return ProcessorInterface
    */
   public function setEntityHandler(EntityHandlerInterface $entity_handler);
@@ -97,9 +92,11 @@ interface ProcessorInterface {
 
   /**
    * Finds & adds items to the queue.
+   *
+   * @param string $field_name
    * @return ProcessorInterface
    */
-  public function enqueue();
+  public function enqueue($field_name);
 
   /**
    * Ensures there is always something in the queue.
@@ -145,19 +142,12 @@ interface ProcessorInterface {
   public function getQueueItem();
 
   /**
-   * Find links in the text.
-   * @param ItemInterface $item
-   * @return array
-   */
-  public function findLinks(ItemInterface $item);
-
-  /**
    * Checks and changes the url to be correct.
    *
    * @param ItemInterface $item
-   * @param array $links
+   * @param Field $field
    * @return array
    */
-  public function correctLinks(ItemInterface $item, $links);
+  public function correctLinks(ItemInterface $item, FieldInterface $field);
 
 }

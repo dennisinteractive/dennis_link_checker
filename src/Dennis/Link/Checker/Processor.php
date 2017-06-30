@@ -26,8 +26,14 @@ class Processor implements ProcessorInterface {
 
   protected $notFounds = [];
 
+
   /**
-   * @inheritDoc
+   * ProcessorInterface constructor.
+   *
+   * @param ConfigInterface $config
+   * @param DrupalReliableQueueInterface $queue
+   * @param EntityHandlerInterface $entity_handler
+   * @param AnalyzerInterface $analyzer
    */
   public function __construct(
     ConfigInterface $config,
@@ -44,7 +50,16 @@ class Processor implements ProcessorInterface {
    * @inheritDoc
    */
   public function run() {
+    // Prevent processing of links when site is in maintenance mode.
+    if (variable_get('maintenance_mode', 0)) {
+      $this->config->getLogger()->info('Links cannot be processed when the site is in maintenance mode.');
+      return;
+    }
+
     $end = time() + $this->timeLimit;
+
+    // Remove any old items from the queue.
+    $this->queue->prune();
 
     // Make sure there is something to do.
     $this->ensureEnqueued();
@@ -52,7 +67,6 @@ class Processor implements ProcessorInterface {
     $more = TRUE;
     while ($more && time() < $end) {
       $more = $this->doNextItem();
-      sleep(1);
     }
   }
 
@@ -134,17 +148,20 @@ class Processor implements ProcessorInterface {
   public function ensureEnqueued() {
     // Check for anything in the queue to process.
     if ($this->numberOfItems() == 0) {
-      $this->enqueue();
+      $field_names = $this->config->getFieldNames();
+      foreach ($field_names as $field_name) {
+        $this->enqueue($field_name);
+      }
     }
   }
 
   /**
    * @inheritDoc
    */
-  public function enqueue() {
+  public function enqueue($field_name) {
     // entities that have a text area field with a link.
     // Just the body text field for now.
-    $query = db_select('field_data_body', 'b');
+    $query = db_select('field_data_' . $field_name, 'b');
     // The entity may not be a node.
     $query->leftJoin('node', 'n', 'n.nid = b.entity_id');
     $query->addField('b', 'entity_id');
@@ -155,7 +172,7 @@ class Processor implements ProcessorInterface {
 
     // Crudely find things that could be links.
     // Accurate link finding happens when the queue is processed.
-    $query->condition('body_value', '%' . db_like('<a') . '%', 'LIKE');
+    $query->condition($field_name . '_value', '%' . db_like('<a') . '%', 'LIKE');
 
     // Optionally limit the result set
     $nids = $this->config->getNodeList();
@@ -168,7 +185,7 @@ class Processor implements ProcessorInterface {
     $result = $query->execute();
 
     foreach ($result as $record) {
-      $this->addItem(new Item($record->entity_type, $record->entity_id));
+      $this->addItem(new Item($record->entity_type, $record->entity_id, $field_name));
     }
 
   }
@@ -208,9 +225,11 @@ class Processor implements ProcessorInterface {
    */
   public function queueWorker($item) {
     // Not forcing the instance on the function param so that it can fail silently.
-    if ($item instanceof Item) {
-      $links = $this->findLinks($item);
-      $this->correctLinks($item, $links);
+    if ($item instanceof ItemInterface) {
+      $field = $this->getEntityHandler()
+        ->getEntity($item->entityType(), $item->entityId())
+        ->getField($item->fieldName());
+      $this->correctLinks($item, $field);
     }
   }
 
@@ -239,33 +258,38 @@ class Processor implements ProcessorInterface {
   /**
    * @inheritDoc
    */
-  public function findLinks(ItemInterface $item) {
-    return $this->getEntityHandler()->findLinks($item->entityType(), $item->entityId());
-  }
-
-  /**
-   * @inheritDoc
-   */
-  public function correctLinks(ItemInterface $item, $links) {
-    if (count($links) > 0) {
+  public function correctLinks(ItemInterface $item, FieldInterface $field) {
+    if ($links = $field->getLinks()) {
       // Check all the links.
-      $links = $this->getAnalyzer()->multipleLinks($links);
+      try {
+        $links = $this->getAnalyzer()->multipleLinks($links);
+      }
+      catch (TimeoutException $e) {
+        // Log timeout and stop processing this item so that it gets deleted from the queue.
+        $this->config->getLogger()->warning($e->getMessage() . ' | '
+          . $item->entityType() . '/' . $item->entityId());
+        return;
+      }
+
+      $do_field_save = FALSE;
+      $entity = $field->getEntity();
+
       foreach ($links as $link) {
         if ($err = $link->getError()) {
-          if ($link->hasTooManyRedirects()) {
+          if ($link->getNumberOfRedirects() > $this->config->getMaxRedirects()) {
             $msg = 'Excessive Redirects on: '
-              . $link->entityType() . '/' . $link->entityId()
+              . $entity->entityType() . '/' . $entity->entityId()
               . ' to ' . $link->originalHref();
             $this->config->getLogger()->warning($msg);
           }
           else {
-            $this->config->getLogger()->error($link->originalHref(), $err);
+            $this->config->getLogger()->error('Error when visiting: ' . $link->originalHref(), $err);
           }
         }
         else {
 
           $this->config->getLogger()->debug(
-            $link->entityType() . '/' . $link->entityId()
+            $entity->entityType() . '/' . $entity->entityId()
             . ' : ' . $link->getNumberOfRedirects()
             . ' : ' . $link->originalHref()
           );
@@ -276,20 +300,51 @@ class Processor implements ProcessorInterface {
             $suggested = empty($suggested) ? 'No suggestion' : 'Suggest : ' . $suggested;
             $this->notFounds = $link;
             $this->config->getLogger()->warning('Page Not Found | '
-              . $link->entityType() . '/' . $link->entityId()
+              . $entity->entityType() . '/' . $entity->entityId()
               . ' | '. $link->originalHref()
               . ' => ' . $suggested);
           }
 
           // Do the correction if needed.
-          if ($link->corrected()) {
-            $this->getEntityHandler()->updateLink($link);
+          if ($link->corrected() && $this->updateLink($entity, $link)) {
+            $do_field_save = TRUE;
           }
 
         }
       }
-
+      if ($do_field_save) {
+        $field->save();
+      }
     }
+  }
+
+  /**
+   * Updates a link.
+   */
+  public function updateLink(EntityInterface $entity, LinkInterface $link) {
+    // Before doing the replacement, check if the link originally pointed to a node, and
+    // now points to a term, and if so then remove the link altogether. See case 27710.
+    if ($this->config->removeTermLinks() && $link->redirectsToTerm()) {
+      // Strip link and keep the text part
+      $link->strip();
+      $this->config->getLogger()->warning('LINK REMOVED | '
+        . $entity->entityType() . '/' . $entity->entityId()
+        . ' | ' . $link->originalHref() . " => " . $link->correctedHref());
+    }
+    else {
+      if ($link->replace()) {
+        $this->config->getLogger()->info('Link corrected | '
+          . $entity->entityType() . '/' . $entity->entityId()
+          . ' | ' . $link->originalHref() . " => " . $link->correctedHref());
+      }
+      else {
+        $this->config->getLogger()->info('Link NOT corrected | '
+          . $entity->entityType() . '/' . $entity->entityId()
+          . ' | ' . $link->originalHref() . " => " . $link->correctedHref());
+        return FALSE;
+      }
+    }
+    return TRUE;
   }
 
 }

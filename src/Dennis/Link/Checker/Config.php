@@ -25,6 +25,8 @@ class Config implements ConfigInterface {
 
   protected $nids = FALSE;
 
+  protected $fieldNames = [];
+
   /**
    * @inheritDoc
    */
@@ -136,4 +138,21 @@ class Config implements ConfigInterface {
   public function getNodeList() {
     return $this->nids;
   }
+
+  /**
+   * @inheritDoc
+   */
+  public function setFieldNames(array $field_names) {
+    $this->fieldNames = $field_names;
+
+    return $this;
+  }
+
+  /**
+   * @inheritDoc
+   */
+  public function getFieldNames() {
+    return $this->fieldNames;
+  }
+
 }

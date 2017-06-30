@@ -117,4 +117,19 @@ interface ConfigInterface {
    * @return array
    */
   public function getNodeList();
+
+  /**
+   * The names of fields to check for links in.
+   *
+   * @param array $field_names
+   * @return self
+   */
+  public function setFieldNames(array $field_names);
+
+  /**
+   * The names of fields to check for links in.
+   *
+   * @return array
+   */
+  public function getFieldNames();
 }

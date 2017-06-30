@@ -11,26 +11,6 @@ namespace Dennis\Link\Checker;
  */
 interface LinkInterface {
 
-  public function __construct(ConfigInterface $config, $entity_type, $entity_id, $field, $href);
-
-  /**
-   * The type of the entity.
-   * @return string
-   */
-  public function entityType();
-
-  /**
-   * The entity id.
-   * @return integer
-   */
-  public function entityId();
-
-  /**
-   * The field the link is in.
-   * @return string
-   */
-  public function entityField();
-
   /**
    * The number of redirects needed to get to the corrected url.
    *
@@ -45,17 +25,6 @@ interface LinkInterface {
    * @return LinkInterface
    */
   public function setNumberOfRedirects($int);
-
-  /**
-   * Marke the link has having too many redirects.
-   * @return LinkInterface
-   */
-  public function setTooManyRedirects();
-
-  /**
-   * @return boolean
-   */
-  public function hasTooManyRedirects();
 
   /**
    * Whether the link was corrected.
@@ -132,4 +101,28 @@ interface LinkInterface {
    */
   public function redirectsToTerm();
 
+  /**
+   * Strip link.
+   *
+   * @param bool $keep_link_text
+   * @return bool
+   */
+  public function strip($keep_link_text = TRUE);
+
+  /**
+   * Replace link.
+   *
+   * @return bool
+   */
+  public function replace();
+
+  /**
+   * @return \DOMElement
+   */
+  public function element();
+
+  /**
+   * @return Config
+   */
+  public function getConfig();
 }
