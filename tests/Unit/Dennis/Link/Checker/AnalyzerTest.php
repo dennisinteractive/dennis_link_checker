@@ -39,7 +39,7 @@ class AnalyzerTest extends PHPUnitTestCase {
 
   /**
    * @covers ::getInfo
-   * @expectedException \Exception
+   * @expectedException \Dennis\Link\Checker\ResourceFailException
    */
   public function testGetInfoException() {
     // Check the exception is thrown.
@@ -47,7 +47,7 @@ class AnalyzerTest extends PHPUnitTestCase {
       ->disableOriginalConstructor()
       ->setMethods(['doInfoRequest'])
       ->getMock();
-    $data = new \Exception('test', 42);
+    $data = new ResourceFailException('test', 42);
     $analyzer->method('doInfoRequest')->willThrowException($data);
     $url = 'http://example.com';
     $analyzer->getInfo($url);
