@@ -5,9 +5,6 @@
  */
 namespace Dennis\Link\Checker;
 
-// Use our mocked versions of some global functions.
-include_once 'global_functions.php';
-
 use PHPUnit\Framework\TestCase as PHPUnitTestCase;
 
 /**
