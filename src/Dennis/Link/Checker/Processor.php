@@ -258,7 +258,7 @@ class Processor implements ProcessorInterface {
       $field = $this->getEntityHandler()
         ->getEntity($item->entityType(), $item->entityId())
         ->getField($item->fieldName());
-        $this->correctLinks($item, $field);
+      $this->correctLinks($item, $field);
     }
   }
 
