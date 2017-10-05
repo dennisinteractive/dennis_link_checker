@@ -19,7 +19,7 @@ class AnalyzerTest extends PHPUnitTestCase {
   /**
    * @covers ::getInfo
    */
-  public function testGetLinks() {
+  public function testGetInfo() {
     $analyzer = $this->getMockBuilder(Analyzer::class)
       ->disableOriginalConstructor()
       ->setMethods(['doInfoRequest'])
@@ -41,7 +41,7 @@ class AnalyzerTest extends PHPUnitTestCase {
    * @covers ::getInfo
    * @expectedException \Exception
    */
-  public function testGetLinksException() {
+  public function testGetInfoException() {
     // Check the exception is thrown.
     $analyzer = $this->getMockBuilder(Analyzer::class)
       ->disableOriginalConstructor()
@@ -51,6 +51,26 @@ class AnalyzerTest extends PHPUnitTestCase {
     $analyzer->method('doInfoRequest')->willThrowException($data);
     $url = 'http://example.com';
     $analyzer->getInfo($url);
+  }
+
+  /**
+   * @covers ::link
+   * @expectedException \Dennis\Link\Checker\RequestTimeoutException
+   */
+  public function testLinkException() {
+    $analyzer = $this->getMockBuilder(Analyzer::class)
+      ->disableOriginalConstructor()
+      ->setMethods(['doInfoRequest', 'throttle', 'getSiteHost'])
+      ->getMock();
+    $data = new RequestTimeoutException('timeout test', CURLOPT_TIMEOUT);
+    $analyzer->method('throttle')->willReturn(TRUE);
+    $analyzer->method('getSiteHost')->willReturn('example.com');
+    $analyzer->method('doInfoRequest')->willThrowException($data);
+
+    $link = $this->getMockBuilder(Link::class)
+      ->disableOriginalConstructor()
+      ->getMock();
+    $analyzer->link($link);
   }
 
 }

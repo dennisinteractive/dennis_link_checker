@@ -66,7 +66,13 @@ class Processor implements ProcessorInterface {
 
     $more = TRUE;
     while ($more && time() < $end) {
-      $more = $this->doNextItem();
+      try {
+        $more = $this->doNextItem();
+      } catch (RequestTimeoutException $e) {
+        // Don't try to process any more items for this run.
+        $this->config->getLogger()->warning($e->getMessage());
+        return;
+      }
     }
   }
 
@@ -229,7 +235,7 @@ class Processor implements ProcessorInterface {
       $field = $this->getEntityHandler()
         ->getEntity($item->entityType(), $item->entityId())
         ->getField($item->fieldName());
-      $this->correctLinks($item, $field);
+        $this->correctLinks($item, $field);
     }
   }
 
