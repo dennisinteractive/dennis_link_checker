@@ -92,6 +92,9 @@ class Processor implements ProcessorInterface {
     return $this->queue;
   }
 
+  /**
+   * Removes old items.
+   */
   public function prune() {
     $this->getQueue()->prune();
   }
