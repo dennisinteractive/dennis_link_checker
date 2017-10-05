@@ -8,7 +8,7 @@ namespace Dennis\Link\Checker;
 use PHPUnit\Framework\TestCase as PHPUnitTestCase;
 
 /**
- * Class FieldTest
+ * Class AnalyzerTest
  * @package Dennis/Link/Checker
  */
 class AnalyzerTest extends PHPUnitTestCase {

@@ -6,7 +6,7 @@
 namespace Dennis\Link\Checker;
 
 /**
- * Class Corrector
+ * Class Analyzer
  * @package Dennis\Link\Checker
  */
 class Analyzer implements AnalyzerInterface {
