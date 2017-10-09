@@ -46,9 +46,17 @@ interface ProcessorInterface {
   /**
    * Processes the queue.
    *
-   * @return ProcessorInterface
+   * @return boolean
    */
   public function run();
+
+  /**
+   * The configuration object.
+   *
+   * @param ConfigInterface $config
+   * @return self
+   */
+  public function setConfig(ConfigInterface $config);
 
   /**
    * The queue to process.

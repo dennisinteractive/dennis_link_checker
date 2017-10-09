@@ -25,6 +25,7 @@ interface AnalyzerInterface {
    *
    * @param $link LinkInterface
    * @return string
+   * @thows RequestTimeoutException
    */
   public function link(LinkInterface $link);
 

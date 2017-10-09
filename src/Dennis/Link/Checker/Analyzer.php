@@ -6,7 +6,7 @@
 namespace Dennis\Link\Checker;
 
 /**
- * Class Corrector
+ * Class Analyzer
  * @package Dennis\Link\Checker
  */
 class Analyzer implements AnalyzerInterface {
@@ -36,13 +36,9 @@ class Analyzer implements AnalyzerInterface {
   protected $database;
 
   /**
-   * @inheritDoc
+   * @var array Static cache of info from url calls.
    */
-  public function __construct(ConfigInterface $config, Throttler $curl_throttler, Database $database) {
-    $this->config = $config;
-    $this->curlThrottler = $curl_throttler;
-    $this->database = $database;
-  }
+  protected $urlInfo = [];
 
   /**
    * The number of seconds to wait while trying to connect.
@@ -53,6 +49,15 @@ class Analyzer implements AnalyzerInterface {
    * The maximum number of seconds to allow cURL functions to execute.
    */
   protected $timeout = 10;
+
+  /**
+   * @inheritDoc
+   */
+  public function __construct(ConfigInterface $config, Throttler $curl_throttler, Database $database) {
+    $this->config = $config;
+    $this->curlThrottler = $curl_throttler;
+    $this->database = $database;
+  }
 
   /**
    * @inheritDoc
@@ -74,6 +79,7 @@ class Analyzer implements AnalyzerInterface {
           $this->linkTimeLimit));
       }
       $this->link($link);
+
       // Keep the DB connection alive whilst we are processing external links.
       $this->database->keepConnectionAlive();
     }
@@ -82,11 +88,17 @@ class Analyzer implements AnalyzerInterface {
   }
 
   /**
+   * Make sure we only process one link per configured number of seconds.
+   */
+  public function throttle() {
+    $this->curlThrottler->throttle();
+  }
+
+  /**
    * @inheritDoc
    */
   public function link(LinkInterface $link) {
-    // Make sure we only process one link per configured number of seconds.
-    $this->curlThrottler->throttle();
+    $this->throttle();
 
     // Only redirect 301's so cannot use CURLOPT_FOLLOWLOCATION
     $this->redirectCount = 0;
@@ -105,10 +117,15 @@ class Analyzer implements AnalyzerInterface {
       $link->setFoundUrl($info['url'])
         ->setHttpCode($info['http_code'])
         ->setNumberOfRedirects($this->redirectCount);
-
     } catch (ResourceFailException $e) {
       $link->setNumberOfRedirects($this->redirectCount)
         ->setError($e->getMessage(), $e->getCode());
+
+      // If the request timed out,
+      // throw a RequestTimeoutException so the processor can give up for this process.
+      if ($e->getCode() == CURLE_OPERATION_TIMEDOUT || $e->getCode() == CURLOPT_TIMEOUT) {
+        throw new RequestTimeoutException($e->getMessage(), $e->getCode());
+      }
     }
 
     return $link;
@@ -143,9 +160,40 @@ class Analyzer implements AnalyzerInterface {
    * Makes an http call and returns info about what it found.
    *
    * @param $url
+   *
    * @return array
+   * @throws ResourceFailException
    */
-  protected function getInfo($url) {
+  public function getInfo($url) {
+    $md5 = md5($url);
+    if (isset($this->urlInfo[$md5])) {
+      if (isset($this->urlInfo[$md5]['exception'])) {
+        // Throw the exception again
+        throw $this->urlInfo[$md5]['exception'];
+      }
+      return $this->urlInfo[$md5];
+    }
+
+    try {
+      $this->urlInfo[$md5] = $this->doInfoRequest($url);
+      return $this->urlInfo[$md5];
+    } catch (ResourceFailException $e) {
+      // Statically cache the exception happened.
+      $this->urlInfo[$md5] = ['exception' => $e];
+      // Re-throw the exception
+      throw $e;
+    }
+  }
+
+  /**
+   * Performs a HEAD request.
+   *
+   * @param $url
+   *
+   * @return array
+   * @throws ResourceFailException
+   */
+  protected function doInfoRequest($url) {
     // Only redirect 301's so cannot use CURLOPT_FOLLOWLOCATION
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_URL, $url);
@@ -166,7 +214,6 @@ class Analyzer implements AnalyzerInterface {
       curl_close($ch);
       throw new ResourceFailException($error, $errno);
     }
-
   }
 
 }

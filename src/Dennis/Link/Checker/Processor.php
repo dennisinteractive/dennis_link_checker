@@ -40,7 +40,7 @@ class Processor implements ProcessorInterface {
     DrupalReliableQueueInterface $queue,
     EntityHandlerInterface $entity_handler,
     AnalyzerInterface $analyzer) {
-      $this->config = $config;
+      $this->setConfig($config);
       $this->setQueue($queue);
       $this->setEntityHandler($entity_handler);
       $this->setAnalyzer($analyzer);
@@ -51,23 +51,38 @@ class Processor implements ProcessorInterface {
    */
   public function run() {
     // Prevent processing of links when site is in maintenance mode.
-    if (variable_get('maintenance_mode', 0)) {
+    if ($this->inMaintenanceMode()) {
       $this->config->getLogger()->info('Links cannot be processed when the site is in maintenance mode.');
-      return;
+      return FALSE;
     }
 
     $end = time() + $this->timeLimit;
 
     // Remove any old items from the queue.
-    $this->queue->prune();
+    $this->prune();
 
     // Make sure there is something to do.
     $this->ensureEnqueued();
 
     $more = TRUE;
     while ($more && time() < $end) {
-      $more = $this->doNextItem();
+      try {
+        $more = $this->doNextItem();
+      } catch (RequestTimeoutException $e) {
+        // Don't try to process any more items for this run.
+        $this->config->getLogger()->warning($e->getMessage());
+        return FALSE;
+      }
     }
+
+    return TRUE;
+  }
+
+  /**
+   * Whether the site is in maintenance mode.
+   */
+  public function inMaintenanceMode() {
+    return variable_get('maintenance_mode', 0);
   }
 
   /**
@@ -75,6 +90,13 @@ class Processor implements ProcessorInterface {
    */
   public function getQueue() {
     return $this->queue;
+  }
+
+  /**
+   * Removes old items.
+   */
+  public function prune() {
+    $this->getQueue()->prune();
   }
 
   /**
@@ -89,6 +111,13 @@ class Processor implements ProcessorInterface {
    */
   public function getTimeLimit() {
     return $this->timeLimit;
+  }
+
+  /**
+   * @inheritDoc
+   */
+  public function setConfig(ConfigInterface $config) {
+    $this->config = $config;
   }
 
   /**
