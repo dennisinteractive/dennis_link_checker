@@ -67,7 +67,13 @@ class Field implements FieldInterface {
       $result = $query->execute()->fetchObject();
 
       $this->revision_id = $result->revision_id;
-      $this->dom = filter_dom_load($result->{$value_field});
+
+      // Convert all Windows and Mac newlines to a single newline, so filters only
+      // need to deal with one possibility.
+      // This has been copied from check_markup().
+      $value = str_replace(array("\r\n", "\r"), "\n", $result->{$value_field});
+
+      $this->dom = filter_dom_load($value);
     }
 
     return $this->dom;
