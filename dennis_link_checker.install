@@ -1,0 +1,17 @@
+<?php
+
+/**
+ * @file
+ * Install, update, and uninstall hooks for the Dennis Link Checker module.
+ */
+
+/**
+ * Remove &#13;
+ */
+function dennis_link_checker_update_7001() {
+  $result1 = db_query("UPDATE field_data_body SET body_value=replace(body_value, '&#13;', '')");
+  $message1 = $result1->rowCount() . ' rows updated in field_data_body';
+  $result2 = db_query("UPDATE field_revision_body SET body_value=replace(body_value, '&#13;', '')");
+  $message2 = $result2->rowCount() . ' rows updated in field_revision_body';
+  return $message1 . PHP_EOL . $message2;
+}
