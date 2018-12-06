@@ -6,12 +6,17 @@
  */
 
 /**
- * Remove &#13;
+ * Remove &#13; from text fields.
  */
 function dennis_link_checker_update_7001() {
-  $result1 = db_query("UPDATE field_data_body SET body_value=replace(body_value, '&#13;', '')");
-  $message1 = $result1->rowCount() . ' rows updated in field_data_body';
-  $result2 = db_query("UPDATE field_revision_body SET body_value=replace(body_value, '&#13;', '')");
-  $message2 = $result2->rowCount() . ' rows updated in field_revision_body';
-  return $message1 . PHP_EOL . $message2;
+  $messages = array();
+  foreach (variable_get('dennis_link_checker_fields', array('body')) as $field_name) {
+    foreach (array('data', 'revision') as $table_type) {
+      $table = 'field_' . $table_type . '_' . $field_name;
+      $column = $field_name .'_value';
+      $result = db_query("UPDATE $table SET $column = replace($column, '&#13;', '')");
+      $messages[] = $result->rowCount() . ' rows updated in ' . $table;
+    }
+  }
+  return implode($messages, PHP_EOL);
 }
