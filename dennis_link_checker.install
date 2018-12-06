@@ -1,0 +1,22 @@
+<?php
+
+/**
+ * @file
+ * Install, update, and uninstall hooks for the Dennis Link Checker module.
+ */
+
+/**
+ * Remove &#13; from text fields.
+ */
+function dennis_link_checker_update_7001() {
+  $messages = array();
+  foreach (variable_get('dennis_link_checker_fields', array('body')) as $field_name) {
+    foreach (array('data', 'revision') as $table_type) {
+      $table = 'field_' . $table_type . '_' . $field_name;
+      $column = $field_name .'_value';
+      $result = db_query("UPDATE $table SET $column = replace($column, '&#13;', '')");
+      $messages[] = $result->rowCount() . ' rows updated in ' . $table;
+    }
+  }
+  return implode($messages, PHP_EOL);
+}
