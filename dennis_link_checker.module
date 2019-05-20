@@ -1,68 +1,151 @@
 <?php
 /**
  * @file
+ * dennis_link_checker.module
  */
 
-use Dennis\Link\Checker\Config;
-use Dennis\Link\Checker\Logger;
-use Dennis\Link\Checker\LinkLocalisation;
-use Dennis\Link\Checker\Processor;
-use Dennis\Link\Checker\EntityHandler;
-use Dennis\Link\Checker\Analyzer;
-use Dennis\Link\Checker\Throttler;
-use Dennis\Link\Checker\Database;
-use Dennis\Link\Checker\Queue;
+// @TODO: menu callback - admin overview page with form to run link checker - form should contain text field allowing entering of comma-separated NIDs
+// @TODO: menu callback - run link checker callback as batch job
+// @TODO: admin page template
+// @TODO: this module really needs to keep track of when it last checked each node so we can implement a strategy to only check each node once every few days, and we can also
+// split the runs up in cron, etc. I don't think the variable table is a great
+// way to do this because we're going to end up writing kilobytes of serialised
+// data into the status array.
 
 /**
- * PSR-4 autoloader
- * files[] in .info doesn't find them.
+ * Include constants.
  */
-spl_autoload_register(function ($class) {
-  if (strpos($class, 'Dennis\Link\Checker') === 0) {
-    if (file_exists((__DIR__ . '/src/' . str_replace('\\', '/', $class) . '.php'))) {
-      include(__DIR__ . '/src/' . str_replace('\\', '/', $class) . '.php');
-    }
-  }
-});
+require 'dennis_link_checker.constants.inc';
 
 /**
- * Setup the link processor.
- *
- * @param array $nids
- * @return \Dennis\Link\Checker\ProcessorInterface
+ * Include the API functions.
  */
-function dennis_link_checker_setup(array $nids) {
-  $site_host = parse_url(dennis_ga_get_live_url(), PHP_URL_HOST);
-  $config = (new Config())
-    ->setLogger((new Logger())->setVerbosity(Logger::VERBOSITY_HIGH))
-    ->setSiteHost($site_host)
-    ->setMaxRedirects(10)
-    ->setInternalOnly(TRUE)
-    ->setLocalisation(LinkLocalisation::ORIGINAL)
-    ->setFieldNames(variable_get('dennis_link_checker_fields', array('body')))
-    ->setNodeList($nids);
+require 'dennis_link_checker.api.inc';
 
-  $queue = new Queue('dennis_link_checker');
-  $entity_handler = new EntityHandler($config);
+/**
+ * Implements hook_permission().
+ */
+function dennis_link_checker_permission() {
+  $return = [];
 
-  // Make sure we don't request more than one page per second.
-  $curl_throttler = new Throttler(1);
+  $return[DENNIS_LINK_CHECKER_PERMISSION_ACCESS_LINK_CHECKER_OVERVIEW] = [
+    'title' => DENNIS_LINK_CHECKER_PERMISSION_ACCESS_LINK_CHECKER_OVERVIEW_LABEL,
+  ];
 
-  // Database object that allows interaction with the DB.
-  $database = new Database();
+  $return[DENNIS_LINK_CHECKER_PERMISSION_CONFIGURE_LINK_CHECKER] = [
+    'title' => DENNIS_LINK_CHECKER_PERMISSION_CONFIGURE_LINK_CHECKER_LABEL,
+  ];
 
-  $analyzer = new Analyzer($config, $curl_throttler, $database);
+  $return[DENNIS_LINK_CHECKER_PERMISSION_RUN_LINK_CHECKER] = [
+    'title' => DENNIS_LINK_CHECKER_PERMISSION_RUN_LINK_CHECKER_LABEL,
+  ];
 
-  return new Processor($config, $queue, $entity_handler, $analyzer);
+  return $return;
 }
 
 /**
- * Run the link checker queue.
- *
- * @param array $nids
+ * Implements hook_cron().
  */
-function dennis_link_checker_run(array $nids) {
-  $processor = dennis_link_checker_setup($nids);
-  //$processor->setTimeLimit(20); // temporarily low time limit.
-  $processor->run();
+function dennis_link_checker_cron() {
+  // Run the link checker if enough time has passed since the last run
+  // completed, or if we've skipped enough runs that it's time to force a run.
+  // I hate being forced to run...
+
+  // Find out when the last run completed.
+  $link_checker_last_run_timestamp = variable_get(DENNIS_LINK_CHECKER_VARIABLE_LAST_COMPLETED_TIME, DENNIS_LINK_CHECKER_LAST_COMPLETED_TIME_DEFAULT);
+
+  // Get the time interval between runs.
+  $link_checker_run_interval = variable_get(DENNIS_LINK_CHECKER_VARIABLE_RUN_INTERVAL, DENNIS_LINK_CHECKER_RUN_INTERVAL_DEFAULT);
+
+  // If the last run was completed fewer than
+  // DENNIS_LINK_CHECKER_VARIABLE_RUN_INTERVAL seconds ago, it's definitely not
+  // time to re-run, so return.
+  if (($link_checker_last_run_timestamp + $link_checker_run_interval) > REQUEST_TIME) {
+    // Next run is in the future.
+    return;
+  }
+
+  // A run is due to take place. First, check if a run is currently underway.
+  // If it is, we need to work out whether we should skip or force a run.
+  if (variable_get(DENNIS_LINK_CHECKER_VARIABLE_IS_RUNNING, DENNIS_LINK_CHECKER_IS_RUNNING_DEFAULT)) {
+    // Link checker is marked as running. When did we last skip a run?
+    $link_checker_last_run_skipped_timestamp = variable_get(DENNIS_LINK_CHECKER_VARIABLE_LAST_SKIPPED_TIME, DENNIS_LINK_CHECKER_LAST_SKIPPED_TIME_DEFAULT);
+
+    if (($link_checker_last_run_skipped_timestamp + $link_checker_run_interval) > REQUEST_TIME) {
+      // Last skipped run was less than the run interval seconds ago, so we
+      // don't need to do anything now.
+      return;
+    }
+
+    // Update the skipped timestamp to now.
+    variable_set(DENNIS_LINK_CHECKER_VARIABLE_LAST_SKIPPED_TIME, REQUEST_TIME);
+
+    // Increment the skip counter.
+    $link_checker_number_runs_skipped = variable_get(DENNIS_LINK_CHECKER_VARIABLE_NUMBER_RUNS_SKIPPED, DENNIS_LINK_CHECKER_NUMBER_RUNS_SKIPPED_DEFAULT);
+    $link_checker_number_runs_skipped++;
+    variable_set(DENNIS_LINK_CHECKER_VARIABLE_NUMBER_RUNS_SKIPPED, $link_checker_number_runs_skipped);
+
+    // Have we skipped enough runs that we now need to force a run?
+    if ($link_checker_number_runs_skipped < variable_get(DENNIS_LINK_CHECKER_VARIABLE_FORCE_RUN_AFTER_X_SKIPS, DENNIS_LINK_CHECKER_FORCE_RUN_AFTER_X_SKIPS_DEFAULT)) {
+      // No - return.
+      return;
+    }
+  }
+
+  // If we made it here, link checker needs to run.
+  dennis_link_checker_run();
+}
+
+/**
+ * Implements hook_theme().
+ */
+function dennis_link_checker_theme($existing, $type, $theme, $path) {
+  $return = [];
+
+  // The administration overview page with a button to run the link checker.
+  $return[DENNIS_LINK_CHECKER_MODULE_NAME . '_overview_page'] = [
+    'variables' => [], //_dennis_link_checker_last_run_statistics_default(),
+    'template' => 'dennis-link-checker-admin-overview-page',
+    'path' => drupal_get_path('module', DENNIS_LINK_CHECKER_MODULE_NAME) . '/templates',
+  ];
+
+  return $return;
+}
+
+/**
+ * Implements hook_menu().
+ */
+function dennis_link_checker_menu() {
+  $items = [];
+
+  // Link checker main menu entry.
+  $items[DENNIS_LINK_CHECKER_ADMINISTRATION_PATH_ROOT] = [
+    'title' => 'Dennis Link Checker',
+    'description' => 'The Dennis Link Checker module.',
+    'type' => MENU_NORMAL_ITEM,
+    'access arguments' => [DENNIS_LINK_CHECKER_PERMISSION_ACCESS_LINK_CHECKER_OVERVIEW],
+    'page callback' => DENNIS_LINK_CHECKER_MODULE_NAME . '_callback_overview_page',
+    'file' => 'dennis_link_checker.admin.inc',
+  ];
+
+  // Link checker overview/run page (default menu tab).
+  $items[DENNIS_LINK_CHECKER_ADMINISTRATION_PATH_ROOT . '/overview'] = [
+    'title' => 'Overview',
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+  ];
+
+  // Link checker config page (menu tab).
+  $items[DENNIS_LINK_CHECKER_ADMINISTRATION_PATH_ROOT . '/config'] = [
+    'title' => 'Configuration',
+    'type' => MENU_LOCAL_TASK,
+    'access arguments' => [DENNIS_LINK_CHECKER_PERMISSION_CONFIGURE_LINK_CHECKER],
+    'page callback' => 'drupal_get_form',
+    'page arguments' => [DENNIS_LINK_CHECKER_MODULE_NAME . '_callback_config_form'],
+    'file' => 'dennis_link_checker.admin.inc',
+  ];
+
+  // Link checker run batch callback URL (callback).
+  // Not needed?
+
+  return $items;
 }

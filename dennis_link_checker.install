@@ -6,17 +6,95 @@
  */
 
 /**
+ * Include constants.
+ */
+require 'dennis_link_checker.constants.inc';
+
+/**
+ * Implements hook_install().
+ */
+function dennis_link_checker_install() {
+  // Initialise module variables.
+  variable_set(DENNIS_LINK_CHECKER_VARIABLE_TIME_LIMIT, DENNIS_LINK_CHECKER_TIME_LIMIT_DEFAULT);
+  variable_set(DENNIS_LINK_CHECKER_VARIABLE_RUN_INTERVAL, DENNIS_LINK_CHECKER_RUN_INTERVAL_DEFAULT);
+  variable_set(DENNIS_LINK_CHECKER_VARIABLE_LAST_STARTED_TIME, DENNIS_LINK_CHECKER_LAST_STARTED_TIME_DEFAULT);
+  variable_set(DENNIS_LINK_CHECKER_VARIABLE_IS_RUNNING, DENNIS_LINK_CHECKER_IS_RUNNING_DEFAULT);
+  variable_set(DENNIS_LINK_CHECKER_VARIABLE_LAST_COMPLETED_TIME, DENNIS_LINK_CHECKER_LAST_COMPLETED_TIME_DEFAULT);
+  variable_set(DENNIS_LINK_CHECKER_VARIABLE_LAST_SKIPPED_TIME, DENNIS_LINK_CHECKER_LAST_SKIPPED_TIME_DEFAULT);
+  variable_set(DENNIS_LINK_CHECKER_VARIABLE_NUMBER_RUNS_SKIPPED, DENNIS_LINK_CHECKER_NUMBER_RUNS_SKIPPED_DEFAULT);
+  variable_set(DENNIS_LINK_CHECKER_VARIABLE_FORCE_RUN_AFTER_X_SKIPS, DENNIS_LINK_CHECKER_FORCE_RUN_AFTER_X_SKIPS_DEFAULT);
+  variable_set(DENNIS_LINK_CHECKER_VARIABLE_LAST_RUN_STATISTICS, DENNIS_LINK_CHECKER_LAST_RUN_STATISTICS_DEFAULT);
+
+  // Grant administrator permissions.
+  dennis_link_checker_grant_administrator_permissions();
+}
+
+/**
+ * Empty update function.
+ */
+function dennis_link_checker_update_7000() {
+}
+
+/**
  * Remove &#13; from text fields.
  */
 function dennis_link_checker_update_7001() {
-  $messages = array();
-  foreach (variable_get('dennis_link_checker_fields', array('body')) as $field_name) {
-    foreach (array('data', 'revision') as $table_type) {
+  $messages = [];
+  foreach (variable_get('dennis_link_checker_fields', ['body']) as $field_name) {
+    foreach (['data', 'revision'] as $table_type) {
       $table = 'field_' . $table_type . '_' . $field_name;
-      $column = $field_name .'_value';
+      $column = $field_name . '_value';
       $result = db_query("UPDATE $table SET $column = replace($column, '&#13;', '')");
       $messages[] = $result->rowCount() . ' rows updated in ' . $table;
     }
   }
+
   return implode($messages, PHP_EOL);
+}
+
+/**
+ * Grant administrator permissions.
+ */
+function dennis_link_checker_update_7002(&$sandbox) {
+  // Grant administrator permissions.
+  if (dennis_link_checker_grant_administrator_permissions()) {
+    return t('Done!');
+  }
+  else {
+    return t("Couldn't find the administrator role, or the role couldn't be updated. D'oh.");
+  }
+}
+
+/**
+ * Implements hook_uninstall().
+ */
+function dennis_link_checker_uninstall() {
+  // Remove module variables.
+  variable_del(DENNIS_LINK_CHECKER_VARIABLE_TIME_LIMIT);
+  variable_del(DENNIS_LINK_CHECKER_VARIABLE_RUN_INTERVAL);
+  variable_del(DENNIS_LINK_CHECKER_VARIABLE_LAST_STARTED_TIME);
+  variable_del(DENNIS_LINK_CHECKER_VARIABLE_IS_RUNNING);
+  variable_del(DENNIS_LINK_CHECKER_VARIABLE_LAST_COMPLETED_TIME);
+  variable_del(DENNIS_LINK_CHECKER_VARIABLE_LAST_SKIPPED_TIME);
+  variable_del(DENNIS_LINK_CHECKER_VARIABLE_NUMBER_RUNS_SKIPPED);
+  variable_del(DENNIS_LINK_CHECKER_VARIABLE_FORCE_RUN_AFTER_X_SKIPS);
+  variable_del(DENNIS_LINK_CHECKER_VARIABLE_LAST_RUN_STATISTICS);
+}
+
+/**
+ * Grant administrator permissions on install and when updating existing sites.
+ */
+function dennis_link_checker_grant_administrator_permissions() {
+  if ($administrator_role = user_role_load_by_name('administrator')) {
+    user_role_grant_permissions($administrator_role->rid, [
+      DENNIS_LINK_CHECKER_PERMISSION_ACCESS_LINK_CHECKER_OVERVIEW,
+      DENNIS_LINK_CHECKER_PERMISSION_RUN_LINK_CHECKER,
+      DENNIS_LINK_CHECKER_PERMISSION_CONFIGURE_LINK_CHECKER,
+    ]);
+
+    return TRUE;
+  }
+
+  // Role not found. D'oh.
+  return FALSE;
 }

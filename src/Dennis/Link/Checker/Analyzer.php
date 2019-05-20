@@ -100,7 +100,7 @@ class Analyzer implements AnalyzerInterface {
   public function link(LinkInterface $link) {
     $this->throttle();
 
-    // Only redirect 301's so cannot use CURLOPT_FOLLOWLOCATION
+    // Only redirect 301s so cannot use CURLOPT_FOLLOWLOCATION
     $this->redirectCount = 0;
 
     $src = trim($link->originalHref());
@@ -194,7 +194,7 @@ class Analyzer implements AnalyzerInterface {
    * @throws ResourceFailException
    */
   protected function doInfoRequest($url) {
-    // Only redirect 301's so cannot use CURLOPT_FOLLOWLOCATION
+    // Only redirect 301s so cannot use CURLOPT_FOLLOWLOCATION
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_URL, $url);
     curl_setopt($ch, CURLOPT_USERAGENT, 'dennis_link_checker');
@@ -215,5 +215,4 @@ class Analyzer implements AnalyzerInterface {
       throw new ResourceFailException($error, $errno);
     }
   }
-
 }
