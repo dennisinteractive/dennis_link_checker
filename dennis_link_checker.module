@@ -4,14 +4,6 @@
  * dennis_link_checker.module
  */
 
-// @TODO: menu callback - admin overview page with form to run link checker - form should contain text field allowing entering of comma-separated NIDs
-// @TODO: menu callback - run link checker callback as batch job
-// @TODO: admin page template
-// @TODO: this module really needs to keep track of when it last checked each node so we can implement a strategy to only check each node once every few days, and we can also
-// split the runs up in cron, etc. I don't think the variable table is a great
-// way to do this because we're going to end up writing kilobytes of serialised
-// data into the status array.
-
 use Dennis\Link\Checker\Config;
 use Dennis\Link\Checker\Logger;
 use Dennis\Link\Checker\LinkLocalisation;
