@@ -67,21 +67,29 @@ function dennis_link_checker_setup(array $nids) {
  * @param array $node_ids
  *   An array of node IDs to check.
  *
+ * @param null|int $time_limit
+ *   Override the time limit to X seconds.
+ *
  * @return \Dennis\Link\Checker\ProcessorInterface
  */
-function dennis_link_checker_run(array $node_ids = []) {
+function dennis_link_checker_run(array $node_ids = [], $time_limit = NULL) {
   // Set the "is running" flag and last started timestamp.
   variable_set(DENNIS_LINK_CHECKER_VARIABLE_IS_RUNNING, TRUE);
   variable_set(DENNIS_LINK_CHECKER_VARIABLE_LAST_STARTED_TIME, REQUEST_TIME);
 
-  $link_checker_processor = dennis_link_checker_setup($node_ids);
+  $processor = dennis_link_checker_setup($node_ids);
 
   // Remove any already-queued items.
-  $link_checker_processor->getQueue()->removeAll();
+  $processor->getQueue()->removeAll();
 
-  $link_checker_processor->setTimeLimit(variable_get(DENNIS_LINK_CHECKER_VARIABLE_TIME_LIMIT, DENNIS_LINK_CHECKER_TIME_LIMIT_DEFAULT));
+  if (!is_null($time_limit) && is_numeric($time_limit)) {
+    $processor->setTimeLimit($time_limit);
+  }
+  else {
+    $processor->setTimeLimit(variable_get(DENNIS_LINK_CHECKER_VARIABLE_TIME_LIMIT, DENNIS_LINK_CHECKER_TIME_LIMIT_DEFAULT));
+  }
 
-  $link_checker_processor->run();
+  $processor->run();
 
   // Un-set the "is running" flag and set the last completed timestamp.
   // Note that we use time() and not REQUEST_TIME as these two values can vary
@@ -93,7 +101,7 @@ function dennis_link_checker_run(array $node_ids = []) {
   variable_set(DENNIS_LINK_CHECKER_VARIABLE_NUMBER_RUNS_SKIPPED, DENNIS_LINK_CHECKER_NUMBER_RUNS_SKIPPED_DEFAULT);
 
   // Record statistics.
-  $statistics_array_dump = $link_checker_processor->getAnalyzer()->getStatistics();
+  $statistics_array_dump = $processor->getAnalyzer()->getStatistics();
 
   // At this point, $statistics_array_dump could be a MASSIVE array of arrays
   // - we don't want to try and stuff this into {variable} because Drupal will
@@ -118,19 +126,19 @@ function dennis_link_checker_run(array $node_ids = []) {
     unset($statistics_array['previous_run']['previous_run']);
   }
 
-//  $statistics_array['number_checked'] = $link_checker_processor->getNumberChecked();
-//  $statistics_array['links_updated'] = count($link_checker_processor->getLinksUpdated());
-//  $statistics_array['links_not_updated'] = count($link_checker_processor->getLinksNotUpdated());
-//  $statistics_array['links_deleted'] = count($link_checker_processor->getLinksDeleted());
-//  $statistics_array['errors_encountered'] = count($link_checker_processor->getErrorsEncountered());
-//  $statistics_array['404s_found'] = count($link_checker_processor->getNotFounds());
-//  $statistics_array['404s_removed'] = count($link_checker_processor->getNotFoundsFixed());
-//  $statistics_array['redirect_loops_found'] = count($link_checker_processor->getRedirectLoopsFound());
-//  $statistics_array['redirect_loops_removed'] = count($link_checker_processor->getRedirectLoopsRemoved());
+//  $statistics_array['number_checked'] = $processor->getNumberChecked();
+//  $statistics_array['links_updated'] = count($processor->getLinksUpdated());
+//  $statistics_array['links_not_updated'] = count($processor->getLinksNotUpdated());
+//  $statistics_array['links_deleted'] = count($processor->getLinksDeleted());
+//  $statistics_array['errors_encountered'] = count($processor->getErrorsEncountered());
+//  $statistics_array['404s_found'] = count($processor->getNotFounds());
+//  $statistics_array['404s_removed'] = count($processor->getNotFoundsFixed());
+//  $statistics_array['redirect_loops_found'] = count($processor->getRedirectLoopsFound());
+//  $statistics_array['redirect_loops_removed'] = count($processor->getRedirectLoopsRemoved());
 
   variable_set(DENNIS_LINK_CHECKER_VARIABLE_LAST_RUN_STATISTICS, $statistics_array);
 
-  return $link_checker_processor;
+  return $processor;
 }
 
 /**
