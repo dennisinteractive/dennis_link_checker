@@ -223,8 +223,9 @@ function dennis_link_checker_overview_page_run_form_submit($form, &$form_state) 
   $node_ids_to_check = [];
   if (!empty($form_state['values']['node_ids_to_check'])) {
     $node_ids_to_check = explode(',', $form_state['values']['node_ids_to_check']);
-    $_SESSION[DENNIS_LINK_CHECKER_MODULE_NAME]['node_ids_to_check'] = $form_state['values']['node_ids_to_check'];
   }
+
+  $_SESSION[DENNIS_LINK_CHECKER_MODULE_NAME]['node_ids_to_check'] = $form_state['values']['node_ids_to_check'];
 
   // Run tings.
   $link_checker_processor = dennis_link_checker_run($node_ids_to_check);
