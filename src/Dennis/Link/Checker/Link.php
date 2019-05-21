@@ -23,6 +23,20 @@ class Link implements LinkInterface {
   }
 
   /**
+   * @return array
+   */
+  public function getData() {
+    return $this->data;
+  }
+
+  /**
+   * @param array $data
+   */
+  public function setData($data) {
+    $this->data = $data;
+  }
+
+  /**
    * @inheritDoc
    */
   public function getConfig() {
@@ -46,8 +60,8 @@ class Link implements LinkInterface {
   /**
    * @inheritDoc
    */
-  public function setNumberOfRedirects($int) {
-    $this->data['redirect_count'] = (int) $int;
+  public function setNumberOfRedirects($redirect_count) {
+    $this->data['redirect_count'] = (int) $redirect_count;
 
     return $this;
   }
@@ -198,6 +212,7 @@ class Link implements LinkInterface {
    * @inheritDoc
    */
   public function setError($code, $msg) {
+    // @TODO: add details of the error to the stats here?
     $this->data['error']['code'] = $code;
     $this->data['error']['msg'] = $msg;
 

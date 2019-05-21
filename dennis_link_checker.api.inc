@@ -56,7 +56,7 @@ function dennis_link_checker_setup(array $nids) {
   // Database object that allows interaction with the DB.
   $database = new Database();
 
-  $analyzer = new Analyzer($config, $curl_throttler, $database);
+  $analyzer = new Analyzer($config, $curl_throttler, $database, _dennis_link_checker_last_run_statistics_default());
 
   return new Processor($config, $queue, $entity_handler, $analyzer);
 }
@@ -76,6 +76,9 @@ function dennis_link_checker_run(array $node_ids = []) {
 
   $link_checker_processor = dennis_link_checker_setup($node_ids);
 
+  // Remove any already-queued items.
+  $link_checker_processor->getQueue()->removeAll();
+
   $link_checker_processor->setTimeLimit(variable_get(DENNIS_LINK_CHECKER_VARIABLE_TIME_LIMIT, DENNIS_LINK_CHECKER_TIME_LIMIT_DEFAULT));
 
   $link_checker_processor->run();
@@ -90,18 +93,40 @@ function dennis_link_checker_run(array $node_ids = []) {
   variable_set(DENNIS_LINK_CHECKER_VARIABLE_NUMBER_RUNS_SKIPPED, DENNIS_LINK_CHECKER_NUMBER_RUNS_SKIPPED_DEFAULT);
 
   // Record statistics.
-  $statistics_array = _dennis_link_checker_last_run_statistics_default();
+  $statistics_array_dump = $link_checker_processor->getAnalyzer()->getStatistics();
+
+  // At this point, $statistics_array_dump could be a MASSIVE array of arrays
+  // - we don't want to try and stuff this into {variable} because Drupal will
+  // choke, so we will turn it into counts only, but we might want to come back
+  // at some point and find a way of exporting this data as a report, perhaps?
+
+  // Turn the raw dump into a series of counts.
+  $statistics_array = [];
+  foreach ($statistics_array_dump as $key => $value) {
+    if (is_array($value)) {
+      $statistics_array[$key] = count($value);
+    }
+    else {
+      $statistics_array[$key] = $value;
+    }
+  }
+
   $statistics_array['previous_run'] = _dennis_link_checker_last_run_statistics();
 
-  $statistics_array['number_checked'] = $link_checker_processor->getNumberChecked();
-  $statistics_array['links_updated'] = count($link_checker_processor->getLinksUpdated());
-  $statistics_array['links_not_updated'] = count($link_checker_processor->getLinksNotUpdated());
-  $statistics_array['links_deleted'] = count($link_checker_processor->getLinksDeleted());
-  $statistics_array['errors_encountered'] = count($link_checker_processor->getErrorsEncountered());
-  $statistics_array['404s_found'] = count($link_checker_processor->getNotFounds());
-  $statistics_array['404s_removed'] = count($link_checker_processor->getNotFoundsFixed());
-  $statistics_array['redirect_loops_found'] = count($link_checker_processor->getRedirectLoopsFound());
-  $statistics_array['redirect_loops_removed'] = count($link_checker_processor->getRedirectLoopsRemoved());
+  // Don't allow a recursive loop of previous_run dataception to build up.
+  if (!empty($statistics_array['previous_run']['previous_run'])) {
+    unset($statistics_array['previous_run']['previous_run']);
+  }
+
+//  $statistics_array['number_checked'] = $link_checker_processor->getNumberChecked();
+//  $statistics_array['links_updated'] = count($link_checker_processor->getLinksUpdated());
+//  $statistics_array['links_not_updated'] = count($link_checker_processor->getLinksNotUpdated());
+//  $statistics_array['links_deleted'] = count($link_checker_processor->getLinksDeleted());
+//  $statistics_array['errors_encountered'] = count($link_checker_processor->getErrorsEncountered());
+//  $statistics_array['404s_found'] = count($link_checker_processor->getNotFounds());
+//  $statistics_array['404s_removed'] = count($link_checker_processor->getNotFoundsFixed());
+//  $statistics_array['redirect_loops_found'] = count($link_checker_processor->getRedirectLoopsFound());
+//  $statistics_array['redirect_loops_removed'] = count($link_checker_processor->getRedirectLoopsRemoved());
 
   variable_set(DENNIS_LINK_CHECKER_VARIABLE_LAST_RUN_STATISTICS, $statistics_array);
 
@@ -134,7 +159,7 @@ function _dennis_link_checker_get_skip_options() {
 function _dennis_link_checker_last_run_statistics_default() {
   /**
    * Last run statistics - array:
-   * - number of nodes checked
+   * - number of links checked
    * - number redirects updated successfully
    * - number errors encountered
    * - number 404s found
@@ -238,12 +263,36 @@ function _dennis_link_checker_time_limit_options($option_value_to_get_label_for 
     DENNIS_LINK_CHECKER_TIME_LIMIT_02MINS => t(DENNIS_LINK_CHECKER_TIME_LIMIT_02MINS_LABEL),
     DENNIS_LINK_CHECKER_TIME_LIMIT_04MINS => t(DENNIS_LINK_CHECKER_TIME_LIMIT_04MINS_LABEL),
     DENNIS_LINK_CHECKER_TIME_LIMIT_08MINS => t(DENNIS_LINK_CHECKER_TIME_LIMIT_08MINS_LABEL),
-    DENNIS_LINK_CHECKER_TIME_LIMIT_16MINS => t(DENNIS_LINK_CHECKER_TIME_LIMIT_16MINS_LABEL),
-    DENNIS_LINK_CHECKER_TIME_LIMIT_32MINS => t(DENNIS_LINK_CHECKER_TIME_LIMIT_32MINS_LABEL),
   ];
 
   // Implement hook_dennis_link_checker_time_limit_options_alter().
   drupal_alter('dennis_link_checker_time_limit_options', $options);
+
+  // If we have an option value to get a label for, just return that label.
+  if (!empty($option_value_to_get_label_for)
+    && array_key_exists($option_value_to_get_label_for, $options)) {
+    return $options[$option_value_to_get_label_for];
+  }
+
+  return $options;
+}
+
+/**
+ * Get an array of check frequency options.
+ *
+ * @return array
+ */
+function _dennis_link_checker_check_frequency_options($option_value_to_get_label_for = NULL) {
+  $options = [
+    DENNIS_LINK_CHECKER_CHECK_FREQUENCY_01DAYS => t(DENNIS_LINK_CHECKER_CHECK_FREQUENCY_01DAYS_LABEL),
+    DENNIS_LINK_CHECKER_CHECK_FREQUENCY_02DAYS => t(DENNIS_LINK_CHECKER_CHECK_FREQUENCY_02DAYS_LABEL),
+    DENNIS_LINK_CHECKER_CHECK_FREQUENCY_04DAYS => t(DENNIS_LINK_CHECKER_CHECK_FREQUENCY_04DAYS_LABEL),
+    DENNIS_LINK_CHECKER_CHECK_FREQUENCY_07DAYS => t(DENNIS_LINK_CHECKER_CHECK_FREQUENCY_07DAYS_LABEL),
+    DENNIS_LINK_CHECKER_CHECK_FREQUENCY_14DAYS => t(DENNIS_LINK_CHECKER_CHECK_FREQUENCY_14DAYS_LABEL),
+  ];
+
+  // Implement hook_dennis_link_checker_check_frequency_options_alter().
+  drupal_alter('dennis_link_checker_check_frequency_options', $options);
 
   // If we have an option value to get a label for, just return that label.
   if (!empty($option_value_to_get_label_for)

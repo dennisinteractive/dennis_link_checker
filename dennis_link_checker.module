@@ -12,15 +12,37 @@
 // way to do this because we're going to end up writing kilobytes of serialised
 // data into the status array.
 
+use Dennis\Link\Checker\Config;
+use Dennis\Link\Checker\Logger;
+use Dennis\Link\Checker\LinkLocalisation;
+use Dennis\Link\Checker\Processor;
+use Dennis\Link\Checker\EntityHandler;
+use Dennis\Link\Checker\Analyzer;
+use Dennis\Link\Checker\Throttler;
+use Dennis\Link\Checker\Database;
+use Dennis\Link\Checker\Queue;
+
+/**
+ * PSR-4 autoloader
+ * files[] in .info doesn't find them.
+ */
+spl_autoload_register(function ($class) {
+  if (strpos($class, 'Dennis\Link\Checker') === 0) {
+    if (file_exists((__DIR__ . '/src/' . str_replace('\\', '/', $class) . '.php'))) {
+      include(__DIR__ . '/src/' . str_replace('\\', '/', $class) . '.php');
+    }
+  }
+});
+
 /**
  * Include constants.
  */
-require 'dennis_link_checker.constants.inc';
+require_once 'dennis_link_checker.constants.inc';
 
 /**
  * Include the API functions.
  */
-require 'dennis_link_checker.api.inc';
+require_once 'dennis_link_checker.api.inc';
 
 /**
  * Implements hook_permission().

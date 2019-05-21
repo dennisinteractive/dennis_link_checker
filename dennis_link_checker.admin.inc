@@ -11,8 +11,10 @@
  * Build the output for the administration overview page.
  */
 function dennis_link_checker_callback_overview_page() {
-  // Have we received a POST from the run form? If yes, we need to (redirect
-  // to) run the link checker.
+  // Check if the database table is available.
+  if (!db_table_exists('dennis_link_checker_checked_nodes')) {
+    drupal_set_message(t('Database schema not installed for dennis_link_checker - please run database updates.'), 'error');
+  }
 
   $variables = [];
 
@@ -58,11 +60,20 @@ function dennis_link_checker_callback_overview_page() {
     '@value' => implode(', ', explode(',', variable_get(DENNIS_LINK_CHECKER_VARIABLE_FIELDS_TO_CHECK, _dennis_link_checker_fields_to_check_default_field_names()))),
   ]);
 
+  // Hmm... Can't use the Queue class without adding a Use statement at the
+  // top of the file. Need to check with the D8 devs how to do this correctly...
+
+//  // Queue size.
+//  $queue = new Queue('dennis_link_checker');
+//  $variables['queue_size'] = t('Number of fields queued for link checking: <em>@value</em>', [
+//    '@value' => $queue->count(),
+//  ]);
+
   // Last run statistics.
   $last_run_stats_variables = _dennis_link_checker_last_run_statistics('@');
 
   $last_run_stats_rows = [];
-  $last_run_stats_rows[] = t('Number of nodes checked: @number_checked', $last_run_stats_variables);
+  $last_run_stats_rows[] = t('Number of links checked: @number_checked', $last_run_stats_variables);
   $last_run_stats_rows[] = t('Redirects updated: @links_updated', $last_run_stats_variables);
   $last_run_stats_rows[] = t('Errors encountered: @errors_encountered', $last_run_stats_variables);
   $last_run_stats_rows[] = t('404 "page not found" errors encountered: @404s_found', $last_run_stats_variables);
@@ -91,6 +102,13 @@ function dennis_link_checker_callback_overview_page() {
  */
 function dennis_link_checker_callback_config_form() {
   $form = [];
+
+  $form[DENNIS_LINK_CHECKER_VARIABLE_CHECK_FREQUENCY] = [
+    '#title' => t("How long should we wait between checking each piece of content's links?"),
+    '#type' => 'select',
+    '#options' => _dennis_link_checker_check_frequency_options(),
+    '#default_value' => variable_get(DENNIS_LINK_CHECKER_VARIABLE_CHECK_FREQUENCY, DENNIS_LINK_CHECKER_CHECK_FREQUENCY_DEFAULT),
+  ];
 
   $form[DENNIS_LINK_CHECKER_VARIABLE_TIME_LIMIT] = [
     '#title' => t('Time limit for each run:'),
@@ -212,7 +230,7 @@ function dennis_link_checker_overview_page_run_form_submit($form, &$form_state) 
   $link_checker_processor = dennis_link_checker_run($node_ids_to_check);
 
   // Set a success or error drupal_message().
-  // @TODO.
-
-  $monkeys = TRUE;
+  drupal_set_message(t('Link Checker run completed. Please review the "Last Run Statistics" on the !link_checker_overview_page.', [
+    '!link_checker_overview_page' => l(t('link checker overview page'), DENNIS_LINK_CHECKER_ADMINISTRATION_PATH_ROOT),
+  ]));
 }

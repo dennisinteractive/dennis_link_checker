@@ -8,7 +8,7 @@
 /**
  * Include constants.
  */
-require 'dennis_link_checker.constants.inc';
+require_once 'dennis_link_checker.constants.inc';
 
 /**
  * Implements hook_install().
@@ -27,6 +27,17 @@ function dennis_link_checker_install() {
 
   // Grant administrator permissions.
   dennis_link_checker_grant_administrator_permissions();
+}
+
+/**
+ * Implements hook_schema().
+ */
+function dennis_link_checker_schema() {
+  $schema = [];
+
+  $schema['dennis_link_checker_checked_nodes'] = dennis_link_checker_checked_nodes_table_schema();
+
+  return $schema;
 }
 
 /**
@@ -66,6 +77,15 @@ function dennis_link_checker_update_7002(&$sandbox) {
 }
 
 /**
+ * Install the module's database schema.
+ */
+function dennis_link_checker_update_7003() {
+  if (!db_table_exists('dennis_link_checker_checked_nodes')) {
+    db_create_table('dennis_link_checker_checked_nodes', dennis_link_checker_checked_nodes_table_schema());
+  }
+}
+
+/**
  * Implements hook_uninstall().
  */
 function dennis_link_checker_uninstall() {
@@ -97,4 +117,61 @@ function dennis_link_checker_grant_administrator_permissions() {
 
   // Role not found. D'oh.
   return FALSE;
+}
+
+/**
+ * Schema definition for {dennis_link_checker_checked_nodes_table}.
+ *
+ * @return array
+ * @see dennis_link_checker_schema()
+ *
+ */
+function dennis_link_checker_checked_nodes_table_schema() {
+  return [
+    'description' => "A list of the checked fields for each node, and when they were last checked by the link checker.",
+    'fields' => [
+      'nid' => [
+        'description' => 'The primary identifier for a node.',
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ],
+      'vid' => [
+        'description' => 'The current {node_revision}.vid version identifier.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ],
+      'field_name' => [
+        'description' => 'The name of the checked field.',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+      ],
+      'last_checked' => [
+        'description' => 'Timestamp denoting when the links in this node field were last checked.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ],
+    ],
+    'indexes' => [
+      'last_checked' => [
+        'last_checked',
+      ],
+      'vid' => [
+        'vid',
+      ],
+    ],
+    'unique keys' => [
+      'nid_vid_field_name' => [
+        'nid',
+        'vid',
+        'field_name',
+      ],
+    ],
+  ];
 }

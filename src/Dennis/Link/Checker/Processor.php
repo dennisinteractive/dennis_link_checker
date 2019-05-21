@@ -128,13 +128,11 @@ class Processor implements ProcessorInterface {
     return $this->redirectLoopsRemoved;
   }
 
-  // @TODO: finish these.
-
   /**
    * ProcessorInterface constructor.
    *
    * @param \Dennis\Link\Checker\ConfigInterface $config
-   * @param \DrupalReliableQueueInterface $queue
+   * @param \Dennis\Link\Checker\QueueInterface $queue
    * @param \Dennis\Link\Checker\EntityHandlerInterface $entity_handler
    * @param \Dennis\Link\Checker\AnalyzerInterface $analyzer
    */
@@ -162,15 +160,16 @@ class Processor implements ProcessorInterface {
     $end = time() + $this->timeLimit;
 
     // Remove any old items from the queue.
-    $this->prune();
+    $this->getQueue()->removeAll();
 
     // Make sure there is something to do.
     $this->ensureEnqueued();
 
-    $more = TRUE;
-    while ($more && time() < $end) {
+    $ok_to_continue = TRUE;
+
+    while ($ok_to_continue && (time() < $end)) {
       try {
-        $more = $this->doNextItem();
+        $ok_to_continue = $this->doNextItem();
       } catch (RequestTimeoutException $e) {
         // Don't try to process any more items for this run.
         $this->getConfig()->getLogger()->warning($e->getMessage());
@@ -291,14 +290,14 @@ class Processor implements ProcessorInterface {
    * @inheritDoc
    */
   public function enqueue($field_name) {
-    // entities that have a text area field with a link.
-    // Just the body text field for now.
+    // Find entities that have a text area field with a link.
     $query = db_select('field_data_' . $field_name, 'b');
 
     // The entity may not be a node.
     $query->leftJoin('node', 'n', 'n.nid = b.entity_id');
     $query->addField('b', 'entity_id');
     $query->addField('b', 'entity_type');
+    $query->addField('n', 'vid', 'entity_vid');
 
     // Nodes only if they are published.
     $or = db_or()->condition('n.status', 1)->isNull('n.status');
@@ -308,18 +307,27 @@ class Processor implements ProcessorInterface {
     // Accurate link finding happens when the queue is processed.
     $query->condition($field_name . '_value', '%' . db_like('<a') . '%', 'LIKE');
 
-    // Optionally limit the result set
+    // Optionally limit the result set.
     $nids = $this->getConfig()->getNodeList();
+
     if (!empty($nids)) {
       $query->condition('n.nid', $nids, 'IN');
     }
+
+    // Only process nodes which haven't been checked, or which haven't been
+    // checked in the last N days.
+    $query->leftJoin('dennis_link_checker_checked_nodes', 'cn', 'n.vid = cn.vid AND cn.field_name = :field_name', [':field_name' => $field_name]);
+
+    $or = db_or()->isNull('cn.last_checked')
+      ->condition('cn.last_checked', REQUEST_TIME - (variable_get(DENNIS_LINK_CHECKER_VARIABLE_CHECK_FREQUENCY, DENNIS_LINK_CHECKER_CHECK_FREQUENCY_DEFAULT) * 24 * 60 * 60), '<');
+    $query->condition($or);
 
     $query->orderBy('b.entity_id', 'DESC');
 
     $result = $query->execute();
 
     foreach ($result as $record) {
-      $this->addItem(new Item($record->entity_type, $record->entity_id, $field_name));
+      $this->addItem(new Item($record->entity_type, $record->entity_id, $record->entity_vid, $field_name));
     }
   }
 
@@ -410,6 +418,7 @@ class Processor implements ProcessorInterface {
 
       foreach ($links as $link) {
         $this->numberChecked++;
+        $this->getAnalyzer()->updateStatistics('number_checked');
 
         if ($err = $link->getError()) {
           if ($link->getNumberOfRedirects() > $this->getConfig()->getMaxRedirects()) {
@@ -417,11 +426,11 @@ class Processor implements ProcessorInterface {
               . $entity->entityType() . '/' . $entity->entityId()
               . ' to ' . $link->originalHref();
             $this->getConfig()->getLogger()->warning($msg);
-            $this->redirectLoopsFound[] = ['node' => $item->entityId(), 'link' => $link->originalHref()];
+            $this->getAnalyzer()->updateStatistics('redirect_loops_found', ['node' => $item->entityId(), 'link' => $link->getData()]);
           }
           else {
             $this->getConfig()->getLogger()->error('Error when visiting: ' . $link->originalHref(), $err);
-            $this->errorsEncountered[] = ['node' => $item->entityId(), 'link' => $link->originalHref()];
+            $this->getAnalyzer()->updateStatistics('errors_encountered', ['node' => $item->entityId(), 'link' => $link->getData(), 'error' => $err]);
           }
         }
         else {
@@ -435,19 +444,23 @@ class Processor implements ProcessorInterface {
           if ($link->getHttpCode() == 404) {
             $suggested = $link->suggestLink($link->originalHref());
             $suggested = empty($suggested) ? 'No suggestion' : 'Suggest : ' . $suggested;
-            $this->notFounds[] = ['node' => $item->entityId(), 'link' => $link->originalHref()];
+
+            $this->getAnalyzer()->updateStatistics('404s_found', ['node' => $item->entityId(), 'link' => $link->getData(), 'suggestedLink' => $suggested]);
+
             $this->getConfig()->getLogger()->warning('Page Not Found | '
               . $entity->entityType() . '/' . $entity->entityId()
               . ' | '. $link->originalHref()
               . ' => ' . $suggested);
-            $this->notFounds[] = ['node' => $item->entityId(), 'link' => $link->originalHref()];
           }
 
           // Do the correction if needed.
           if ($link->corrected() && $this->updateLink($entity, $link)) {
             $do_field_save = TRUE;
+            $this->getAnalyzer()->updateStatistics('links_updated', ['node' => $item->entityId(), 'link' => $link->getData()]);
           }
-
+          else {
+            $this->getAnalyzer()->updateStatistics('links_not_updated', ['node' => $item->entityId(), 'link' => $link->getData()]);
+          }
         }
       }
 
@@ -455,6 +468,9 @@ class Processor implements ProcessorInterface {
         $field->save();
       }
     }
+
+    // Make a record of the field being checked.
+    $item->recordItemProcessed();
   }
 
   /**
@@ -469,20 +485,20 @@ class Processor implements ProcessorInterface {
       $this->getConfig()->getLogger()->warning('LINK REMOVED | '
         . $entity->entityType() . '/' . $entity->entityId()
         . ' | ' . $link->originalHref() . " => " . $link->correctedHref());
-      $this->linksDeleted[] = ['node' => $entity->entityId(), 'original' => $link->originalHref()];
+      $this->getAnalyzer()->updateStatistics('links_deleted', ['node' => $entity->entityId(), 'link' => $link->getData()]);
     }
     else {
       if ($link->replace()) {
         $this->getConfig()->getLogger()->info('Link corrected | '
           . $entity->entityType() . '/' . $entity->entityId()
           . ' | ' . $link->originalHref() . " => " . $link->correctedHref());
-        $this->linksUpdated[] = ['node' => $entity->entityId(), 'original' => $link->originalHref(), 'corrected' => $link->correctedHref()];
+        $this->getAnalyzer()->updateStatistics('links_updated', ['node' => $entity->entityId(), 'link' => $link->getData()]);
       }
       else {
         $this->getConfig()->getLogger()->info('Link NOT corrected | '
           . $entity->entityType() . '/' . $entity->entityId()
           . ' | ' . $link->originalHref() . " => " . $link->correctedHref());
-        $this->linksNotUpdated[] = ['node' => $entity->entityId(), 'original' => $link->originalHref(), 'corrected' => $link->correctedHref()];
+        $this->getAnalyzer()->updateStatistics('links_not_updated', ['node' => $entity->entityId(), 'link' => $link->getData()]);
         return FALSE;
       }
     }

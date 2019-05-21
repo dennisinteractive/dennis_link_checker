@@ -30,17 +30,36 @@ define('DENNIS_LINK_CHECKER_TIME_LIMIT_04MINS', 60 * 4);
 define('DENNIS_LINK_CHECKER_TIME_LIMIT_04MINS_LABEL', '4 minutes');
 define('DENNIS_LINK_CHECKER_TIME_LIMIT_08MINS', 60 * 8);
 define('DENNIS_LINK_CHECKER_TIME_LIMIT_08MINS_LABEL', '8 minutes');
-define('DENNIS_LINK_CHECKER_TIME_LIMIT_16MINS', 60 * 16);
-define('DENNIS_LINK_CHECKER_TIME_LIMIT_16MINS_LABEL', '16 minutes');
-define('DENNIS_LINK_CHECKER_TIME_LIMIT_32MINS', 60 * 32);
-define('DENNIS_LINK_CHECKER_TIME_LIMIT_32MINS_LABEL', '32 minutes');
 
 /**
- * {variable} table names.
+ * How frequently should links be checked?
  */
+define('DENNIS_LINK_CHECKER_CHECK_FREQUENCY_01DAYS', 1);
+define('DENNIS_LINK_CHECKER_CHECK_FREQUENCY_01DAYS_LABEL', '1 day');
+define('DENNIS_LINK_CHECKER_CHECK_FREQUENCY_02DAYS', 2);
+define('DENNIS_LINK_CHECKER_CHECK_FREQUENCY_02DAYS_LABEL', '2 days');
+define('DENNIS_LINK_CHECKER_CHECK_FREQUENCY_04DAYS', 4);
+define('DENNIS_LINK_CHECKER_CHECK_FREQUENCY_04DAYS_LABEL', '4 days');
+define('DENNIS_LINK_CHECKER_CHECK_FREQUENCY_07DAYS', 7);
+define('DENNIS_LINK_CHECKER_CHECK_FREQUENCY_07DAYS_LABEL', '1 week');
+define('DENNIS_LINK_CHECKER_CHECK_FREQUENCY_14DAYS', 14);
+define('DENNIS_LINK_CHECKER_CHECK_FREQUENCY_14DAYS_LABEL', '2 weeks');
 
-// Variable name prefix.
+/**
+ * The module name; also used as a variable name prefix.
+ */
 define('DENNIS_LINK_CHECKER_MODULE_NAME', 'dennis_link_checker');
+
+/**
+ * The Watchdog label: when messages with this label are sent to the Dennis
+ * logging service, a message is generated in a special Slack channel which
+ * has been set up to monitor for Link Checker updates.
+ */
+define('DENNIS_LINK_CHECKER_WATCHDOG_LABEL', DENNIS_LINK_CHECKER_MODULE_NAME . '_seo');
+
+/**
+ * {variable} table names and default values.
+ */
 
 // Run interval, seconds.
 define('DENNIS_LINK_CHECKER_VARIABLE_RUN_INTERVAL', DENNIS_LINK_CHECKER_MODULE_NAME . '_run_interval');
@@ -52,7 +71,7 @@ define('DENNIS_LINK_CHECKER_RUN_INTERVAL_DEFAULT', DENNIS_LINK_CHECKER_CRON_24HR
 define('DENNIS_LINK_CHECKER_VARIABLE_TIME_LIMIT', DENNIS_LINK_CHECKER_MODULE_NAME . '_time_limit');
 
 // Default time limit, seconds.
-define('DENNIS_LINK_CHECKER_TIME_LIMIT_DEFAULT', DENNIS_LINK_CHECKER_TIME_LIMIT_32MINS);
+define('DENNIS_LINK_CHECKER_TIME_LIMIT_DEFAULT', DENNIS_LINK_CHECKER_TIME_LIMIT_04MINS);
 
 // Last started time, Unix timestamp.
 define('DENNIS_LINK_CHECKER_VARIABLE_LAST_STARTED_TIME', DENNIS_LINK_CHECKER_MODULE_NAME . '_last_started_time');
@@ -89,6 +108,12 @@ define('DENNIS_LINK_CHECKER_VARIABLE_FORCE_RUN_AFTER_X_SKIPS', DENNIS_LINK_CHECK
 
 // Force run after how many skips, default.
 define('DENNIS_LINK_CHECKER_FORCE_RUN_AFTER_X_SKIPS_DEFAULT', 4);
+
+// Don't check links more frequently than X days.
+define('DENNIS_LINK_CHECKER_VARIABLE_CHECK_FREQUENCY', DENNIS_LINK_CHECKER_MODULE_NAME . '_check_frequency');
+
+// Don't check links more frequently than X days, default.
+define('DENNIS_LINK_CHECKER_CHECK_FREQUENCY_DEFAULT', 7);
 
 // Last run statistics.
 define('DENNIS_LINK_CHECKER_VARIABLE_LAST_RUN_STATISTICS', DENNIS_LINK_CHECKER_MODULE_NAME . '_last_run_statistics');

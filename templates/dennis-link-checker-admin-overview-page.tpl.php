@@ -40,6 +40,11 @@
 <?php endif; ?>
 
 <?php if (!empty($last_run_stats)): ?>
+  <br />
+  <hr />
+  <br />
+
+  <h3><?php print t('Last link checker run statistics'); ?></h3>
   <div class="last-run-stats"><?php print $last_run_stats; ?></div>
 <?php endif; ?>
 

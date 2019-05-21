@@ -11,6 +11,10 @@ namespace Dennis\Link\Checker;
  */
 class Logger implements LoggerInterface {
 
+  // @TODO: none of the variabibbles passed in to the logger are being run
+  // through t(), which isn't the end of the world, but also isn't great
+  // practice, Karen...
+
   /**
    * Detailed debug information
    */
@@ -153,7 +157,7 @@ class Logger implements LoggerInterface {
   public function warning($message, array $context = array()) {
     $this->addRecord(self::WARNING, (string) $message, $context);
     // Special watchdog so the message can be automatically send to Slack.
-    watchdog('dennis_link_checker_seo', $message);
+    watchdog(DENNIS_LINK_CHECKER_WATCHDOG_LABEL, $message);
   }
 
   /**
