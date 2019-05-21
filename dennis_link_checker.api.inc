@@ -74,11 +74,11 @@ function dennis_link_checker_run(array $node_ids = []) {
   variable_set(DENNIS_LINK_CHECKER_VARIABLE_IS_RUNNING, TRUE);
   variable_set(DENNIS_LINK_CHECKER_VARIABLE_LAST_STARTED_TIME, REQUEST_TIME);
 
-  $processor = dennis_link_checker_setup($node_ids);
+  $link_checker_processor = dennis_link_checker_setup($node_ids);
 
-  $processor->setTimeLimit(variable_get(DENNIS_LINK_CHECKER_VARIABLE_TIME_LIMIT, DENNIS_LINK_CHECKER_TIME_LIMIT_DEFAULT));
+  $link_checker_processor->setTimeLimit(variable_get(DENNIS_LINK_CHECKER_VARIABLE_TIME_LIMIT, DENNIS_LINK_CHECKER_TIME_LIMIT_DEFAULT));
 
-  $processor->run();
+  $link_checker_processor->run();
 
   // Un-set the "is running" flag and set the last completed timestamp.
   // Note that we use time() and not REQUEST_TIME as these two values can vary
@@ -90,10 +90,22 @@ function dennis_link_checker_run(array $node_ids = []) {
   variable_set(DENNIS_LINK_CHECKER_VARIABLE_NUMBER_RUNS_SKIPPED, DENNIS_LINK_CHECKER_NUMBER_RUNS_SKIPPED_DEFAULT);
 
   // Record statistics.
-  // @TODO.
+  $statistics_array = _dennis_link_checker_last_run_statistics_default();
+  $statistics_array['previous_run'] = _dennis_link_checker_last_run_statistics();
 
-  return $processor;
-  die(__FUNCTION__);
+  $statistics_array['number_checked'] = $link_checker_processor->getNumberChecked();
+  $statistics_array['links_updated'] = count($link_checker_processor->getLinksUpdated());
+  $statistics_array['links_not_updated'] = count($link_checker_processor->getLinksNotUpdated());
+  $statistics_array['links_deleted'] = count($link_checker_processor->getLinksDeleted());
+  $statistics_array['errors_encountered'] = count($link_checker_processor->getErrorsEncountered());
+  $statistics_array['404s_found'] = count($link_checker_processor->getNotFounds());
+  $statistics_array['404s_removed'] = count($link_checker_processor->getNotFoundsFixed());
+  $statistics_array['redirect_loops_found'] = count($link_checker_processor->getRedirectLoopsFound());
+  $statistics_array['redirect_loops_removed'] = count($link_checker_processor->getRedirectLoopsRemoved());
+
+  variable_set(DENNIS_LINK_CHECKER_VARIABLE_LAST_RUN_STATISTICS, $statistics_array);
+
+  return $link_checker_processor;
 }
 
 /**
@@ -132,10 +144,12 @@ function _dennis_link_checker_last_run_statistics_default() {
    */
   return [
     'number_checked' => NULL,
-    'redirects_updated' => NULL,
+    'links_updated' => NULL,
+    'links_not_updated' => NULL,
+    'links_deleted' => NULL,
     'errors_encountered' => NULL,
     '404s_found' => NULL,
-    '404s_fixed' => NULL,
+    '404s_removed' => NULL,
     'redirect_loops_found' => NULL,
     'redirect_loops_removed' => NULL,
   ];
@@ -159,6 +173,11 @@ function _dennis_link_checker_last_run_statistics($array_key_prefix = '') {
       $last_run_statistics[$array_key_prefix . $key] = $value;
       unset($last_run_statistics[$key]);
     }
+  }
+
+  // Remove the "previous_run" array if $array_key_prefix is "@".
+  if ($array_key_prefix == '@') {
+    unset($last_run_statistics['@previous_run']);
   }
 
   // Implement hook_dennis_link_checker_last_run_statistics_alter().

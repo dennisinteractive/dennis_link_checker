@@ -120,6 +120,7 @@ class Field implements FieldInterface {
     $updated = 0;
 
     $updated_text = filter_dom_serialize($this->getDOM());
+
     foreach (array('data', 'revision') as $table_type) {
       $updated += db_update('field_' . $table_type . '_' . $this->field_name)
         ->fields(array(
@@ -128,6 +129,7 @@ class Field implements FieldInterface {
         ->condition('entity_id', $this->getEntity()->entityId())
         ->condition('entity_type', $this->getEntity()->entityType())
         ->condition('revision_id', $this->revision_id)
+
         // Hardcoded delta so only the first value of a multivalue field is used.
         ->condition('delta', 0)
         ->execute();

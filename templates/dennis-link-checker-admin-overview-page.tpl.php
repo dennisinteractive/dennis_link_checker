@@ -7,8 +7,6 @@
 
 ?>
 
-<h1>Monkeys</h1>
-
 <?php if (!empty($run_interval)): ?>
   <p><?php print $run_interval; ?></p>
 <?php endif; ?>

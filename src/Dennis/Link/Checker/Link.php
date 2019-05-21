@@ -64,7 +64,7 @@ class Link implements LinkInterface {
       return TRUE;
     }
 
-    // Check to see if the link as changed for another reason.
+    // Check to see if the link has changed for another reason.
     if ($this->correctedHref() != $this->originalHref()) {
       return TRUE;
     }

@@ -63,14 +63,17 @@ function dennis_link_checker_callback_overview_page() {
 
   $last_run_stats_rows = [];
   $last_run_stats_rows[] = t('Number of nodes checked: @number_checked', $last_run_stats_variables);
-  $last_run_stats_rows[] = t('Redirects updated: @redirects_updated', $last_run_stats_variables);
+  $last_run_stats_rows[] = t('Redirects updated: @links_updated', $last_run_stats_variables);
   $last_run_stats_rows[] = t('Errors encountered: @errors_encountered', $last_run_stats_variables);
   $last_run_stats_rows[] = t('404 "page not found" errors encountered: @404s_found', $last_run_stats_variables);
-  $last_run_stats_rows[] = t('404 "page not found" errors fixed: @404s_fixed', $last_run_stats_variables);
+  $last_run_stats_rows[] = t('404 "page not found" errors fixed: @404s_removed', $last_run_stats_variables);
   $last_run_stats_rows[] = t('Redirect loops found: @redirect_loops_found', $last_run_stats_variables);
   $last_run_stats_rows[] = t('Redirect loops removed: @redirect_loops_removed', $last_run_stats_variables);
 
-  $variables['last_run_stats'] = theme('item_list', $last_run_stats_rows);
+  $variables['last_run_stats'] = theme('item_list', [
+    'items' => $last_run_stats_rows,
+    'type' => 'ul',
+  ]);
 
   $variables['run_link_checker_form'] = NULL;
   if (user_access(DENNIS_LINK_CHECKER_PERMISSION_RUN_LINK_CHECKER)) {
@@ -167,8 +170,15 @@ function dennis_link_checker_overview_page_run_form_validate($form, &$form_state
     $node_ids_to_check_array = explode(',', $node_ids_to_check);
 
     if (!empty($node_ids_to_check_array)) {
-      foreach ($node_ids_to_check_array as &$node_id_to_check) {
+      foreach ($node_ids_to_check_array as $key => &$node_id_to_check) {
         $node_id_to_check = trim($node_id_to_check);
+
+        // If it ends up being blank, remove and move on.
+        if (empty($node_id_to_check)) {
+          unset($node_ids_to_check_array[$key]);
+          continue;
+        }
+
         if (!is_numeric($node_id_to_check)) {
           form_set_error('node_ids_to_check', t('Please only enter numeric values and commas in this field.'));
         }
@@ -192,11 +202,17 @@ function dennis_link_checker_overview_page_run_form_submit($form, &$form_state) 
     $_SESSION[DENNIS_LINK_CHECKER_MODULE_NAME] = [];
   }
 
-  $_SESSION[DENNIS_LINK_CHECKER_MODULE_NAME]['node_ids_to_check'] = $form_state['values']['node_ids_to_check'];
+  $node_ids_to_check = [];
+  if (!empty($form_state['values']['node_ids_to_check'])) {
+    $node_ids_to_check = explode(',', $form_state['values']['node_ids_to_check']);
+    $_SESSION[DENNIS_LINK_CHECKER_MODULE_NAME]['node_ids_to_check'] = $form_state['values']['node_ids_to_check'];
+  }
 
   // Run tings.
-  $link_checker_processor = dennis_link_checker_run(explode(',', $form_state['values']['node_ids_to_check']));
+  $link_checker_processor = dennis_link_checker_run($node_ids_to_check);
 
   // Set a success or error drupal_message().
   // @TODO.
+
+  $monkeys = TRUE;
 }

@@ -52,16 +52,26 @@ function dennis_link_checker_cron() {
   // I hate being forced to run...
 
   // Find out when the last run completed.
-  $link_checker_last_run_timestamp = variable_get(DENNIS_LINK_CHECKER_VARIABLE_LAST_COMPLETED_TIME, DENNIS_LINK_CHECKER_LAST_COMPLETED_TIME_DEFAULT);
+  $last_run_timestamp = variable_get(DENNIS_LINK_CHECKER_VARIABLE_LAST_COMPLETED_TIME, DENNIS_LINK_CHECKER_LAST_COMPLETED_TIME_DEFAULT);
+  $last_run_time = format_date($last_run_timestamp, 'medium');
 
   // Get the time interval between runs.
-  $link_checker_run_interval = variable_get(DENNIS_LINK_CHECKER_VARIABLE_RUN_INTERVAL, DENNIS_LINK_CHECKER_RUN_INTERVAL_DEFAULT);
+  $run_interval = variable_get(DENNIS_LINK_CHECKER_VARIABLE_RUN_INTERVAL, DENNIS_LINK_CHECKER_RUN_INTERVAL_DEFAULT);
+
+  // Work out when the next run is due.
+  $next_run_timestamp = $last_run_timestamp + $run_interval;
+  $next_run_time = format_date($next_run_timestamp, 'medium');
 
   // If the last run was completed fewer than
   // DENNIS_LINK_CHECKER_VARIABLE_RUN_INTERVAL seconds ago, it's definitely not
   // time to re-run, so return.
-  if (($link_checker_last_run_timestamp + $link_checker_run_interval) > REQUEST_TIME) {
+  if (($next_run_timestamp) > REQUEST_TIME) {
     // Next run is in the future.
+    watchdog(DENNIS_LINK_CHECKER_MODULE_NAME, 'Cron: not running link checker as next scheduled run is in the future, at @next_run_time. Last run was at @last_run_time.', [
+      '@next_run_time' => $next_run_time,
+      '@last_run_time' => $last_run_time,
+    ], WATCHDOG_DEBUG, l(t('Link Checker status'), DENNIS_LINK_CHECKER_ADMINISTRATION_PATH_ROOT));
+
     return;
   }
 
@@ -69,11 +79,17 @@ function dennis_link_checker_cron() {
   // If it is, we need to work out whether we should skip or force a run.
   if (variable_get(DENNIS_LINK_CHECKER_VARIABLE_IS_RUNNING, DENNIS_LINK_CHECKER_IS_RUNNING_DEFAULT)) {
     // Link checker is marked as running. When did we last skip a run?
-    $link_checker_last_run_skipped_timestamp = variable_get(DENNIS_LINK_CHECKER_VARIABLE_LAST_SKIPPED_TIME, DENNIS_LINK_CHECKER_LAST_SKIPPED_TIME_DEFAULT);
+    $last_run_skipped_timestamp = variable_get(DENNIS_LINK_CHECKER_VARIABLE_LAST_SKIPPED_TIME, DENNIS_LINK_CHECKER_LAST_SKIPPED_TIME_DEFAULT);
+    $last_run_skipped_time = format_date($last_run_skipped_timestamp, 'medium');
 
-    if (($link_checker_last_run_skipped_timestamp + $link_checker_run_interval) > REQUEST_TIME) {
+    if (($last_run_skipped_timestamp + $run_interval) > REQUEST_TIME) {
       // Last skipped run was less than the run interval seconds ago, so we
       // don't need to do anything now.
+      watchdog(DENNIS_LINK_CHECKER_MODULE_NAME, 'Cron: not running link checker - already running, and the last skipped run was at @last_skipped_time, which is less than the run interval @run_interval ago.', [
+        '@last_skipped_time' => $last_run_skipped_time,
+        '@run_interval' => _dennis_link_checker_cron_interval_options($run_interval),
+      ], WATCHDOG_DEBUG, l(t('Link Checker status'), DENNIS_LINK_CHECKER_ADMINISTRATION_PATH_ROOT));
+
       return;
     }
 
@@ -81,19 +97,36 @@ function dennis_link_checker_cron() {
     variable_set(DENNIS_LINK_CHECKER_VARIABLE_LAST_SKIPPED_TIME, REQUEST_TIME);
 
     // Increment the skip counter.
-    $link_checker_number_runs_skipped = variable_get(DENNIS_LINK_CHECKER_VARIABLE_NUMBER_RUNS_SKIPPED, DENNIS_LINK_CHECKER_NUMBER_RUNS_SKIPPED_DEFAULT);
-    $link_checker_number_runs_skipped++;
-    variable_set(DENNIS_LINK_CHECKER_VARIABLE_NUMBER_RUNS_SKIPPED, $link_checker_number_runs_skipped);
+    $number_runs_skipped = variable_get(DENNIS_LINK_CHECKER_VARIABLE_NUMBER_RUNS_SKIPPED, DENNIS_LINK_CHECKER_NUMBER_RUNS_SKIPPED_DEFAULT);
+    $number_runs_skipped++;
+    variable_set(DENNIS_LINK_CHECKER_VARIABLE_NUMBER_RUNS_SKIPPED, $number_runs_skipped);
+
+    // How man skips before we force a run?
+    $force_run_after_x_skips = variable_get(DENNIS_LINK_CHECKER_VARIABLE_FORCE_RUN_AFTER_X_SKIPS, DENNIS_LINK_CHECKER_FORCE_RUN_AFTER_X_SKIPS_DEFAULT);
 
     // Have we skipped enough runs that we now need to force a run?
-    if ($link_checker_number_runs_skipped < variable_get(DENNIS_LINK_CHECKER_VARIABLE_FORCE_RUN_AFTER_X_SKIPS, DENNIS_LINK_CHECKER_FORCE_RUN_AFTER_X_SKIPS_DEFAULT)) {
+    if ($number_runs_skipped < $force_run_after_x_skips) {
       // No - return.
+      watchdog(DENNIS_LINK_CHECKER_MODULE_NAME, 'Cron: not running link checker - already running. We have skipped @number_runs_skipped. We will force a run after skipping @force_run_after_x_skips. The last skipped run was at @last_skipped_time.', [
+        '@number_runs_skipped' => $number_runs_skipped,
+        '@force_run_after_x_skips' => $force_run_after_x_skips,
+        '@last_skipped_time' => $last_run_skipped_time,
+      ], WATCHDOG_DEBUG, l(t('Link Checker status'), DENNIS_LINK_CHECKER_ADMINISTRATION_PATH_ROOT));
+
       return;
     }
   }
 
   // If we made it here, link checker needs to run.
+  watchdog(DENNIS_LINK_CHECKER_MODULE_NAME, 'Cron: running link checker. Last run was at @last_run_time.', [
+    '@last_run_time' => $last_run_time,
+  ], WATCHDOG_NOTICE, l(t('Link Checker status'), DENNIS_LINK_CHECKER_ADMINISTRATION_PATH_ROOT));
+
   dennis_link_checker_run();
+
+  watchdog(DENNIS_LINK_CHECKER_MODULE_NAME, 'Cron: link checker run completed at @last_run_time.', [
+    '@last_run_time' => $last_run_time,
+  ], WATCHDOG_DEBUG, l(t('Link Checker status'), DENNIS_LINK_CHECKER_ADMINISTRATION_PATH_ROOT));
 }
 
 /**

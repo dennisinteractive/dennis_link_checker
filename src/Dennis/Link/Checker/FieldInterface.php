@@ -11,13 +11,13 @@ namespace Dennis\Link\Checker;
  */
 interface FieldInterface {
   /**
-   * @return EntityInterface
+   * @return \Dennis\Link\Checker\EntityInterface
    */
   public function getEntity();
 
   /**
    * Get links from field.
-   * @return array
+   * @return array \Dennis\Link\Checker\LinkInterface
    */
   public function getLinks();
 
@@ -27,7 +27,7 @@ interface FieldInterface {
   public function save();
 
   /**
-   * @return Config
+   * @return \Dennis\Link\Checker\Config
    */
   public function getConfig();
 }

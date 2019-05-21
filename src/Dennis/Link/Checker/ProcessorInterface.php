@@ -158,4 +158,59 @@ interface ProcessorInterface {
    */
   public function correctLinks(ItemInterface $item, FieldInterface $field);
 
+
+  /**
+   * @return mixed
+   */
+  public function getConfig();
+
+  /**
+   * @return mixed
+   */
+  public function getLocalisation();
+
+  /**
+   * @return int
+   */
+  public function getNumberChecked();
+
+  /**
+   * @return array
+   */
+  public function getLinksDeleted();
+
+  /**
+   * @return array
+   */
+  public function getLinksUpdated();
+
+  /**
+   * @return array
+   */
+  public function getLinksNotUpdated();
+
+  /**
+   * @return array
+   */
+  public function getErrorsEncountered();
+
+  /**
+   * @return array
+   */
+  public function getNotFounds();
+
+  /**
+   * @return array
+   */
+  public function getNotFoundsFixed();
+
+  /**
+   * @return array
+   */
+  public function getRedirectLoopsFound();
+
+  /**
+   * @return array
+   */
+  public function getRedirectLoopsRemoved();
 }
