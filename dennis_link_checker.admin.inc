@@ -75,7 +75,9 @@ function dennis_link_checker_callback_overview_page() {
   $last_run_stats_rows = [];
   $last_run_stats_rows[] = t('Number of nodes checked: @number_nodes_checked', $last_run_stats_variables);
   $last_run_stats_rows[] = t('Number of links checked: @number_links_checked', $last_run_stats_variables);
-  $last_run_stats_rows[] = t('Redirects updated: @links_updated', $last_run_stats_variables);
+  $last_run_stats_rows[] = t('Links updated: @links_updated', $last_run_stats_variables);
+  $last_run_stats_rows[] = t('Links not updated: @links_not_updated', $last_run_stats_variables);
+  $last_run_stats_rows[] = t('Links deleted: @links_deleted', $last_run_stats_variables);
   $last_run_stats_rows[] = t('Errors encountered: @errors_encountered', $last_run_stats_variables);
   $last_run_stats_rows[] = t('404 "page not found" errors encountered: @404s_found', $last_run_stats_variables);
   $last_run_stats_rows[] = t('404 "page not found" errors fixed: @404s_removed', $last_run_stats_variables);
