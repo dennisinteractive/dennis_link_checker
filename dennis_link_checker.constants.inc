@@ -8,7 +8,11 @@
 /**
  * Time intervals between runs, in seconds.
  */
-define('DENNIS_LINK_CHECKER_CRON_01HRS', 60 * 60);
+define('DENNIS_LINK_CHECKER_CRON_00HRS', 0);
+define('DENNIS_LINK_CHECKER_CRON_00HRS_LABEL', 'No minimum time interval - always run (recommended for testing only)');
+define('DENNIS_LINK_CHECKER_CRON_30MINS', 60 * 30);
+define('DENNIS_LINK_CHECKER_CRON_30MINS_LABEL', '30 minutes');
+define('DENNIS_LINK_CHECKER_CRON_01HRS', 60 * 60 * 1);
 define('DENNIS_LINK_CHECKER_CRON_01HRS_LABEL', '1 hour');
 define('DENNIS_LINK_CHECKER_CRON_02HRS', 60 * 60 * 2);
 define('DENNIS_LINK_CHECKER_CRON_02HRS_LABEL', '2 hours');

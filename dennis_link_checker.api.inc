@@ -254,6 +254,8 @@ function _dennis_link_checker_fields_to_check_default_field_names() {
  */
 function _dennis_link_checker_cron_interval_options($option_value_to_get_label_for = NULL) {
   $options = [
+    DENNIS_LINK_CHECKER_CRON_00HRS => t(DENNIS_LINK_CHECKER_CRON_00HRS_LABEL),
+    DENNIS_LINK_CHECKER_CRON_30MINS => t(DENNIS_LINK_CHECKER_CRON_30MINS_LABEL),
     DENNIS_LINK_CHECKER_CRON_01HRS => t(DENNIS_LINK_CHECKER_CRON_01HRS_LABEL),
     DENNIS_LINK_CHECKER_CRON_02HRS => t(DENNIS_LINK_CHECKER_CRON_02HRS_LABEL),
     DENNIS_LINK_CHECKER_CRON_06HRS => t(DENNIS_LINK_CHECKER_CRON_06HRS_LABEL),
