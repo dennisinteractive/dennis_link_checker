@@ -236,11 +236,12 @@ class Link implements LinkInterface {
    * @return bool
    */
   public function redirectsToTerm() {
-    if ($this->data['redirects_to_term']) {
+    if (!empty($this->data['redirects_to_term'])) {
       return $this->data['redirects_to_term'];
     }
 
     $this->data['redirects_to_term'] = FALSE;
+
     if ($this->correctedHref() != $this->originalHref()) {
       // This is definitely a redirected href
       // So the original href will either have a redirect record, or an alias
