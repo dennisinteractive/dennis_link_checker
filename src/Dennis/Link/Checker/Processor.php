@@ -157,7 +157,7 @@ class Processor implements ProcessorInterface {
       return FALSE;
     }
 
-    $end = time() + $this->timeLimit;
+    $end = time() + $this->getTimeLimit();
 
     // Remove any old items from the queue.
     $this->getQueue()->removeAll();
@@ -509,5 +509,4 @@ class Processor implements ProcessorInterface {
     }
     return TRUE;
   }
-
 }
