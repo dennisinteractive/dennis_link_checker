@@ -231,8 +231,13 @@ function dennis_link_checker_overview_page_run_form_submit($form, &$form_state) 
   // Run tings.
   $link_checker_processor = dennis_link_checker_run($node_ids_to_check);
 
+  // Get stats.
+  $statistics = _dennis_link_checker_last_run_statistics();
+
   // Set a success or error drupal_message().
-  drupal_set_message(t('Link Checker run completed. Please review the "Last Run Statistics" on the !link_checker_overview_page.', [
+  drupal_set_message(t('Link Checker run completed - @links links in @nodes nodes (pages) were checked. Please review the "Last Run Statistics" on the !link_checker_overview_page for more details.', [
     '!link_checker_overview_page' => l(t('link checker overview page'), DENNIS_LINK_CHECKER_ADMINISTRATION_PATH_ROOT),
+    '@links' => $statistics['number_links_checked'],
+    '@nodes' => $statistics['number_nodes_checked'],
   ]));
 }
