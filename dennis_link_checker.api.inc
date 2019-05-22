@@ -267,7 +267,7 @@ function _dennis_link_checker_cron_interval_options($option_value_to_get_label_f
   drupal_alter('dennis_link_checker_cron_interval_options', $options);
 
   // If we have an option value to get a label for, just return that label.
-  if (!empty($option_value_to_get_label_for)
+  if (!is_null($option_value_to_get_label_for)
     && array_key_exists($option_value_to_get_label_for, $options)) {
     return $options[$option_value_to_get_label_for];
   }
@@ -294,7 +294,7 @@ function _dennis_link_checker_time_limit_options($option_value_to_get_label_for 
   drupal_alter('dennis_link_checker_time_limit_options', $options);
 
   // If we have an option value to get a label for, just return that label.
-  if (!empty($option_value_to_get_label_for)
+  if (!is_null($option_value_to_get_label_for)
     && array_key_exists($option_value_to_get_label_for, $options)) {
     return $options[$option_value_to_get_label_for];
   }
@@ -320,7 +320,7 @@ function _dennis_link_checker_check_frequency_options($option_value_to_get_label
   drupal_alter('dennis_link_checker_check_frequency_options', $options);
 
   // If we have an option value to get a label for, just return that label.
-  if (!empty($option_value_to_get_label_for)
+  if (!is_null($option_value_to_get_label_for)
     && array_key_exists($option_value_to_get_label_for, $options)) {
     return $options[$option_value_to_get_label_for];
   }
