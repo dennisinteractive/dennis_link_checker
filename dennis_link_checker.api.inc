@@ -75,7 +75,10 @@ function dennis_link_checker_setup(array $nids) {
 function dennis_link_checker_run(array $node_ids = [], $time_limit = NULL) {
   // Set the "is running" flag and last started timestamp.
   variable_set(DENNIS_LINK_CHECKER_VARIABLE_IS_RUNNING, TRUE);
-  variable_set(DENNIS_LINK_CHECKER_VARIABLE_LAST_STARTED_TIME, REQUEST_TIME);
+
+  // Note that we use time() and not REQUEST_TIME as these two values can vary
+  // significantly for long-running batch tasks.
+  variable_set(DENNIS_LINK_CHECKER_VARIABLE_LAST_STARTED_TIME, time());
 
   $processor = dennis_link_checker_setup($node_ids);
 
@@ -89,11 +92,12 @@ function dennis_link_checker_run(array $node_ids = [], $time_limit = NULL) {
     $processor->setTimeLimit(variable_get(DENNIS_LINK_CHECKER_VARIABLE_TIME_LIMIT, DENNIS_LINK_CHECKER_TIME_LIMIT_DEFAULT));
   }
 
+  // Run the processor.
   $processor->run();
 
   // Un-set the "is running" flag and set the last completed timestamp.
   // Note that we use time() and not REQUEST_TIME as these two values can vary
-  // significantly for a long-running task.
+  // significantly for long-running batch tasks.
   variable_set(DENNIS_LINK_CHECKER_VARIABLE_IS_RUNNING, FALSE);
   variable_set(DENNIS_LINK_CHECKER_VARIABLE_LAST_COMPLETED_TIME, time());
 
