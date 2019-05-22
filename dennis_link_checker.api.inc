@@ -51,7 +51,7 @@ function dennis_link_checker_setup(array $nids) {
   $entity_handler = new EntityHandler($config);
 
   // Make sure we don't request more than one page per second.
-  $curl_throttler = new Throttler(1);
+  $curl_throttler = new Throttler(500);
 
   // Database object that allows interaction with the DB.
   $database = new Database();

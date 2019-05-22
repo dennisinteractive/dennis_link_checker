@@ -18,21 +18,22 @@ class Throttler implements ThrottlerInterface {
   /**
    * @var int number of seconds to throttle for.
    */
-  protected $seconds;
+  protected $milliseconds;
 
   /**
    * Throttler constructor.
-   * @param $seconds
+   *
+   * @param $milliseconds
    */
-  public function __construct($seconds) {
-    $this->seconds = $seconds;
+  public function __construct($milliseconds) {
+    $this->milliseconds = $milliseconds;
   }
 
   /**
    * @inheritDoc
    */
   public function throttle() {
-    $wait_until = $this->startTime + $this->seconds;
+    $wait_until = $this->startTime + ($this->milliseconds / 1000);
     if (microtime(TRUE) < $wait_until) {
       usleep(($wait_until - microtime(TRUE)) * 1000000);
     }
