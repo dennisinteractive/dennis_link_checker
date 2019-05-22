@@ -126,7 +126,8 @@ function dennis_link_checker_run(array $node_ids = [], $time_limit = NULL) {
     unset($statistics_array['previous_run']['previous_run']);
   }
 
-//  $statistics_array['number_checked'] = $processor->getNumberChecked();
+//  $statistics_array['number_nodes_checked'] = $processor->getNumberChecked();
+//  $statistics_array['number_links_checked'] = $processor->getNumberChecked();
 //  $statistics_array['links_updated'] = count($processor->getLinksUpdated());
 //  $statistics_array['links_not_updated'] = count($processor->getLinksNotUpdated());
 //  $statistics_array['links_deleted'] = count($processor->getLinksDeleted());
@@ -167,6 +168,7 @@ function _dennis_link_checker_get_skip_options() {
 function _dennis_link_checker_last_run_statistics_default() {
   /**
    * Last run statistics - array:
+   * - number of nodes checked
    * - number of links checked
    * - number redirects updated successfully
    * - number errors encountered
@@ -176,7 +178,8 @@ function _dennis_link_checker_last_run_statistics_default() {
    * - number redirect loops removed
    */
   return [
-    'number_checked' => NULL,
+    'number_nodes_checked' => NULL,
+    'number_links_checked' => NULL,
     'links_updated' => NULL,
     'links_not_updated' => NULL,
     'links_deleted' => NULL,

@@ -418,7 +418,7 @@ class Processor implements ProcessorInterface {
 
       foreach ($links as $link) {
         $this->numberChecked++;
-        $this->getAnalyzer()->updateStatistics('number_checked');
+        $this->getAnalyzer()->updateStatistics('number_links_checked');
 
         if ($err = $link->getError()) {
           if ($link->getNumberOfRedirects() > $this->getConfig()->getMaxRedirects()) {
@@ -471,6 +471,11 @@ class Processor implements ProcessorInterface {
 
     // Make a record of the field being checked.
     $item->recordItemProcessed();
+
+    // Make a record of the node being checked.
+    $number_nodes_checked_array = $this->getAnalyzer()->getStatistics('number_nodes_checked');
+    $number_nodes_checked_array[$item->entityId()] = TRUE;
+    $this->getAnalyzer()->setStatistics('number_nodes_checked', $number_nodes_checked_array);
   }
 
   /**
