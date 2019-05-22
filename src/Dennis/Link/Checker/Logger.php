@@ -97,25 +97,25 @@ class Logger implements LoggerInterface {
 
     if ($this->verbose_level == self::VERBOSITY_DEBUG) {
       if ($level >= self::DEBUG) {
-        print $message . "\n";
+        drupal_set_message($message, 'status');
         if (!empty($context)) {
-          print_r($context);
+          drupal_set_message('<pre>' . print_r($context) . '</pre>', 'status');
         }
       }
     }
     elseif ($this->verbose_level == self::VERBOSITY_HIGH) {
       if ($level >= self::INFO) {
-        print $message . "\n";
+        drupal_set_message($message, 'status');
         if (!empty($context)) {
-          print_r($context);
+          drupal_set_message('<pre>' . print_r($context) . '</pre>', 'status');
         }
       }
     }
     elseif ($this->verbose_level == self::VERBOSITY_LOW) {
       if ($level >= self::WARNING) {
-        print $message . "\n";
+        drupal_set_message($message, 'warning');
         if (!empty($context)) {
-          print_r($context);
+          drupal_set_message('<pre>' . print_r($context) . '</pre>', 'status');
         }
       }
     }
