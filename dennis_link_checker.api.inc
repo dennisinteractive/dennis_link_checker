@@ -118,8 +118,14 @@ function dennis_link_checker_run(array $node_ids = [], $time_limit = NULL) {
     if (is_array($value)) {
       $statistics_array[$key] = count($value);
     }
-    else {
+    // If it's a number, record the number.
+    elseif (is_numeric($value)) {
       $statistics_array[$key] = $value;
+    }
+    // If nothing happened with the statistic, it might still be its default
+    // value of NULL.
+    else {
+      $statistics_array[$key] = 0;
     }
   }
 
