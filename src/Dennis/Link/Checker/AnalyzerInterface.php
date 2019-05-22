@@ -39,7 +39,7 @@ interface AnalyzerInterface {
    * @param array $links
    *   An array of LinkInterface links
    *
-   * @return array
+   * @return array Dennis\Link\Checker\LinkInterface
    */
   public function multipleLinks($links);
 
