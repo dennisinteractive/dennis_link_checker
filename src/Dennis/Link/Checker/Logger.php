@@ -94,28 +94,33 @@ class Logger implements LoggerInterface {
    * @return LoggerInterface
    */
   public function addRecord($level, $message, $context = []) {
-
+    if (drupal_is_cli()) {
+      $function = 'drush_print';
+    }
+    else {
+      $function = 'drupal_set_message';
+    }
     if ($this->verbose_level == self::VERBOSITY_DEBUG) {
       if ($level >= self::DEBUG) {
-        drupal_set_message($message, 'status');
+        $function($message);
         if (!empty($context)) {
-          drupal_set_message('<pre>' . print_r($context) . '</pre>', 'status');
+          $function('<pre>' . print_r($context) . '</pre>');
         }
       }
     }
     elseif ($this->verbose_level == self::VERBOSITY_HIGH) {
       if ($level >= self::INFO) {
-        drupal_set_message($message, 'status');
+        $function($message);
         if (!empty($context)) {
-          drupal_set_message('<pre>' . print_r($context) . '</pre>', 'status');
+          $function('<pre>' . print_r($context) . '</pre>');
         }
       }
     }
     elseif ($this->verbose_level == self::VERBOSITY_LOW) {
       if ($level >= self::WARNING) {
-        drupal_set_message($message, 'warning');
+        drupal_is_cli() ? $function($message) : $function($message, 'warning');
         if (!empty($context)) {
-          drupal_set_message('<pre>' . print_r($context) . '</pre>', 'status');
+          $function('<pre>' . print_r($context) . '</pre>');
         }
       }
     }
