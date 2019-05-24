@@ -23,6 +23,20 @@ class Link implements LinkInterface {
   }
 
   /**
+   * @return array
+   */
+  public function getData() {
+    return $this->data;
+  }
+
+  /**
+   * @param array $data
+   */
+  public function setData($data) {
+    $this->data = $data;
+  }
+
+  /**
    * @inheritDoc
    */
   public function getConfig() {
@@ -46,8 +60,8 @@ class Link implements LinkInterface {
   /**
    * @inheritDoc
    */
-  public function setNumberOfRedirects($int) {
-    $this->data['redirect_count'] = (int) $int;
+  public function setNumberOfRedirects($redirect_count) {
+    $this->data['redirect_count'] = (int) $redirect_count;
 
     return $this;
   }
@@ -64,7 +78,7 @@ class Link implements LinkInterface {
       return TRUE;
     }
 
-    // Check to see if the link as changed for another reason.
+    // Check to see if the link has changed for another reason.
     if ($this->correctedHref() != $this->originalHref()) {
       return TRUE;
     }
@@ -198,6 +212,7 @@ class Link implements LinkInterface {
    * @inheritDoc
    */
   public function setError($code, $msg) {
+    // @TODO: add details of the error to the stats here?
     $this->data['error']['code'] = $code;
     $this->data['error']['msg'] = $msg;
 
@@ -221,11 +236,12 @@ class Link implements LinkInterface {
    * @return bool
    */
   public function redirectsToTerm() {
-    if ($this->data['redirects_to_term']) {
+    if (!empty($this->data['redirects_to_term'])) {
       return $this->data['redirects_to_term'];
     }
 
     $this->data['redirects_to_term'] = FALSE;
+
     if ($this->correctedHref() != $this->originalHref()) {
       // This is definitely a redirected href
       // So the original href will either have a redirect record, or an alias

@@ -51,12 +51,189 @@ class Analyzer implements AnalyzerInterface {
   protected $timeout = 10;
 
   /**
+   * @var array An array of statistics which are used to analyse the previous
+   * run.
+   */
+  protected $statistics = [];
+
+  /**
+   * @return \Dennis\Link\Checker\ConfigInterface
+   */
+  public function getConfig() {
+    return $this->config;
+  }
+
+  /**
+   * @param \Dennis\Link\Checker\ConfigInterface $config
+   */
+  public function setConfig($config) {
+    $this->config = $config;
+  }
+
+  /**
+   * @return number
+   */
+  public function getRedirectCount() {
+    return $this->redirectCount;
+  }
+
+  /**
+   * @param number $redirectCount
+   */
+  public function setRedirectCount($redirectCount) {
+    $this->redirectCount = $redirectCount;
+  }
+
+  /**
+   * @return int
+   */
+  public function getLinkTimeLimit() {
+    return $this->linkTimeLimit;
+  }
+
+  /**
+   * @param int $linkTimeLimit
+   */
+  public function setLinkTimeLimit($linkTimeLimit) {
+    $this->linkTimeLimit = $linkTimeLimit;
+  }
+
+  /**
+   * @return \Dennis\Link\Checker\Throttler
+   */
+  public function getCurlThrottler() {
+    return $this->curlThrottler;
+  }
+
+  /**
+   * @param \Dennis\Link\Checker\Throttler $curlThrottler
+   */
+  public function setCurlThrottler($curlThrottler) {
+    $this->curlThrottler = $curlThrottler;
+  }
+
+  /**
+   * @return \Dennis\Link\Checker\Database
+   */
+  public function getDatabase() {
+    return $this->database;
+  }
+
+  /**
+   * @param \Dennis\Link\Checker\Database $database
+   */
+  public function setDatabase($database) {
+    $this->database = $database;
+  }
+
+  /**
+   * @return array
+   */
+  public function getUrlInfo() {
+    return $this->urlInfo;
+  }
+
+  /**
+   * @param array $urlInfo
+   */
+  public function setUrlInfo($urlInfo) {
+    $this->urlInfo = $urlInfo;
+  }
+
+  /**
+   * @return mixed
+   */
+  public function getConnectionTimeout() {
+    return $this->connectionTimeout;
+  }
+
+  /**
+   * @param mixed $connectionTimeout
+   */
+  public function setConnectionTimeout($connectionTimeout) {
+    $this->connectionTimeout = $connectionTimeout;
+  }
+
+  /**
+   * @return mixed
+   */
+  public function getTimeout() {
+    return $this->timeout;
+  }
+
+  /**
+   * @param mixed $timeout
+   */
+  public function setTimeout($timeout) {
+    $this->timeout = $timeout;
+  }
+
+  /**
    * @inheritDoc
    */
-  public function __construct(ConfigInterface $config, Throttler $curl_throttler, Database $database) {
+  public function getStatistics($array_key = NULL) {
+    if (!empty($array_key)) {
+      return !empty($this->statistics[$array_key]) ? $this->statistics[$array_key] : NULL;
+    }
+
+    return $this->statistics;
+  }
+
+  /**
+   * @inheritDoc
+   */
+  public function setStatistics($statistics_or_array_key, $value = NULL) {
+    if (is_string($statistics_or_array_key)) {
+      $this->statistics[$statistics_or_array_key] = $value;
+    }
+    else {
+      $this->statistics = $statistics_or_array_key;
+    }
+  }
+
+  /**
+   * @inheritDoc
+   */
+  public function updateStatistics($label, $value = NULL) {
+    $statistics = $this->getStatistics();
+
+    // If $value is NULL, we're recording an increment in a counter.
+    if (is_null($value)) {
+      $value = 1;
+    }
+
+    // If the statistic is new, create its array key.
+    if (empty($statistics[$label])) {
+      // If $value is a number, the statistic is going to be a counter;
+      // otherwise, we assume it's going to be an array of strings - e.g. URLs.
+      if (is_numeric($value)) {
+        $statistics[$label] = 0;
+      }
+      else {
+        $statistics[$label] = [];
+      }
+    }
+
+    // Record the statistic.
+    if (is_numeric($value)) {
+      $statistics[$label] += $value;
+    }
+    else {
+      $statistics[$label][] = $value;
+    }
+
+    // Update the statistics.
+    $this->setStatistics($statistics);
+  }
+
+  /**
+   * @inheritDoc
+   */
+  public function __construct(ConfigInterface $config, Throttler $curl_throttler, Database $database, array $statistics) {
     $this->config = $config;
     $this->curlThrottler = $curl_throttler;
     $this->database = $database;
+    $this->setStatistics($statistics);
   }
 
   /**
@@ -100,7 +277,7 @@ class Analyzer implements AnalyzerInterface {
   public function link(LinkInterface $link) {
     $this->throttle();
 
-    // Only redirect 301's so cannot use CURLOPT_FOLLOWLOCATION
+    // Only redirect 301s so cannot use CURLOPT_FOLLOWLOCATION
     $this->redirectCount = 0;
 
     $src = trim($link->originalHref());
@@ -194,7 +371,7 @@ class Analyzer implements AnalyzerInterface {
    * @throws ResourceFailException
    */
   protected function doInfoRequest($url) {
-    // Only redirect 301's so cannot use CURLOPT_FOLLOWLOCATION
+    // Only redirect 301s so cannot use CURLOPT_FOLLOWLOCATION
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_URL, $url);
     curl_setopt($ch, CURLOPT_USERAGENT, 'dennis_link_checker');
@@ -215,5 +392,4 @@ class Analyzer implements AnalyzerInterface {
       throw new ResourceFailException($error, $errno);
     }
   }
-
 }

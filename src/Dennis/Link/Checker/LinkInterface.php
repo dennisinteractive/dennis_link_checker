@@ -21,10 +21,11 @@ interface LinkInterface {
   /**
    * Set the number of redirects needed to get to the corrected url.
    *
-   * @param $int
+   * @param $redirect_count
+   *
    * @return LinkInterface
    */
-  public function setNumberOfRedirects($int);
+  public function setNumberOfRedirects($redirect_count);
 
   /**
    * Whether the link was corrected.

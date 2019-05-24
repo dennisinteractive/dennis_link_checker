@@ -11,6 +11,10 @@ namespace Dennis\Link\Checker;
  */
 class Logger implements LoggerInterface {
 
+  // @TODO: none of the variabibbles passed in to the logger are being run
+  // through t(), which isn't the end of the world, but also isn't great
+  // practice, Karen...
+
   /**
    * Detailed debug information
    */
@@ -90,28 +94,33 @@ class Logger implements LoggerInterface {
    * @return LoggerInterface
    */
   public function addRecord($level, $message, $context = []) {
-
+    if (drupal_is_cli()) {
+      $function = 'drush_print';
+    }
+    else {
+      $function = 'drupal_set_message';
+    }
     if ($this->verbose_level == self::VERBOSITY_DEBUG) {
       if ($level >= self::DEBUG) {
-        print $message . "\n";
+        $function($message);
         if (!empty($context)) {
-          print_r($context);
+          $function('<pre>' . print_r($context) . '</pre>');
         }
       }
     }
     elseif ($this->verbose_level == self::VERBOSITY_HIGH) {
       if ($level >= self::INFO) {
-        print $message . "\n";
+        $function($message);
         if (!empty($context)) {
-          print_r($context);
+          $function('<pre>' . print_r($context) . '</pre>');
         }
       }
     }
     elseif ($this->verbose_level == self::VERBOSITY_LOW) {
       if ($level >= self::WARNING) {
-        print $message . "\n";
+        drupal_is_cli() ? $function($message) : $function($message, 'warning');
         if (!empty($context)) {
-          print_r($context);
+          $function('<pre>' . print_r($context) . '</pre>');
         }
       }
     }
@@ -153,7 +162,7 @@ class Logger implements LoggerInterface {
   public function warning($message, array $context = array()) {
     $this->addRecord(self::WARNING, (string) $message, $context);
     // Special watchdog so the message can be automatically send to Slack.
-    watchdog('dennis_link_checker_seo', $message);
+    watchdog(DENNIS_LINK_CHECKER_WATCHDOG_LABEL, $message);
   }
 
   /**
