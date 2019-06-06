@@ -100,6 +100,11 @@ class Logger implements LoggerInterface {
     else {
       $function = 'drupal_set_message';
     }
+
+    // Send Watchdog log entries (which in turn end up in Papertrail and other
+    // reporting services).
+    watchdog(DENNIS_LINK_CHECKER_WATCHDOG_LABEL, $message, $context, $this->mapDebugLevelsToWatchdogLevels($level), DENNIS_LINK_CHECKER_ADMINISTRATION_PATH_ROOT);
+
     if ($this->verbose_level == self::VERBOSITY_DEBUG) {
       if ($level >= self::DEBUG) {
         $function($message);
@@ -126,6 +131,44 @@ class Logger implements LoggerInterface {
     }
 
     return $this;
+  }
+
+  /**
+   * Given a dennis_link_checker log level, return the Watchdog log level.
+   *
+   * E.g. if you need to send a debug log entry to Watchdog, and you know the
+   * dennis_link_checker debug level (100), this function will return the
+   * value of WATCHDOG_DEBUG (7).
+   *
+   * @see $this->addRecord()
+   *
+   * @param int|null $debug_level
+   *   The specific debug level to get - optional.
+   *
+   * @return array|int
+   *   Either the Watchdog debug level constant value, e.g. 1, 2, ... 7, or
+   *   the entire mapping array.
+   */
+  public function mapDebugLevelsToWatchdogLevels($debug_level = NULL) {
+    $map = [
+      self::ALERT => WATCHDOG_ALERT,
+      self::CRITICAL => WATCHDOG_CRITICAL,
+      self::ERROR => WATCHDOG_ERROR,
+      self::WARNING => WATCHDOG_WARNING,
+      self::NOTICE => WATCHDOG_NOTICE,
+      self::INFO => WATCHDOG_INFO,
+      self::DEBUG => WATCHDOG_DEBUG,
+    ];
+
+    // Have we been asked to map a dennis_link_checker log level to a
+    // watchdog.module log level?
+    if (!is_null($debug_level)) {
+      // Note that we assume the array key $map[$debug_level] exists; we want
+      // to fail noisily if it doesn't.
+      return $map[$debug_level];
+    }
+
+    return $map;
   }
 
   /**
