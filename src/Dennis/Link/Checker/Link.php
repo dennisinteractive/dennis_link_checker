@@ -266,7 +266,7 @@ class Link implements LinkInterface {
           }
         } else {
           // Alias entity type can not be established.
-          $this->getConfig()->getLogger()->warning('ENTITY TYPE COULD NOT BE DETERMINED: ' . $internal_path);
+          $this->getConfig()->getLogger()->warning('Unable to load determine the entity type from Drupal path @internal_path. ', ['@internal_path' => $internal_path]);
         }
       }
     }
