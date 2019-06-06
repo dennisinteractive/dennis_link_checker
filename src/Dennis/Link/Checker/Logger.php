@@ -90,10 +90,11 @@ class Logger implements LoggerInterface {
    *
    * @param  int     $level   The logging level
    * @param  string  $message The log message
-   * @param  array   $context The log context
+   * @param  array   $variables The log context
+   *
    * @return LoggerInterface
    */
-  public function addRecord($level, $message, $context = []) {
+  public function addRecord($level, $message, $variables = []) {
     if (drupal_is_cli()) {
       $function = 'drush_print';
     }
@@ -103,29 +104,29 @@ class Logger implements LoggerInterface {
 
     // Send Watchdog log entries (which in turn end up in Papertrail and other
     // reporting services).
-    watchdog(DENNIS_LINK_CHECKER_WATCHDOG_LABEL, $message, $context, $this->mapDebugLevelsToWatchdogLevels($level), DENNIS_LINK_CHECKER_ADMINISTRATION_PATH_ROOT);
+    watchdog(DENNIS_LINK_CHECKER_WATCHDOG_LABEL, $message, $variables, $this->mapDebugLevelsToWatchdogLevels($level), DENNIS_LINK_CHECKER_ADMINISTRATION_PATH_ROOT);
 
     if ($this->verbose_level == self::VERBOSITY_DEBUG) {
       if ($level >= self::DEBUG) {
         $function($message);
-        if (!empty($context)) {
-          $function('<pre>' . print_r($context) . '</pre>');
+        if (!empty($variables)) {
+          $function('<pre>' . print_r($variables) . '</pre>');
         }
       }
     }
     elseif ($this->verbose_level == self::VERBOSITY_HIGH) {
       if ($level >= self::INFO) {
         $function($message);
-        if (!empty($context)) {
-          $function('<pre>' . print_r($context) . '</pre>');
+        if (!empty($variables)) {
+          $function('<pre>' . print_r($variables) . '</pre>');
         }
       }
     }
     elseif ($this->verbose_level == self::VERBOSITY_LOW) {
       if ($level >= self::WARNING) {
         drupal_is_cli() ? $function($message) : $function($message, 'warning');
-        if (!empty($context)) {
-          $function('<pre>' . print_r($context) . '</pre>');
+        if (!empty($variables)) {
+          $function('<pre>' . print_r($variables) . '</pre>');
         }
       }
     }
@@ -174,66 +175,64 @@ class Logger implements LoggerInterface {
   /**
    * @inheritDoc
    */
-  public function emergency($message, array $context = array()) {
-    $this->addRecord(self::EMERGENCY, (string) $message, $context);
+  public function emergency($message, array $variables = array()) {
+    $this->addRecord(self::EMERGENCY, (string) $message, $variables);
   }
 
   /**
    * @inheritDoc
    */
-  public function alert($message, array $context = array()) {
-    $this->addRecord(self::ALERT, (string) $message, $context);
+  public function alert($message, array $variables = array()) {
+    $this->addRecord(self::ALERT, (string) $message, $variables);
   }
 
   /**
    * @inheritDoc
    */
-  public function critical($message, array $context = array()) {
-    $this->addRecord(self::CRITICAL, (string) $message, $context);
+  public function critical($message, array $variables = array()) {
+    $this->addRecord(self::CRITICAL, (string) $message, $variables);
   }
 
   /**
    * @inheritDoc
    */
-  public function error($message, array $context = array()) {
-    $this->addRecord(self::ERROR, (string) $message, $context);
+  public function error($message, array $variables = array()) {
+    $this->addRecord(self::ERROR, (string) $message, $variables);
   }
 
   /**
    * @inheritDoc
    */
-  public function warning($message, array $context = array()) {
-    $this->addRecord(self::WARNING, (string) $message, $context);
-    // Special watchdog so the message can be automatically send to Slack.
-    watchdog(DENNIS_LINK_CHECKER_WATCHDOG_LABEL, $message);
+  public function warning($message, array $variables = array()) {
+    $this->addRecord(self::WARNING, (string) $message, $variables);
   }
 
   /**
    * @inheritDoc
    */
-  public function notice($message, array $context = array()) {
-    $this->addRecord(self::NOTICE, (string) $message, $context);
+  public function notice($message, array $variables = array()) {
+    $this->addRecord(self::NOTICE, (string) $message, $variables);
   }
 
   /**
    * @inheritDoc
    */
-  public function info($message, array $context = array()) {
-    $this->addRecord(self::INFO, (string) $message, $context);
+  public function info($message, array $variables = array()) {
+    $this->addRecord(self::INFO, (string) $message, $variables);
   }
 
   /**
    * @inheritDoc
    */
-  public function debug($message, array $context = array()) {
-    $this->addRecord(self::DEBUG, (string) $message, $context);
+  public function debug($message, array $variables = array()) {
+    $this->addRecord(self::DEBUG, (string) $message, $variables);
   }
 
   /**
    * @inheritDoc
    */
-  public function log($level, $message, array $context = array()) {
-    $this->addRecord($level, (string) $message, $context);
+  public function log($level, $message, array $variables = array()) {
+    $this->addRecord($level, (string) $message, $variables);
   }
 
 }

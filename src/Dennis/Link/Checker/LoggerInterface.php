@@ -25,11 +25,11 @@ interface LoggerInterface {
    * System is unusable.
    *
    * @param string $message
-   * @param array  $context
+   * @param array  $variables
    *
    * @return void
    */
-  public function emergency($message, array $context = array());
+  public function emergency($message, array $variables = array());
 
   /**
    * Action must be taken immediately.
@@ -38,11 +38,11 @@ interface LoggerInterface {
    * trigger the SMS alerts and wake you up.
    *
    * @param string $message
-   * @param array  $context
+   * @param array  $variables
    *
    * @return void
    */
-  public function alert($message, array $context = array());
+  public function alert($message, array $variables = array());
 
   /**
    * Critical conditions.
@@ -50,22 +50,22 @@ interface LoggerInterface {
    * Example: Application component unavailable, unexpected exception.
    *
    * @param string $message
-   * @param array  $context
+   * @param array  $variables
    *
    * @return void
    */
-  public function critical($message, array $context = array());
+  public function critical($message, array $variables = array());
 
   /**
    * Runtime errors that do not require immediate action but should typically
    * be logged and monitored.
    *
    * @param string $message
-   * @param array  $context
+   * @param array  $variables
    *
    * @return void
    */
-  public function error($message, array $context = array());
+  public function error($message, array $variables = array());
 
   /**
    * Exceptional occurrences that are not errors.
@@ -74,21 +74,21 @@ interface LoggerInterface {
    * that are not necessarily wrong.
    *
    * @param string $message
-   * @param array  $context
+   * @param array  $variables
    *
    * @return void
    */
-  public function warning($message, array $context = array());
+  public function warning($message, array $variables = array());
 
   /**
    * Normal but significant events.
    *
    * @param string $message
-   * @param array  $context
+   * @param array  $variables
    *
    * @return void
    */
-  public function notice($message, array $context = array());
+  public function notice($message, array $variables = array());
 
   /**
    * Interesting events.
@@ -96,30 +96,30 @@ interface LoggerInterface {
    * Example: User logs in, SQL logs.
    *
    * @param string $message
-   * @param array  $context
+   * @param array  $variables
    *
    * @return void
    */
-  public function info($message, array $context = array());
+  public function info($message, array $variables = array());
 
   /**
    * Detailed debug information.
    *
    * @param string $message
-   * @param array  $context
+   * @param array  $variables
    *
    * @return void
    */
-  public function debug($message, array $context = array());
+  public function debug($message, array $variables = array());
 
   /**
    * Logs with an arbitrary level.
    *
    * @param mixed  $level
    * @param string $message
-   * @param array  $context
+   * @param array  $variables
    *
    * @return void
    */
-  public function log($level, $message, array $context = array());
+  public function log($level, $message, array $variables = array());
 }
