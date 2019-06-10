@@ -3,10 +3,12 @@
  * @file
  * Logger
  */
+
 namespace Dennis\Link\Checker;
 
 /**
  * Class Logger
+ *
  * @package Dennis\Link\Checker
  */
 class Logger implements LoggerInterface {
@@ -61,10 +63,12 @@ class Logger implements LoggerInterface {
   const ALERT = 550;
 
   const VERBOSITY_NONE = 0;
-  const VERBOSITY_LOW = 1;
-  const VERBOSITY_HIGH = 2;
-  const VERBOSITY_DEBUG = 3;
 
+  const VERBOSITY_LOW = 1;
+
+  const VERBOSITY_HIGH = 2;
+
+  const VERBOSITY_DEBUG = 3;
 
   /**
    * Urgent alert.
@@ -77,6 +81,7 @@ class Logger implements LoggerInterface {
    * How much to output while logging.
    *
    * @param $level
+   *
    * @return $this
    */
   public function setVerbosity($level) {
@@ -88,47 +93,63 @@ class Logger implements LoggerInterface {
   /**
    * Adds a log record.
    *
-   * @param  int     $level   The logging level
-   * @param  string  $message The log message
-   * @param  array   $variables The log context
+   * @param int $level The logging level
+   * @param string $message The log message
+   * @param array $variables The log context
    *
    * @return LoggerInterface
    */
   public function addRecord($level, $message, $variables = []) {
-    if (drupal_is_cli()) {
-      $function = 'drush_print';
-    }
-    else {
-      $function = 'drupal_set_message';
-    }
+    // Create a version of $message with $variables added in.
+    $message_parsed = t($message, $variables);
 
     // Send Watchdog log entries (which in turn end up in Papertrail and other
     // reporting services).
     watchdog(DENNIS_LINK_CHECKER_WATCHDOG_LABEL, $message, $variables, $this->mapDebugLevelsToWatchdogLevels($level), DENNIS_LINK_CHECKER_ADMINISTRATION_PATH_ROOT);
 
+    // Create a flag we can use to track if we're going to show this message.
+    $add_message = FALSE;
+
     if ($this->verbose_level == self::VERBOSITY_DEBUG) {
       if ($level >= self::DEBUG) {
-        $function($message);
-        if (!empty($variables)) {
-          $function('<pre>' . print_r($variables) . '</pre>');
-        }
+        $add_message = TRUE;
       }
     }
     elseif ($this->verbose_level == self::VERBOSITY_HIGH) {
       if ($level >= self::INFO) {
-        $function($message);
-        if (!empty($variables)) {
-          $function('<pre>' . print_r($variables) . '</pre>');
-        }
+        $add_message = TRUE;
       }
     }
     elseif ($this->verbose_level == self::VERBOSITY_LOW) {
       if ($level >= self::WARNING) {
-        drupal_is_cli() ? $function($message) : $function($message, 'warning');
-        if (!empty($variables)) {
-          $function('<pre>' . print_r($variables) . '</pre>');
-        }
+        $add_message = TRUE;
       }
+    }
+
+    // Are we displaying this message?
+    if ($add_message) {
+      // Work out the message "type", dependent on where it's going and how
+      // high the $level is.
+      switch ($level) {
+        case self::ALERT:
+        case self::CRITICAL:
+        case self::ERROR:
+        $message_type = drupal_is_cli() ? 'failed' : 'error';
+          break;
+
+        case self::WARNING:
+          $message_type = drupal_is_cli() ? 'failed' : 'warning';
+          break;
+
+        case self::NOTICE:
+        case self::INFO:
+        case self::DEBUG:
+        default:
+          $message_type = drupal_is_cli() ? 'ok' : 'status';
+          break;
+      }
+
+      drupal_is_cli() ? drush_log($message_parsed, $message_type) : drupal_set_message($message_parsed, $message_type);
     }
 
     return $this;
@@ -141,14 +162,14 @@ class Logger implements LoggerInterface {
    * dennis_link_checker debug level (100), this function will return the
    * value of WATCHDOG_DEBUG (7).
    *
-   * @see $this->addRecord()
-   *
    * @param int|null $debug_level
    *   The specific debug level to get - optional.
    *
    * @return array|int
    *   Either the Watchdog debug level constant value, e.g. 1, 2, ... 7, or
    *   the entire mapping array.
+   * @see $this->addRecord()
+   *
    */
   public function mapDebugLevelsToWatchdogLevels($debug_level = NULL) {
     $map = [
@@ -175,63 +196,63 @@ class Logger implements LoggerInterface {
   /**
    * @inheritDoc
    */
-  public function emergency($message, array $variables = array()) {
+  public function emergency($message, array $variables = []) {
     $this->addRecord(self::EMERGENCY, (string) $message, $variables);
   }
 
   /**
    * @inheritDoc
    */
-  public function alert($message, array $variables = array()) {
+  public function alert($message, array $variables = []) {
     $this->addRecord(self::ALERT, (string) $message, $variables);
   }
 
   /**
    * @inheritDoc
    */
-  public function critical($message, array $variables = array()) {
+  public function critical($message, array $variables = []) {
     $this->addRecord(self::CRITICAL, (string) $message, $variables);
   }
 
   /**
    * @inheritDoc
    */
-  public function error($message, array $variables = array()) {
+  public function error($message, array $variables = []) {
     $this->addRecord(self::ERROR, (string) $message, $variables);
   }
 
   /**
    * @inheritDoc
    */
-  public function warning($message, array $variables = array()) {
+  public function warning($message, array $variables = []) {
     $this->addRecord(self::WARNING, (string) $message, $variables);
   }
 
   /**
    * @inheritDoc
    */
-  public function notice($message, array $variables = array()) {
+  public function notice($message, array $variables = []) {
     $this->addRecord(self::NOTICE, (string) $message, $variables);
   }
 
   /**
    * @inheritDoc
    */
-  public function info($message, array $variables = array()) {
+  public function info($message, array $variables = []) {
     $this->addRecord(self::INFO, (string) $message, $variables);
   }
 
   /**
    * @inheritDoc
    */
-  public function debug($message, array $variables = array()) {
+  public function debug($message, array $variables = []) {
     $this->addRecord(self::DEBUG, (string) $message, $variables);
   }
 
   /**
    * @inheritDoc
    */
-  public function log($level, $message, array $variables = array()) {
+  public function log($level, $message, array $variables = []) {
     $this->addRecord($level, (string) $message, $variables);
   }
 
