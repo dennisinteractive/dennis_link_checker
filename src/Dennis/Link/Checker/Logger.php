@@ -21,6 +21,7 @@ class Logger implements LoggerInterface {
    * Detailed debug information
    */
   const DEBUG = 100;
+  const DEBUG_LABEL = 'Debug';
 
   /**
    * Interesting events
@@ -28,11 +29,13 @@ class Logger implements LoggerInterface {
    * Examples: User logs in, SQL logs.
    */
   const INFO = 200;
+  const INFO_LABEL = 'Info';
 
   /**
    * Uncommon events
    */
   const NOTICE = 250;
+  const NOTICE_LABEL = 'Notice';
 
   /**
    * Exceptional occurrences that are not errors
@@ -41,11 +44,13 @@ class Logger implements LoggerInterface {
    * undesirable things that are not necessarily wrong.
    */
   const WARNING = 300;
+  const WARNING_LABEL = 'Warning';
 
   /**
    * Runtime errors
    */
   const ERROR = 400;
+  const ERROR_LABEL = 'Error';
 
   /**
    * Critical conditions
@@ -53,6 +58,7 @@ class Logger implements LoggerInterface {
    * Example: Application component unavailable, unexpected exception.
    */
   const CRITICAL = 500;
+  const CRITICAL_LABEL = 'Critical';
 
   /**
    * Action must be taken immediately
@@ -61,6 +67,13 @@ class Logger implements LoggerInterface {
    * This should trigger the SMS alerts and wake you up.
    */
   const ALERT = 550;
+  const ALERT_LABEL = 'Alert';
+
+  /**
+   * Urgent alert.
+   */
+  const EMERGENCY = 600;
+  const EMERGENCY_LABEL = 'Emergency';
 
   const VERBOSITY_NONE = 0;
 
@@ -69,11 +82,6 @@ class Logger implements LoggerInterface {
   const VERBOSITY_HIGH = 2;
 
   const VERBOSITY_DEBUG = 3;
-
-  /**
-   * Urgent alert.
-   */
-  const EMERGENCY = 600;
 
   protected $verbose_level = self::VERBOSITY_LOW;
 
@@ -101,7 +109,7 @@ class Logger implements LoggerInterface {
    */
   public function addRecord($level, $message, $variables = []) {
     // Create a version of $message with $variables added in.
-    $message_parsed = t($message, $variables);
+    $message_parsed = t($this->getDebugLevelLabel($level) . ': ' . $message, $variables);
 
     // Send Watchdog log entries (which in turn end up in Papertrail and other
     // reporting services).
@@ -168,8 +176,8 @@ class Logger implements LoggerInterface {
    * @return array|int
    *   Either the Watchdog debug level constant value, e.g. 1, 2, ... 7, or
    *   the entire mapping array.
-   * @see $this->addRecord()
    *
+   * @see $this->addRecord()
    */
   public function mapDebugLevelsToWatchdogLevels($debug_level = NULL) {
     $map = [
@@ -184,6 +192,36 @@ class Logger implements LoggerInterface {
 
     // Have we been asked to map a dennis_link_checker log level to a
     // watchdog.module log level?
+    if (!is_null($debug_level)) {
+      // Note that we assume the array key $map[$debug_level] exists; we want
+      // to fail noisily if it doesn't.
+      return $map[$debug_level];
+    }
+
+    return $map;
+  }
+
+  /**
+   * Given a dennis_link_checker log level, return its label.
+   *
+   * @param int|null $debug_level
+   *   The specific debug level to get - optional.
+   *
+   * @return array|string
+   *   Either the Watchdog debug level's label, or the entire mapping array.
+   */
+  public function getDebugLevelLabel($debug_level = NULL) {
+    $map = [
+      self::ALERT => t(self::ALERT_LABEL),
+      self::CRITICAL => t(self::CRITICAL_LABEL),
+      self::ERROR => t(self::ERROR_LABEL),
+      self::WARNING => t(self::WARNING_LABEL),
+      self::NOTICE => t(self::NOTICE_LABEL),
+      self::INFO => t(self::INFO_LABEL),
+      self::DEBUG => t(self::DEBUG_LABEL),
+    ];
+
+    // Have we been asked to map a dennis_link_checker log level to a label?
     if (!is_null($debug_level)) {
       // Note that we assume the array key $map[$debug_level] exists; we want
       // to fail noisily if it doesn't.
