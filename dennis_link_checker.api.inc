@@ -305,10 +305,13 @@ function _dennis_link_checker_time_limit_options($option_value_to_get_label_for 
 /**
  * Get an array of check frequency options.
  *
+ * @param string|null $option_value_to_get_label_for
+ *
  * @return array
  */
 function _dennis_link_checker_check_frequency_options($option_value_to_get_label_for = NULL) {
   $options = [
+    DENNIS_LINK_CHECKER_CHECK_FREQUENCY_00DAYS => t(DENNIS_LINK_CHECKER_CHECK_FREQUENCY_00DAYS_LABEL),
     DENNIS_LINK_CHECKER_CHECK_FREQUENCY_01DAYS => t(DENNIS_LINK_CHECKER_CHECK_FREQUENCY_01DAYS_LABEL),
     DENNIS_LINK_CHECKER_CHECK_FREQUENCY_02DAYS => t(DENNIS_LINK_CHECKER_CHECK_FREQUENCY_02DAYS_LABEL),
     DENNIS_LINK_CHECKER_CHECK_FREQUENCY_04DAYS => t(DENNIS_LINK_CHECKER_CHECK_FREQUENCY_04DAYS_LABEL),
