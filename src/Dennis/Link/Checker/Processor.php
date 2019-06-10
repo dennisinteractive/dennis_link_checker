@@ -406,10 +406,10 @@ class Processor implements ProcessorInterface {
       try {
         $links = $this->getAnalyzer()->multipleLinks($links);
       }
-      catch (TimeoutException $e) {
+      catch (TimeoutException $timeout_exception) {
         // Log timeout and stop processing this item so that it gets deleted from the queue.
         $this->getConfig()->getLogger()->warning('Warning: error @error encountered - entity type: @entity_type - entity ID: @entity_id', [
-          '@error' => $e->getMessage(),
+          '@error' => $timeout_exception->getMessage(),
           '@entity_type' => $item->entityType(),
           '@entity_id' => $item->entityId(),
         ]);
@@ -435,7 +435,7 @@ class Processor implements ProcessorInterface {
           }
           else {
             $this->getConfig()->getLogger()->error('Error: @error when visiting @link.', [
-              '@error' => $error,
+              '@error' => $error->getMessage(),
               '@link' => $link->originalHref(),
             ]);
 
