@@ -434,8 +434,9 @@ class Processor implements ProcessorInterface {
             $this->getAnalyzer()->updateStatistics('redirect_loops_found', ['node' => $item->entityId(), 'link' => $link->getData()]);
           }
           else {
-            $this->getConfig()->getLogger()->error('Error: @error when visiting @link.', [
-              '@error' => $error->getMessage(),
+            $this->getConfig()->getLogger()->error('Error: @error_message (error code: @error_code) when visiting @link.', [
+              '@error_message' => $error['msg'],
+              '@error_code' => $error['code'],
               '@link' => $link->originalHref(),
             ]);
 
