@@ -109,7 +109,8 @@ class Logger implements LoggerInterface {
    */
   public function addRecord($level, $message, $variables = []) {
     // Create a version of $message with $variables added in.
-    $message_parsed = t($this->getDebugLevelLabel($level) . ': ' . $message, $variables);
+    $message_with_label = '@label: ' . $message;
+    $variables += ['@label' => $this->getDebugLevelLabel($level)];
 
     // Send Watchdog log entries (which in turn end up in Papertrail and other
     // reporting services).
@@ -157,7 +158,7 @@ class Logger implements LoggerInterface {
           break;
       }
 
-      drupal_is_cli() ? drush_log($message_parsed, $message_type) : drupal_set_message($message_parsed, $message_type);
+      drupal_is_cli() ? drush_log(dt($message_with_label, $variables), $message_type) : drupal_set_message(t($message_with_label, $variables), $message_type);
     }
 
     return $this;
