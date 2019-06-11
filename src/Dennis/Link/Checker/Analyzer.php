@@ -380,6 +380,26 @@ class Analyzer implements AnalyzerInterface {
     curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $this->connectionTimeout);
     curl_setopt($ch, CURLOPT_TIMEOUT, $this->timeout);
 
+    // Don't check the certificate on the subject link; we're only checking for
+    // broken links on an entertainment website, so we're not concerned about
+    // certificates.
+
+    // Also, note that if we try to validate the SSL cert when
+    // running link checker through the admin UI on e.g. auth.evo.co.uk, and
+    // cURL requests a page from www.evo.co.uk, in some circumstances the DNS
+    // setup on Auth causes the request to loop back to the Auth server, which
+    // presents the wrong SSL certificate - for auth.evo.co.uk, instead of
+    // www.evo.co.uk - so the certificate check will fail as a result.
+
+    // When this happens, the entire link check database is very quickly
+    // polluted with failed link checks, error logs are filled with errors, and
+    // it becomes very noisy in the Papertrail monitoring service, none of
+    // which is ideal.
+
+    // This is why we don't check the SSL certificates (-:
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, FALSE);
+
     if (curl_exec($ch)) {
       $info = curl_getinfo($ch);
       curl_close($ch);
