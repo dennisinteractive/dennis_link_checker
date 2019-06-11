@@ -2,7 +2,7 @@ name = Dennis Link Checker
 description = Monitors links to reduce redirects
 core = 7.x
 package = SEO
-version = 7.x-1.10
+version = 7.x-1.11
 
 dependencies[] = dennis_ga
 
