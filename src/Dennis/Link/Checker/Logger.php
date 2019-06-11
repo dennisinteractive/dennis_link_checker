@@ -114,7 +114,7 @@ class Logger implements LoggerInterface {
 
     // Send Watchdog log entries (which in turn end up in Papertrail and other
     // reporting services).
-    watchdog(DENNIS_LINK_CHECKER_WATCHDOG_LABEL, $message, $variables, $this->mapDebugLevelsToWatchdogLevels($level), DENNIS_LINK_CHECKER_ADMINISTRATION_PATH_ROOT);
+    watchdog(DENNIS_LINK_CHECKER_WATCHDOG_LABEL, $message_with_label, $variables, $this->mapDebugLevelsToWatchdogLevels($level), DENNIS_LINK_CHECKER_ADMINISTRATION_PATH_ROOT);
 
     // Create a flag we can use to track if we're going to show this message.
     $add_message = FALSE;
