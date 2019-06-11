@@ -212,13 +212,13 @@ class Logger implements LoggerInterface {
    */
   public function getDebugLevelLabel($debug_level = NULL) {
     $map = [
-      self::ALERT => t(self::ALERT_LABEL),
-      self::CRITICAL => t(self::CRITICAL_LABEL),
-      self::ERROR => t(self::ERROR_LABEL),
-      self::WARNING => t(self::WARNING_LABEL),
-      self::NOTICE => t(self::NOTICE_LABEL),
-      self::INFO => t(self::INFO_LABEL),
-      self::DEBUG => t(self::DEBUG_LABEL),
+      self::ALERT => self::ALERT_LABEL,
+      self::CRITICAL => self::CRITICAL_LABEL,
+      self::ERROR => self::ERROR_LABEL,
+      self::WARNING => self::WARNING_LABEL,
+      self::NOTICE => self::NOTICE_LABEL,
+      self::INFO => self::INFO_LABEL,
+      self::DEBUG => self::DEBUG_LABEL,
     ];
 
     // Have we been asked to map a dennis_link_checker log level to a label?
