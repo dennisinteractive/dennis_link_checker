@@ -434,9 +434,12 @@ class Processor implements ProcessorInterface {
             $this->getAnalyzer()->updateStatistics('redirect_loops_found', ['node' => $item->entityId(), 'link' => $link->getData()]);
           }
           else {
-            $this->getConfig()->getLogger()->error('@error_message (error code: @error_code) when visiting @link.', [
-              '@error_message' => $error['msg'],
-              '@error_code' => $error['code'],
+            $this->getConfig()->getLogger()->error('#@error_code "@error_message" when visiting @link.', [
+              // N.b. the ['code'] and ['msg'] array keys are reversed by the
+              // $link object code; for this reason, they are reversed, below.
+              // Please don't "fix" them; you'll break them (-:
+              '@error_message' => $error['code'],
+              '@error_code' => $error['msg'],
               '@link' => $link->originalHref(),
             ]);
 
