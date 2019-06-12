@@ -406,92 +406,52 @@ class Processor implements ProcessorInterface {
       try {
         $links = $this->getAnalyzer()->multipleLinks($links);
       }
-      catch (TimeoutException $timeout_exception) {
+      catch (TimeoutException $e) {
         // Log timeout and stop processing this item so that it gets deleted from the queue.
-        $this->getConfig()->getLogger()->warning('Error @error encountered - entity type: @entity_type - entity ID: @entity_id', [
-          '@error' => $timeout_exception->getMessage(),
-          '@entity_type' => $item->entityType(),
-          '@entity_id' => $item->entityId(),
-        ]);
-
+        $this->config->getLogger()->warning($e->getMessage() . ' | '
+          . $item->entityType() . '/' . $item->entityId());
         return;
       }
-
       $do_field_save = FALSE;
       $entity = $field->getEntity();
-
       foreach ($links as $link) {
-        $this->numberChecked++;
-        $this->getAnalyzer()->updateStatistics('number_links_checked');
-
-        if ($error = $link->getError()) {
-          if ($link->getNumberOfRedirects() > $this->getConfig()->getMaxRedirects()) {
-            $this->getConfig()->getLogger()->warning('Excessive Redirects on entity type: @entity_type - entity ID: @entity_id', [
-              '@entity_type' => $item->entityType(),
-              '@entity_id' => $item->entityId(),
-            ]);
-
-            $this->getAnalyzer()->updateStatistics('redirect_loops_found', ['node' => $item->entityId(), 'link' => $link->getData()]);
+        if ($err = $link->getError()) {
+          if ($link->getNumberOfRedirects() > $this->config->getMaxRedirects()) {
+            $msg = 'Excessive Redirects on: '
+              . $entity->entityType() . '/' . $entity->entityId()
+              . ' to ' . $link->originalHref();
+            $this->config->getLogger()->warning($msg);
           }
           else {
-            $this->getConfig()->getLogger()->error('#@error_code "@error_message" when visiting @link.', [
-              // N.b. the ['code'] and ['msg'] array keys are reversed by the
-              // $link object code; for this reason, they are reversed, below.
-              // Please don't "fix" them; you'll break them (-:
-              '@error_message' => $error['code'],
-              '@error_code' => $error['msg'],
-              '@link' => $link->originalHref(),
-            ]);
-
-            $this->getAnalyzer()->updateStatistics('errors_encountered', ['node' => $item->entityId(), 'link' => $link->getData(), 'error' => $error]);
+            $this->config->getLogger()->error('Error when visiting: ' . $link->originalHref(), $err);
           }
         }
         else {
-          $this->getConfig()->getLogger()->debug('Processed link: entity type: @entity_type - entity ID: @entity_id - # of redirects: @redirects_count - original URL: @original_href.', [
-            '@entity_type' => $entity->entityType(),
-            '@entity_id' => $entity->entityId(),
-            '@redirects_count' => $link->getNumberOfRedirects(),
-            '@original_href' => $link->originalHref(),
-          ]);
-
+          $this->config->getLogger()->debug(
+            $entity->entityType() . '/' . $entity->entityId()
+            . ' : ' . $link->getNumberOfRedirects()
+            . ' : ' . $link->originalHref()
+          );
           // SEO want a report of 404's.
           if ($link->getHttpCode() == 404) {
             $suggested = $link->suggestLink($link->originalHref());
             $suggested = empty($suggested) ? 'No suggestion' : 'Suggest : ' . $suggested;
-
-            $this->getAnalyzer()->updateStatistics('404s_found', ['node' => $item->entityId(), 'link' => $link->getData(), 'suggestedLink' => $suggested]);
-
-            $this->getConfig()->getLogger()->error('Page not found: entity type: @entity_type - entity ID: @entity_id - original URL: @original_href - suggested URL: @suggested_href.', [
-              '@entity_type' => $entity->entityType(),
-              '@entity_id' => $entity->entityId(),
-              '@original_href' => $link->originalHref(),
-              '@suggested_href' => $suggested,
-            ]);
+            $this->notFounds = $link;
+            $this->config->getLogger()->warning('Page Not Found | '
+              . $entity->entityType() . '/' . $entity->entityId()
+              . ' | '. $link->originalHref()
+              . ' => ' . $suggested);
           }
-
           // Do the correction if needed.
           if ($link->corrected() && $this->updateLink($entity, $link)) {
             $do_field_save = TRUE;
-            $this->getAnalyzer()->updateStatistics('links_updated', ['node' => $item->entityId(), 'link' => $link->getData()]);
-          }
-          else {
-            $this->getAnalyzer()->updateStatistics('links_not_updated', ['node' => $item->entityId(), 'link' => $link->getData()]);
           }
         }
       }
-
       if ($do_field_save) {
         $field->save();
       }
     }
-
-    // Make a record of the field being checked.
-    $item->recordItemProcessed();
-
-    // Make a record of the node being checked.
-    $number_nodes_checked_array = $this->getAnalyzer()->getStatistics('number_nodes_checked');
-    $number_nodes_checked_array[$item->entityId()] = TRUE;
-    $this->getAnalyzer()->setStatistics('number_nodes_checked', $number_nodes_checked_array);
   }
 
   /**
@@ -500,38 +460,23 @@ class Processor implements ProcessorInterface {
   public function updateLink(EntityInterface $entity, LinkInterface $link) {
     // Before doing the replacement, check if the link originally pointed to a node, and
     // now points to a term, and if so then remove the link altogether. See case 27710.
-    if ($this->getConfig()->removeTermLinks() && $link->redirectsToTerm()) {
+    if ($this->config->removeTermLinks() && $link->redirectsToTerm()) {
       // Strip link and keep the text part
       $link->strip();
-
-      $this->getConfig()->getLogger()->info('Link removed: entity type: @entity_type - entity ID: @entity_id - original URL: @original_href - changed to: @corrected_href.', [
-        '@entity_type' => $entity->entityType(),
-        '@entity_id' => $entity->entityId(),
-        '@original_href' => $link->originalHref(),
-        '@corrected_href' => $link->correctedHref(),
-      ]);
-
-      $this->getAnalyzer()->updateStatistics('links_deleted', ['node' => $entity->entityId(), 'link' => $link->getData()]);
+      $this->config->getLogger()->warning('LINK REMOVED | '
+        . $entity->entityType() . '/' . $entity->entityId()
+        . ' | ' . $link->originalHref() . " => " . $link->correctedHref());
     }
     else {
       if ($link->replace()) {
-        $this->getConfig()->getLogger()->info('Link corrected (updated): entity type: @entity_type - entity ID: @entity_id - original URL: @original_href - changed to: @corrected_href.', [
-          '@entity_type' => $entity->entityType(),
-          '@entity_id' => $entity->entityId(),
-          '@original_href' => $link->originalHref(),
-          '@corrected_href' => $link->correctedHref(),
-        ]);
-
-        $this->getAnalyzer()->updateStatistics('links_updated', ['node' => $entity->entityId(), 'link' => $link->getData()]);
+        $this->config->getLogger()->info('Link corrected | '
+          . $entity->entityType() . '/' . $entity->entityId()
+          . ' | ' . $link->originalHref() . " => " . $link->correctedHref());
       }
       else {
-        $this->getConfig()->getLogger()->info('Link not corrected: entity type: @entity_type - entity ID: @entity_id - original URL: @original_href.', [
-          '@entity_type' => $entity->entityType(),
-          '@entity_id' => $entity->entityId(),
-          '@original_href' => $link->originalHref(),
-        ]);
-
-        $this->getAnalyzer()->updateStatistics('links_not_updated', ['node' => $entity->entityId(), 'link' => $link->getData()]);
+        $this->config->getLogger()->info('Link NOT corrected | '
+          . $entity->entityType() . '/' . $entity->entityId()
+          . ' | ' . $link->originalHref() . " => " . $link->correctedHref());
         return FALSE;
       }
     }
