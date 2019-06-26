@@ -194,10 +194,10 @@ class Analyzer implements AnalyzerInterface {
    * @throws ResourceFailException
    */
   protected function doInfoRequest($url) {
-    // If url is protocol neutral, force it to use https.
+    // If url is protocol neutral, force it to use http.
     if (substr( $url, 0, 2 ) === "//") {
       $url = ltrim($url, '//');
-      $url = 'https://' . $url;
+      $url = 'http://' . $url;
     }
     // Only redirect 301's so cannot use CURLOPT_FOLLOWLOCATION
     $ch = curl_init();
