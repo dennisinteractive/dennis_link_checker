@@ -145,6 +145,7 @@ class Logger implements LoggerInterface {
    */
   public function error($message, array $context = array()) {
     $this->addRecord(self::ERROR, (string) $message, $context);
+    watchdog('dennis_link_checker_seo', $message);
   }
 
   /**
@@ -161,6 +162,7 @@ class Logger implements LoggerInterface {
    */
   public function notice($message, array $context = array()) {
     $this->addRecord(self::NOTICE, (string) $message, $context);
+    watchdog('dennis_link_checker_seo', $message);
   }
 
   /**
@@ -168,6 +170,7 @@ class Logger implements LoggerInterface {
    */
   public function info($message, array $context = array()) {
     $this->addRecord(self::INFO, (string) $message, $context);
+    watchdog('dennis_link_checker_seo', $message);
   }
 
   /**
