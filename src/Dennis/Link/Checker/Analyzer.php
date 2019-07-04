@@ -111,7 +111,11 @@ class Analyzer implements AnalyzerInterface {
     else {
       $url = $src;
     }
-
+    // If url is protocol neutral, force it to use http.
+    if (substr( $url, 0, 2 ) === "//") {
+      $url = ltrim($url, '//');
+      $url = 'http://' . $url;
+    }
     try {
       $info = $this->followRedirects($url);
       $link->setFoundUrl($info['url'])
