@@ -56,6 +56,11 @@ class Processor implements ProcessorInterface {
       return FALSE;
     }
 
+    // Clear the queue if nids are present as parameters.
+    if (!empty($this->config->getNodeList())) {
+      $this->getQueue()->deleteQueue();
+    }
+
     $end = time() + $this->timeLimit;
 
     // Remove any old items from the queue.
@@ -305,7 +310,6 @@ class Processor implements ProcessorInterface {
       $entity = $field->getEntity();
 
       foreach ($links as $link) {
-
         // If url is protocol neutral, force it to use http.
         if (substr( $link->originalHref(), 0, 2 ) === "//") {
           $url = ltrim($link->originalHref(), '//');
@@ -342,6 +346,14 @@ class Processor implements ProcessorInterface {
               . ' => ' . $suggested);
           }
 
+          // Remove mce_href parameter from links.
+          if ($link->removeMceHref()) {
+            $this->config->getLogger()->info('mce_href removed | '
+              . $entity->entityType() . '/' . $entity->entityId()
+              . ' | ' . $link->originalHref() . " => " . $link->correctedHref());
+            $do_field_save = TRUE;
+          }
+
           // Do the correction if needed.
           if ($link->corrected() && $this->updateLink($entity, $link)) {
             $do_field_save = TRUE;
@@ -369,11 +381,6 @@ class Processor implements ProcessorInterface {
         . ' | ' . $link->originalHref() . " => " . $link->correctedHref());
     }
     else {
-      if ($link->removeMceHref()) {
-        $this->config->getLogger()->info('mce_href removed | '
-          . $entity->entityType() . '/' . $entity->entityId()
-          . ' | ' . $link->originalHref() . " => " . $link->correctedHref());
-      }
       if ($link->replace()) {
         $this->config->getLogger()->info('Link corrected | '
           . $entity->entityType() . '/' . $entity->entityId()
