@@ -117,6 +117,12 @@ interface LinkInterface {
   public function replace();
 
   /**
+   * Removes mce_href.
+   * @return mixed
+   */
+  public function removeMceHref();
+
+  /**
    * @return \DOMElement
    */
   public function element();
