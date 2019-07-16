@@ -359,4 +359,16 @@ class Link implements LinkInterface {
     }
     return FALSE;
   }
+
+  /**
+   * Remove attribute mce_href, added by tinymce.
+   * @return bool
+   */
+  public function removeMceHref() {
+    if ($this->element()->getAttribute('mce_href')) {
+      $this->element()->removeAttribute('mce_href');
+      return TRUE;
+    }
+    return FALSE;
+  }
 }

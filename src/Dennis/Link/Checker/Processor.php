@@ -20,7 +20,7 @@ class Processor implements ProcessorInterface {
 
   protected $analyzer;
 
-  protected $timeLimit = 1800;
+  protected $timeLimit = 2700;
 
   protected $localisation;
 
@@ -205,6 +205,7 @@ class Processor implements ProcessorInterface {
 
     // Optionally limit the result set
     $nids = $this->config->getNodeList();
+
     if (!empty($nids)) {
       $query->condition('n.nid', $nids, 'IN');
     }
@@ -304,6 +305,13 @@ class Processor implements ProcessorInterface {
       $entity = $field->getEntity();
 
       foreach ($links as $link) {
+
+        // If url is protocol neutral, force it to use http.
+        if (substr( $link->originalHref(), 0, 2 ) === "//") {
+          $url = ltrim($link->originalHref(), '//');
+          $link->setOriginalHref('http://' . $url);
+        }
+
         if ($err = $link->getError()) {
           if ($link->getNumberOfRedirects() > $this->config->getMaxRedirects()) {
             $msg = 'Excessive Redirects on: '
@@ -361,6 +369,11 @@ class Processor implements ProcessorInterface {
         . ' | ' . $link->originalHref() . " => " . $link->correctedHref());
     }
     else {
+      if ($link->removeMceHref()) {
+        $this->config->getLogger()->info('mce_href removed | '
+          . $entity->entityType() . '/' . $entity->entityId()
+          . ' | ' . $link->originalHref() . " => " . $link->correctedHref());
+      }
       if ($link->replace()) {
         $this->config->getLogger()->info('Link corrected | '
           . $entity->entityType() . '/' . $entity->entityId()
