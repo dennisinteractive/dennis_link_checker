@@ -365,7 +365,7 @@ class Link implements LinkInterface {
    * @return bool
    */
   public function removeMceHref() {
-    if ($this->element()->getAttribute('mce_href')) {
+    if (!empty($this->element()->getAttribute('mce_href'))) {
       $this->element()->removeAttribute('mce_href');
       return TRUE;
     }
