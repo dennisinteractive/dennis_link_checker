@@ -259,6 +259,25 @@ class Link implements LinkInterface {
   }
 
   /**
+   * Check of the href redirects to a <front>.
+   *
+   * @return bool
+   */
+  public function redirectsToFront() {
+    if ($this->data['redirects_to_home']) {
+      return $this->data['redirects_to_home'];
+    }
+
+    $this->data['redirects_to_home'] = FALSE;
+    if ($this->correctedHref() != $this->originalHref()) {
+      if($this->correctedHref() == '/') {
+        $this->data['redirects_to_home'] = TRUE;
+      }
+    }
+    return $this->data['redirects_to_home'];
+  }
+
+  /**
    * Helper function to try find a record for a given path.
    *
    * @param $path

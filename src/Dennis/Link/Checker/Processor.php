@@ -373,7 +373,9 @@ class Processor implements ProcessorInterface {
   public function updateLink(EntityInterface $entity, LinkInterface $link) {
     // Before doing the replacement, check if the link originally pointed to a node, and
     // now points to a term, and if so then remove the link altogether. See case 27710.
-    if ($this->config->removeTermLinks() && $link->redirectsToTerm()) {
+    if (($this->config->removeTermLinks() && $link->redirectsToTerm())
+       || ($this->config->removeFrontLinks() && $link->redirectsToFront()
+    )) {
       // Strip link and keep the text part
       $link->strip();
       $this->config->getLogger()->warning('LINK REMOVED | '

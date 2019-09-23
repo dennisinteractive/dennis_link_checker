@@ -23,6 +23,8 @@ class Config implements ConfigInterface {
 
   protected $removeTermLinks = TRUE;
 
+  protected $removeFrontLinks = TRUE;
+
   protected $nids = FALSE;
 
   protected $fieldNames = [];
@@ -122,6 +124,22 @@ class Config implements ConfigInterface {
    */
   public function removeTermLinks() {
     return $this->removeTermLinks;
+  }
+
+  /**
+   * @inheritDoc
+   */
+  public function setRemoveFrontLinks($remove) {
+    $this->removeFrontLinks = $remove;
+
+    return $this;
+  }
+
+  /**
+   * @inheritDoc
+   */
+  public function removeFrontLinks() {
+    return $this->removeFrontLinks;
   }
 
   /**
