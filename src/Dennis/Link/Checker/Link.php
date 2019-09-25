@@ -264,13 +264,17 @@ class Link implements LinkInterface {
    * @return bool
    */
   public function redirectsToFront() {
+    $parsed_url = parse_url($this->originalHref());
+    $baseurl = $parsed_url['scheme'] . '://' . $parsed_url['host'] . '/';
+
     if ($this->data['redirects_to_home']) {
       return $this->data['redirects_to_home'];
     }
 
     $this->data['redirects_to_home'] = FALSE;
+
     if ($this->correctedHref() != $this->originalHref()) {
-      if($this->correctedHref() == '/') {
+      if (in_array($this->correctedHref(), array('/', $baseurl))) {
         $this->data['redirects_to_home'] = TRUE;
       }
     }
