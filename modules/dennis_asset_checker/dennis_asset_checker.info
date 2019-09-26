@@ -1,0 +1,12 @@
+name = Dennis Link Checker
+description = Monitors links to reduce redirects
+core = 7.x
+package = SEO
+
+dependencies[] = dennis_ga
+dependencies[] = dennis_link_checker
+
+files[] = src/Dennis/Asset/Checker/AssetProcessor.php
+files[] = src/Dennis/Asset/Checker/AssetField.php
+files[] = src/Dennis/Asset/Checker/Asset.php
+files[] = src/Dennis/Asset/Checker/AssetAnalyser.php
