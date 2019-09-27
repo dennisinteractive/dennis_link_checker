@@ -25,7 +25,7 @@ function dennis_asset_checker_drush_command() {
 }
 
 /**
- * Callback for dennis_link_checker_drush_command().
+ * Callback for dennis_asset_checker_drush_command().
  */
 function drush_dennis_asset_checker() {
   drush_print('Starting drush dennis_asset_checker: ' . date(DATE_RFC2822));
@@ -33,5 +33,5 @@ function drush_dennis_asset_checker() {
   $nid = drush_get_option('nids', '');
   $nids = !empty($nid) ? explode(',', $nid) : array();
   dennis_asset_checker_run($nids);
-  drush_print('Finished drush dennis_link_checker: ' . date(DATE_RFC2822));
+  drush_print('Finished drush dennis_asset_checker: ' . date(DATE_RFC2822));
 }
