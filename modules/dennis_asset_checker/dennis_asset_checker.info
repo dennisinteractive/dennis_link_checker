@@ -1,5 +1,5 @@
-name = Dennis Link Checker
-description = Monitors links to reduce redirects
+name = Dennis Asset Checker
+description = Monitors asset links
 core = 7.x
 package = SEO
 

@@ -54,7 +54,7 @@ class AssetProcessor extends Processor {
         foreach ($assets as $asset) {
           // As we log 404 links, I figured we might as well keep the logging for broken assets.
           if ($asset->getHttpCode() == 404 || $asset->getHttpCode() == 403) {
-            $suggested = 'No Suggstion';
+            $suggested = 'No Suggestion';
             $this->notFounds = $asset;
             $this->config->getLogger()->warning('Asset Not Found | '
               . $entity->entityType() . '/' . $entity->entityId()
