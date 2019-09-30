@@ -102,6 +102,13 @@ interface LinkInterface {
   public function redirectsToTerm();
 
   /**
+   * Check if the href redirects to a taxonomy term.
+   *
+   * @return bool
+   */
+  public function redirectsToFront();
+
+  /**
    * Strip link.
    *
    * @param bool $keep_link_text
