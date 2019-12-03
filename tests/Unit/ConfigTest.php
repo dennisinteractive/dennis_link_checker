@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\dennis_link_checker\Unit\Dennis\Link\Checker;
+namespace Drupal\Tests\dennis_link_checker\Unit;
 
 use Drupal\Tests\UnitTestCase;
 use Drupal\dennis_link_checker\Dennis\Link\Checker\Config;
@@ -10,6 +10,8 @@ use Drupal\dennis_link_checker\Dennis\Link\Checker\LinkLocalisation;
 
 /**
  * Class ConfigTest
+ *
+ * @coversDefaultClass \Drupal\dennis_link_checker\Dennis\Link\Checker\Config
  *
  * @package Drupal\dennis_link_checker\Unit\Dennis\Link\Checker
  * @group Link_checker
@@ -97,5 +99,4 @@ class ConfigTest extends UnitTestCase {
   protected function config() {
     return new Config();
   }
-
 }

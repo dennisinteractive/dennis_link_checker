@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\dennis_link_checker\Unit\Dennis\Link\Checker;
+namespace Drupal\Tests\dennis_link_checker\Unit;
 
 use Drupal\Tests\UnitTestCase;
 use Drupal\dennis_link_checker\Dennis\Link\Checker\Field;
@@ -11,6 +11,8 @@ use \Drupal\Core\Database\Connection;
 
 /**
  * Class EntityTest
+ *
+ * @coversDefaultClass \Drupal\dennis_link_checker\Dennis\Link\Checker\Entity
  *
  * @package Drupal\dennis_link_checker\Dennis\Link\Checker
  * @group Link_checker
@@ -71,5 +73,4 @@ class EntityTest extends UnitTestCase {
     $field = $entity->getField('body');
     $this->assertInstanceOf(Field::class, $field);
   }
-
 }

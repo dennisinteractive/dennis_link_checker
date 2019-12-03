@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\dennis_link_checker\Unit\Dennis\Link\Checker;
+namespace Drupal\Tests\dennis_link_checker\Unit;
 
 use Drupal\Tests\UnitTestCase;
 use Drupal\dennis_link_checker\Dennis\Link\Checker\Link;
@@ -12,6 +12,8 @@ use Drupal\dennis_link_checker\Dennis\Link\Checker\RequestTimeoutException;
 
 /**
  * Class AnalyzerTest
+ *
+ * @coversDefaultClass \Drupal\dennis_link_checker\Dennis\Link\Checker\Analyzer
  *
  * @package Drupal\dennis_link_checker\Dennis\Link\Checker
  * @group Link_checker

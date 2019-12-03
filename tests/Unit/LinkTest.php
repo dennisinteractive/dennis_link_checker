@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\dennis_link_checker\Unit\Dennis\Link\Checker;
+namespace Drupal\Tests\dennis_link_checker\Unit;
 
 use Drupal\Component\Utility\Html;
 
@@ -13,6 +13,8 @@ use Drupal\dennis_link_checker\Dennis\Link\Checker\LinkLocalisation;
 
 /**
  * Class LinkTest
+ *
+ * @coversDefaultClass \Drupal\dennis_link_checker\Dennis\Link\Checker\Link
  *
  * @package Drupal\dennis_link_checker\Dennis\Link\Checker
  * @group Link_checker

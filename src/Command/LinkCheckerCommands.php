@@ -75,11 +75,11 @@ class LinkCheckerCommands extends DrushCommands {
    * @throws \Exception
    */
   public function link($nid = '') {
-    drush_print('Starting drush link-checker:link: ' . date(DATE_RFC2822));
+    $this->output()->writeln('Starting drush link-checker:link: ' . date(DATE_RFC2822));
     $nids = !empty($nid) ? explode(',', $nid) : [];
     $set_up = new LinkCheckerSetUp($this->request, $this->connection, $this->state);
     $set_up->run($nids);
-    drush_print('Finished drush link-checker:link: ' . date(DATE_RFC2822));
+    $this->output()->writeln('Finished drush link-checker:link: ' . date(DATE_RFC2822));
   }
 
   /**
@@ -96,10 +96,10 @@ class LinkCheckerCommands extends DrushCommands {
    * @throws \Exception
    */
   public function asset($nid = '') {
-    drush_print('Starting drush link-checker:asset: ' . date(DATE_RFC2822));
+    $this->output()->writeln('Starting drush link-checker:asset: ' . date(DATE_RFC2822));
     $nids = !empty($nid) ? explode(',', $nid) : [];
     $set_up = new AssetCheckerSetUp($this->request, $this->connection, $this->state);
     $set_up->run($nids);
-    drush_print('Finished drush link-checker:asset: ' . date(DATE_RFC2822));
+    $this->output()->writeln('Finished drush link-checker:asset: ' . date(DATE_RFC2822));
   }
 }
