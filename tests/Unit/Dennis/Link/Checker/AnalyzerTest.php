@@ -1,20 +1,26 @@
 <?php
-/**
- * @file
- * Tests for Analyzer
- */
-namespace Dennis\Link\Checker;
 
-use PHPUnit\Framework\TestCase as PHPUnitTestCase;
+namespace Drupal\dennis_link_checker\Unit\Dennis\Link\Checker;
+
+use Drupal\Tests\UnitTestCase;
+use Drupal\dennis_link_checker\Dennis\Link\Checker\Link;
+use Drupal\dennis_link_checker\Dennis\Link\Checker\Analyzer;
+use Drupal\dennis_link_checker\Dennis\Link\Checker\ResourceFailException;
+use Drupal\dennis_link_checker\Dennis\Link\Checker\RequestTimeoutException;
+
+
 
 /**
  * Class AnalyzerTest
- * @package Dennis/Link/Checker
+ *
+ * @package Drupal\dennis_link_checker\Dennis\Link\Checker
+ * @group Link_checker
  */
-class AnalyzerTest extends PHPUnitTestCase {
+class AnalyzerTest extends UnitTestCase {
+
 
   /**
-   * @covers ::getInfo
+   * @covers \Drupal\dennis_link_checker\Dennis\Link\Checker\Analyzer::getInfo
    */
   public function testGetInfo() {
     $analyzer = $this->getMockBuilder(Analyzer::class)
@@ -35,8 +41,8 @@ class AnalyzerTest extends PHPUnitTestCase {
   }
 
   /**
-   * @covers ::getInfo
-   * @expectedException \Dennis\Link\Checker\ResourceFailException
+   * @covers \Drupal\dennis_link_checker\Dennis\Link\Checker\Analyzer::getInfo
+   * @expectedException \Drupal\dennis_link_checker\Dennis\Link\Checker\ResourceFailException
    */
   public function testGetInfoException() {
     // Check the exception is thrown.
@@ -51,8 +57,8 @@ class AnalyzerTest extends PHPUnitTestCase {
   }
 
   /**
-   * @covers ::link
-   * @expectedException \Dennis\Link\Checker\RequestTimeoutException
+   * @covers \Drupal\dennis_link_checker\Dennis\Link\Checker\Analyzer::link
+   * @expectedException \Drupal\dennis_link_checker\Dennis\Link\Checker\RequestTimeoutException
    */
   public function testLinkException() {
     $analyzer = $this->getMockBuilder(Analyzer::class)
@@ -69,5 +75,4 @@ class AnalyzerTest extends PHPUnitTestCase {
       ->getMock();
     $analyzer->link($link);
   }
-
 }

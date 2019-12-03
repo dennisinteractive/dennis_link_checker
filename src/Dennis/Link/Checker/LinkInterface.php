@@ -1,13 +1,11 @@
 <?php
-/**
- * @file
- * LinkInterface
- */
-namespace Dennis\Link\Checker;
+
+namespace Drupal\dennis_link_checker\Dennis\Link\Checker;
 
 /**
  * Interface LinkInterface
- * @package Dennis\Link\Checker
+ *
+ * @package Drupal\dennis_link_checker\Dennis\Link\Checker
  */
 interface LinkInterface {
 

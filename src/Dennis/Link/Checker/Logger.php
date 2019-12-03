@@ -1,13 +1,10 @@
 <?php
-/**
- * @file
- * Logger
- */
-namespace Dennis\Link\Checker;
+
+namespace Drupal\dennis_link_checker\Dennis\Link\Checker;
 
 /**
  * Class Logger
- * @package Dennis\Link\Checker
+ * @package Drupal\dennis_link_checker\Dennis\Link\Checker
  */
 class Logger implements LoggerInterface {
 
@@ -122,36 +119,38 @@ class Logger implements LoggerInterface {
   /**
    * @inheritDoc
    */
-  public function emergency($message, array $context = array()) {
+  public function emergency($message, array $context = []) {
     $this->addRecord(self::EMERGENCY, (string) $message, $context);
   }
 
   /**
    * @inheritDoc
    */
-  public function alert($message, array $context = array()) {
+  public function alert($message, array $context = []) {
     $this->addRecord(self::ALERT, (string) $message, $context);
   }
 
   /**
    * @inheritDoc
    */
-  public function critical($message, array $context = array()) {
+  public function critical($message, array $context = []) {
     $this->addRecord(self::CRITICAL, (string) $message, $context);
   }
 
   /**
    * @inheritDoc
    */
-  public function error($message, array $context = array()) {
+  public function error($message, array $context = []) {
     $this->addRecord(self::ERROR, (string) $message, $context);
     watchdog('dennis_link_checker_seo', $message);
+
+   // \Drupal::logger('my_module')
   }
 
   /**
    * @inheritDoc
    */
-  public function warning($message, array $context = array()) {
+  public function warning($message, array $context = []) {
     $this->addRecord(self::WARNING, (string) $message, $context);
     // Special watchdog so the message can be automatically send to Slack.
     watchdog('dennis_link_checker_seo', $message);
@@ -160,7 +159,7 @@ class Logger implements LoggerInterface {
   /**
    * @inheritDoc
    */
-  public function notice($message, array $context = array()) {
+  public function notice($message, array $context = []) {
     $this->addRecord(self::NOTICE, (string) $message, $context);
     watchdog('dennis_link_checker_seo', $message);
   }
@@ -168,7 +167,7 @@ class Logger implements LoggerInterface {
   /**
    * @inheritDoc
    */
-  public function info($message, array $context = array()) {
+  public function info($message, array $context = []) {
     $this->addRecord(self::INFO, (string) $message, $context);
     watchdog('dennis_link_checker_seo', $message);
   }
@@ -176,14 +175,14 @@ class Logger implements LoggerInterface {
   /**
    * @inheritDoc
    */
-  public function debug($message, array $context = array()) {
+  public function debug($message, array $context = []) {
     $this->addRecord(self::DEBUG, (string) $message, $context);
   }
 
   /**
    * @inheritDoc
    */
-  public function log($level, $message, array $context = array()) {
+  public function log($level, $message, array $context = []) {
     $this->addRecord($level, (string) $message, $context);
   }
 

@@ -1,14 +1,11 @@
 <?php
-/**
- * @file
- * Processor
- */
 
-namespace Dennis\Asset\Checker;
+namespace Drupal\dennis_link_checker\Dennis\Asset\Checker;
 
-use Dennis\Link\Checker\Processor;
-use Dennis\Link\Checker\ItemInterface;
-use Dennis\Link\Checker\EntityInterface;
+use Drupal\dennis_link_checker\Dennis\Link\Checker\Processor;
+use Drupal\dennis_link_checker\Dennis\Link\Checker\ItemInterface;
+use Drupal\dennis_link_checker\Dennis\Link\Checker\EntityInterface;
+use Drupal\dennis_link_checker\Dennis\Link\Checker\TimeoutException;
 use phpDocumentor\Reflection\Types\Boolean;
 
 
@@ -33,7 +30,11 @@ class AssetProcessor extends Processor {
 
   /**
    * correct Assets
+   *
    * Heavily borrowed from Processor correctLinks().
+   *
+   * @param ItemInterface $item
+   * @param AssetField $field
    */
   public function correctAssets(ItemInterface $item, AssetField $field) {
     // Potentially the asset types could be moved to a config

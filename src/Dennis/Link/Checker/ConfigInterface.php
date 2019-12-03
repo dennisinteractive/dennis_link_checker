@@ -1,14 +1,8 @@
 <?php
-/**
- * @file
- * ConfigInterface
- */
-namespace Dennis\Link\Checker;
 
-/**
- * Interface ConfigInterface
- * @package Dennis\Link\Checker
- */
+namespace Drupal\dennis_link_checker\Dennis\Link\Checker;
+
+
 interface ConfigInterface {
 
   /**
@@ -76,7 +70,7 @@ interface ConfigInterface {
   /**
    * The logger to use.
    *
-   * @param \Dennis\Link\Checker\LoggerInterface $logger
+   * @param \Drupal\dennis_link_checker\Dennis\Link\Checker\LoggerInterface $logger
    * @return ConfigInterface
    */
   public function setLogger(LoggerInterface $logger);
@@ -84,7 +78,7 @@ interface ConfigInterface {
   /**
    * The logger.
    *
-   * @return \Dennis\Link\Checker\LoggerInterface $logger
+   * @return \Drupal\dennis_link_checker\Dennis\Link\Checker\LoggerInterface $logger
    */
   public function getLogger();
 

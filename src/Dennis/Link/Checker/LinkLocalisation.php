@@ -1,13 +1,11 @@
 <?php
-/**
- * @file
- * LinkLocalisation
- */
-namespace Dennis\Link\Checker;
+
+namespace Drupal\dennis_link_checker\Dennis\Link\Checker;
 
 /**
  * Class LinkLocalisation
- * @package Dennis\Link\Checker
+ *
+ * @package Drupal\dennis_link_checker\Dennis\Link\Checker
  */
 class LinkLocalisation {
 

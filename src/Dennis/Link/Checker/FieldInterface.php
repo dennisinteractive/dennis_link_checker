@@ -1,13 +1,11 @@
 <?php
-/**
- * @file
- * FieldInterface
- */
-namespace Dennis\Link\Checker;
+
+namespace Drupal\dennis_link_checker\Dennis\Link\Checker;
 
 /**
  * Class Field
- * @package Dennis\Link\Checker
+ *
+ * @package Drupal\dennis_link_checker\Dennis\Link\Checker
  */
 interface FieldInterface {
   /**

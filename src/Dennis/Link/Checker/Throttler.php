@@ -1,17 +1,16 @@
 <?php
-/**
- * @file
- * Throttler
- */
-namespace Dennis\Link\Checker;
+
+namespace Drupal\dennis_link_checker\Dennis\Link\Checker;
 
 /**
  * Class Throttler
- * @package Dennis\Link\Checker
+ *
+ * @package Drupal\dennis_link_checker\Dennis\Link\Checker
  */
 class Throttler implements ThrottlerInterface {
+
   /**
-   * @var
+   * @var int
    */
   protected $startTime = 0;
 
@@ -22,6 +21,7 @@ class Throttler implements ThrottlerInterface {
 
   /**
    * Throttler constructor.
+   *
    * @param $seconds
    */
   public function __construct($seconds) {

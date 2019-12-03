@@ -1,13 +1,11 @@
 <?php
-/**
- * @file
- * Analyzer
- */
-namespace Dennis\Link\Checker;
+
+namespace Drupal\dennis_link_checker\Dennis\Link\Checker;
 
 /**
  * Class Analyzer
- * @package Dennis\Link\Checker
+ *
+ * @package Drupal\dennis_link_checker\Dennis\Link\Checker
  */
 class Analyzer implements AnalyzerInterface {
   /**
@@ -67,13 +65,15 @@ class Analyzer implements AnalyzerInterface {
   }
 
   /**
-   * @inheritDoc
+   * @param array $links
+   * @return array
+   * @throws RequestTimeoutException
+   * @throws TimeoutException
    */
   public function multipleLinks($links) {
-    $timeout = $this->linkTimeLimit + time();
-
+    $current_timeout = $this->linkTimeLimit + time();
     foreach ($links as $link) {
-      if (time() >= $timeout) {
+      if (time() >= $current_timeout) {
         throw new TimeoutException(sprintf('Could not process %s links within %s seconds',
           count($links),
           $this->linkTimeLimit));

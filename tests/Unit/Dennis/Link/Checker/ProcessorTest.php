@@ -1,21 +1,23 @@
 <?php
-/**
- * @file
- * Tests for Processor
- */
-namespace Dennis\Link\Checker;
 
-use PHPUnit\Framework\TestCase as PHPUnitTestCase;
+namespace Drupal\dennis_link_checker\Unit\Dennis\Link\Checker;
 
+use Drupal\Tests\UnitTestCase;
+use Drupal\dennis_link_checker\Dennis\Link\Checker\Config;
+use Drupal\dennis_link_checker\Dennis\Link\Checker\Logger;
+use Drupal\dennis_link_checker\Dennis\Link\Checker\Processor;
+use Drupal\dennis_link_checker\Dennis\Link\Checker\RequestTimeoutException;
 
 /**
  * Class ProcessorTest
- * @package Dennis/Link/Checker
+ *
+ * @package Drupal\dennis_link_checker\Dennis\Link\Checker
+ * @group Link_checker
  */
-class ProcessorTest extends PHPUnitTestCase {
+class ProcessorTest extends UnitTestCase {
 
   /**
-   * @covers ::run
+   * @covers \Drupal\dennis_link_checker\Dennis\Link\Checker\Processor::run
    */
   public function testRun() {
 

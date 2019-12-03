@@ -1,23 +1,37 @@
 <?php
-/**
- * @file
- * Link
- */
-namespace Dennis\Link\Checker;
+
+namespace Drupal\dennis_link_checker\Dennis\Link\Checker;
+
+use Drupal\Core\Database\Connection;
 
 /**
  * Class Link
- * @package Dennis\Link\Checker
+ *
+ * @package Drupal\dennis_link_checker\Dennis\Link\Checker
  */
 class Link implements LinkInterface {
 
+  /**
+   * @var array
+   */
   protected $data = [];
+
+  /**
+   * @var Connection
+   */
+  protected $connection;
+
+  /**
+   * @var ConfigInterface
+   */
+  protected $config;
 
   /**
    * @inheritDoc
    */
-  public function __construct(ConfigInterface $config, $href, \DOMElement $element) {
+  public function __construct(Connection $connection, ConfigInterface $config, $href, \DOMElement $element) {
     $this->setOriginalHref($href);
+    $this->connection = $connection;
     $this->config = $config;
     $this->data['element'] = $element;
   }
@@ -274,7 +288,7 @@ class Link implements LinkInterface {
     $this->data['redirects_to_home'] = FALSE;
 
     if ($this->correctedHref() != $this->originalHref()) {
-      if (in_array($this->correctedHref(), array('/', $baseurl))) {
+      if (in_array($this->correctedHref(), ['/', $baseurl])) {
         $this->data['redirects_to_home'] = TRUE;
       }
     }
@@ -285,19 +299,23 @@ class Link implements LinkInterface {
    * Helper function to try find a record for a given path.
    *
    * @param $path
-   * @return bool|mixed
+   * @return bool
+   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
+   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
   private function getInternalPath($path) {
     $internal_path = FALSE;
     // Check for redirect
-    $redirect = redirect_load_by_source($path);
+    $redirects = new Redirects($this->connection);
+    $redirect = $redirects->redirectLoadBySource($path);
     if (!empty($redirect)) {
       $internal_path = $redirect->redirect;
     }
 
     // Check for alias
     if (empty($internal_path)) {
-      $internal_path = drupal_get_normal_path($path);
+      $default_value = \Drupal::languageManager()->getDefaultLanguage()->getId();
+      $internal_path = \Drupal::service('path.alias_manager')->getPathByAlias($path, $default_value);
     }
 
     return $internal_path;
@@ -348,7 +366,7 @@ class Link implements LinkInterface {
     if (count($parts)) {
       foreach ($parts as $part) {
         if (is_numeric($part)) {
-          return drupal_get_path_alias('node/' . $part);
+          return \Drupal::service('path.alias_manager')->getAliasByPath('/node/' . $part);
         }
       }
     }

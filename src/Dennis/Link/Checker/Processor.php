@@ -1,49 +1,85 @@
 <?php
-/**
- * @file
- * Processor
- */
-namespace Dennis\Link\Checker;
-use DrupalReliableQueueInterface;
 
+namespace Drupal\dennis_link_checker\Dennis\Link\Checker;
+
+use Drupal\Core\State\State;
+use Drupal\Core\Database\Connection;
+use Drupal\Core\Queue\ReliableQueueInterface;
 /**
  * Class Processor
- * @package Dennis\Link\Checker
+ *
+ * @package Drupal\dennis_link_checker\Dennis\Link\Checker
  */
 class Processor implements ProcessorInterface {
 
+  /**
+   * @var ConfigInterface
+   */
   protected $config;
 
+  /**
+   * @var \Drupal\Core\Queue\ReliableQueueInterface $queue
+   */
   protected $queue;
 
+  /**
+   * @var EntityHandlerInterface
+   */
   protected $entityHandeler;
 
+  /**
+   * @var AnalyzerInterface
+   */
   protected $analyzer;
 
-  protected $timeLimit = 2700;
-
-  protected $localisation;
-
-  protected $notFounds = [];
-
+  /**
+   * @var Connection
+   */
+  protected $connection;
 
   /**
-   * ProcessorInterface constructor.
+   * @var State
+   */
+  protected $state;
+
+  /**
+   * @var int
+   */
+  protected $timeLimit = 2700;
+
+  /**
+   * @var string
+   */
+  protected $localisation;
+
+  /**
+   * @var array
+   */
+  protected $notFounds = [];
+
+  /**
+   * Processor constructor.
    *
    * @param ConfigInterface $config
-   * @param DrupalReliableQueueInterface $queue
+   * @param ReliableQueueInterface $queue
    * @param EntityHandlerInterface $entity_handler
    * @param AnalyzerInterface $analyzer
+   * @param Connection $connection
+   * @param State $state
    */
   public function __construct(
     ConfigInterface $config,
-    DrupalReliableQueueInterface $queue,
+    ReliableQueueInterface $queue,
     EntityHandlerInterface $entity_handler,
-    AnalyzerInterface $analyzer) {
+    AnalyzerInterface $analyzer,
+    Connection $connection,
+    State $state) {
       $this->setConfig($config);
       $this->setQueue($queue);
       $this->setEntityHandler($entity_handler);
       $this->setAnalyzer($analyzer);
+      $this->connection = $connection;
+      $this->state = $state;
   }
 
   /**
@@ -60,16 +96,17 @@ class Processor implements ProcessorInterface {
     if (!empty($this->config->getNodeList())) {
       $this->getQueue()->deleteQueue();
     }
-
     $end = time() + $this->timeLimit;
+
 
     // Remove any old items from the queue.
     $this->prune();
 
-    // Make sure there is something to do.
-    $this->ensureEnqueued();
+      // Make sure there is something to do.
+      $this->ensureEnqueued();
 
-    $more = TRUE;
+      $more = TRUE;
+
     while ($more && time() < $end) {
       try {
         $more = $this->doNextItem();
@@ -87,7 +124,7 @@ class Processor implements ProcessorInterface {
    * Whether the site is in maintenance mode.
    */
   public function inMaintenanceMode() {
-    return variable_get('maintenance_mode', 0);
+    return $this->state->get('system.maintenance_mode', 0);
   }
 
   /**
@@ -128,7 +165,7 @@ class Processor implements ProcessorInterface {
   /**
    * @inheritDoc
    */
-  public function setQueue(DrupalReliableQueueInterface $queue) {
+  public function setQueue(ReliableQueueInterface $queue) {
     $this->queue = $queue;
   }
 
@@ -195,18 +232,17 @@ class Processor implements ProcessorInterface {
   public function enqueue($field_name) {
     // entities that have a text area field with a link.
     // Just the body text field for now.
-    $query = db_select('field_data_' . $field_name, 'b');
+    $query = $this->connection->select('node__' . $field_name, 'b');
     // The entity may not be a node.
     $query->leftJoin('node', 'n', 'n.nid = b.entity_id');
+    $query->leftJoin('node_field_data', 'd', 'n.nid = d.nid');
     $query->addField('b', 'entity_id');
-    $query->addField('b', 'entity_type');
+    $query->addField('b', 'bundle');
     // Nodes only if they are published.
-    $or = db_or()->condition('n.status', 1)->isNull('n.status');
-    $query->condition($or);
-
+    $query->condition('d.status', 1);
     // Crudely find things that could be links.
     // Accurate link finding happens when the queue is processed.
-    $query->condition($field_name . '_value', '%' . db_like('<a') . '%', 'LIKE');
+    $query->condition($field_name . '_value', '%' . $query->escapeLike('<a') . '%', 'LIKE');
 
     // Optionally limit the result set
     $nids = $this->config->getNodeList();
@@ -308,7 +344,7 @@ class Processor implements ProcessorInterface {
 
       $do_field_save = FALSE;
       $entity = $field->getEntity();
-
+      /** @var \Drupal\dennis_link_checker\Dennis\Link\Checker\Link $link */
       foreach ($links as $link) {
         // If url is protocol neutral, force it to use http.
         if (substr( $link->originalHref(), 0, 2 ) === "//") {
@@ -358,7 +394,6 @@ class Processor implements ProcessorInterface {
           if ($link->corrected() && $this->updateLink($entity, $link)) {
             $do_field_save = TRUE;
           }
-
         }
       }
       if ($do_field_save) {
@@ -369,6 +404,10 @@ class Processor implements ProcessorInterface {
 
   /**
    * Updates a link.
+   *
+   * @param EntityInterface $entity
+   * @param LinkInterface $link
+   * @return bool
    */
   public function updateLink(EntityInterface $entity, LinkInterface $link) {
     // Before doing the replacement, check if the link originally pointed to a node, and
@@ -397,5 +436,4 @@ class Processor implements ProcessorInterface {
     }
     return TRUE;
   }
-
 }

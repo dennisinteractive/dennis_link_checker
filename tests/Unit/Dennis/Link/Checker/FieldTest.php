@@ -1,50 +1,66 @@
 <?php
-/**
- * @file
- * Tests for Field
- */
-namespace Dennis\Link\Checker;
 
-// Use our mocked versions of some global functions.
-include_once 'global_functions.php';
+namespace Drupal\dennis_link_checker\Unit\Dennis\Link\Checker;
 
-use PHPUnit\Framework\TestCase as PHPUnitTestCase;
+use Drupal\Tests\UnitTestCase;
+use Drupal\Component\Utility\Html;
+use \Drupal\Core\Database\Connection;
+use Drupal\dennis_link_checker\Dennis\Link\Checker\Field;
+use Drupal\dennis_link_checker\Dennis\Link\Checker\Config;
+use Drupal\dennis_link_checker\Dennis\Link\Checker\Logger;
+use Drupal\dennis_link_checker\Dennis\Link\Checker\Entity;
+
 
 /**
  * Class FieldTest
- * @package Dennis/Link/Checker
+ *
+ * @package Drupal\dennis_link_checker\Unit\Dennis\Link\Checker
+ * @group Link_checker
  */
-class FieldTest extends PHPUnitTestCase {
+class FieldTest extends UnitTestCase {
   /**
    * @var Field
    */
   protected $field;
 
   /**
+   * @var Connection
+   */
+  protected $connection;
+
+  /**
    * Setup mock objects.
    */
   public function setup() {
+
+    parent::setUp();
+
+    $this->connection = $this->getMockBuilder(Connection::class)
+      ->disableOriginalConstructor()
+      ->getMock();
+
     $config = (new Config())
       ->setSiteHost('www.theweek.co.uk')
       ->setLogger((new Logger())->setVerbosity(Logger::VERBOSITY_LOW));
 
-    $entity = $this->getMockBuilder('Dennis\Link\Checker\Entity')
+    $entity = $this->getMockBuilder(Entity::class)
       ->disableOriginalConstructor()
+      ->setMethods(['getConfig'])
       ->getMock();
     $entity->method('getConfig')->willReturn($config);
 
-    $this->field = $this->getMockBuilder('Dennis\Link\Checker\Field')
-      ->setConstructorArgs(array($entity, 'body'))
+    $this->field = $this->getMockBuilder(Field::class)
+      ->setConstructorArgs(array($entity, $this->connection, 'body'))
       ->setMethods(array('getDOM'))
       ->getMock();
   }
 
   /**
-   * @covers ::getLinks
+   * @covers \Drupal\dennis_link_checker\Dennis\Link\Checker\Field::getLinks
    * @dataProvider getLinksProvider
    */
   public function testGetLinks($data) {
-    $this->field->method('getDOM')->willReturn(filter_dom_load($data['text']));
+    $this->field->method('getDOM')->willReturn(Html::load($data['text']));
     $links = $this->field->getLinks();
 
     foreach ($data['links'] as $k => $v) {
@@ -72,11 +88,11 @@ class FieldTest extends PHPUnitTestCase {
   }
 
   /**
-   * @covers ::getLinks
+   * @covers \Drupal\dennis_link_checker\Dennis\Link\Checker\Field::getLinks
    * @dataProvider getExternalLinksProvider
    */
   public function testExternalGetLinks($data) {
-    $this->field->method('getDOM')->willReturn(filter_dom_load($data['text']));
+    $this->field->method('getDOM')->willReturn(Html::load($data['text']));
     $links = $this->field->getLinks();
     $this->assertEmpty($links);
   }
@@ -93,5 +109,4 @@ class FieldTest extends PHPUnitTestCase {
       [['text' => '<a href="%22http://www.theweek.co.uk/foo">foo</a>']],
     ];
   }
-
 }

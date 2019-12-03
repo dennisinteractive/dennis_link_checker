@@ -1,13 +1,10 @@
 <?php
-/**
- * @file
- * AnalyzerInterface
- */
-namespace Dennis\Link\Checker;
+
+namespace Drupal\dennis_link_checker\Dennis\Link\Checker;
 
 /**
  * Interface AnalyzeInterface
- * @package Dennis\Link\Checker
+ * @package Drupal\dennis_link_checker\Dennis\Link\Checker
  */
 interface AnalyzerInterface {
 

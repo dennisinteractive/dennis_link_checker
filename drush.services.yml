@@ -1,0 +1,10 @@
+services:
+  dennis_link_checker.commands:
+    class: Drupal\dennis_link_checker\Command\LinkCheckerCommands
+    tags:
+      - { name: drush.command }
+    arguments:
+      - '@state'
+      - '@logger.factory'
+      - '@database'
+      - '@request_stack'

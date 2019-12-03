@@ -1,15 +1,14 @@
 <?php
-/**
- * @file
- * EntityInterface
- */
-namespace Dennis\Link\Checker;
+
+namespace Drupal\dennis_link_checker\Dennis\Link\Checker;
 
 /**
  * Class Entity
- * @package Dennis\Link\Checker
+ *
+ * @package Drupal\dennis_link_checker\Dennis\Link\Checker
  */
 Interface EntityInterface {
+
   /**
    * Entity ID.
    *

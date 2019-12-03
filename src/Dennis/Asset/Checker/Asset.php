@@ -1,12 +1,9 @@
 <?php
 
-/**
- * @file
- * Asset
- */
-namespace Dennis\Asset\Checker;
-use Dennis\Link\Checker\Link;
-use Dennis\Link\Checker\ConfigInterface;
+namespace Drupal\dennis_link_checker\Dennis\Asset\Checker;
+
+use Drupal\dennis_link_checker\Dennis\Link\Checker\Link;
+use Drupal\dennis_link_checker\Dennis\Link\Checker\ConfigInterface;
 
 
 /**

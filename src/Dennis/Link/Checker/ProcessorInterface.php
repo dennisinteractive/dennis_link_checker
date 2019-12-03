@@ -1,14 +1,12 @@
 <?php
-/**
- * @file
- * ProcessorInterface
- */
-namespace Dennis\Link\Checker;
-use DrupalReliableQueueInterface;
+
+namespace Drupal\dennis_link_checker\Dennis\Link\Checker;
+use Drupal\Core\Queue\ReliableQueueInterface;
 
 /**
  * Interface ProcessorInterface
- * @package Dennis\Link\Checker
+ *
+ * @package Drupal\dennis_link_checker\Dennis\Link\Checker
  */
 interface ProcessorInterface {
 
@@ -61,14 +59,14 @@ interface ProcessorInterface {
   /**
    * The queue to process.
    *
-   * @param DrupalReliableQueueInterface $queue
+   * @param ReliableQueueInterface $queue
    * @return ProcessorInterface
    */
-  public function setQueue(DrupalReliableQueueInterface $queue);
+  public function setQueue(ReliableQueueInterface $queue);
 
   /**
    * The drupal queue object.
-   * @return DrupalReliableQueueInterface
+   * @return ReliableQueueInterface
    */
   public function getQueue();
 

@@ -1,85 +1,101 @@
 <?php
-namespace Dennis\Link\Checker;
 
+namespace Drupal\dennis_link_checker\Unit\Dennis\Link\Checker;
 
-use PHPUnit\Framework\TestCase as PHPUnitTestCase;
+use Drupal\Tests\UnitTestCase;
+use Drupal\dennis_link_checker\Dennis\Link\Checker\Config;
+use Drupal\dennis_link_checker\Dennis\Link\Checker\Logger;
+use Drupal\dennis_link_checker\Dennis\Link\Checker\LinkLocalisation;
+
 
 /**
+ * Class ConfigTest
  *
- * @package Dennis/Link/Checker
+ * @package Drupal\dennis_link_checker\Unit\Dennis\Link\Checker
+ * @group Link_checker
  */
-class ConfigTest extends PHPUnitTestCase {
+class ConfigTest extends UnitTestCase {
 
   /**
-   * @covers ::getSiteHost
-   * @covers ::setSiteHost
+   * @covers \Drupal\dennis_link_checker\Dennis\Link\Checker\Config::getSiteHost
+   * @covers \Drupal\dennis_link_checker\Dennis\Link\Checker\Config::setSiteHost
    */
   public function testGetSiteHost() {
-    $config = (new Config())->setSiteHost('foo.com');
+    $config = $this->config()->setSiteHost('foo.com');
     $this->assertEquals('foo.com', $config->getSiteHost());
   }
 
   /**
-   * @covers ::getMaxRedirects
-   * @covers ::setMaxRedirects
+   * @covers \Drupal\dennis_link_checker\Dennis\Link\Checker\Config::getMaxRedirects
+   * @covers \Drupal\dennis_link_checker\Dennis\Link\Checker\Config::setMaxRedirects
    */
   public function testGetMaxRedirects() {
-    $config = (new Config())->setMaxRedirects(1234);
+    $config = $this->config()->setMaxRedirects(1234);
     $this->assertEquals('1234', $config->getMaxRedirects());
   }
 
   /**
-   * @covers ::internalOnly
-   * @covers ::setInternalOnly
+   * @covers \Drupal\dennis_link_checker\Dennis\Link\Checker\Config::internalOnly
+   * @covers \Drupal\dennis_link_checker\Dennis\Link\Checker\Config::setInternalOnly
    */
   public function testInternalOnly() {
-    $config = (new Config())->setInternalOnly(TRUE);
+    $config = $this->config()->setInternalOnly(TRUE);
     $this->assertEquals(TRUE, $config->internalOnly());
   }
 
   /**
-   * @covers ::getLocalisation
-   * @covers ::setLocalisation
+   * @covers \Drupal\dennis_link_checker\Dennis\Link\Checker\Config::getLocalisation
+   * @covers \Drupal\dennis_link_checker\Dennis\Link\Checker\Config::setLocalisation
    */
   public function testGetLocalisation() {
-    $config = (new Config())->setLocalisation(LinkLocalisation::RELATIVE);
+    $config = $this->config()->setLocalisation(LinkLocalisation::RELATIVE);
     $this->assertEquals(LinkLocalisation::RELATIVE, $config->getLocalisation());
   }
 
   /**
-   * @covers ::getLogger
-   * @covers ::setLogger
+   * @covers \Drupal\dennis_link_checker\Dennis\Link\Checker\Config::getLogger
+   * @covers \Drupal\dennis_link_checker\Dennis\Link\Checker\Config::setLogger
    */
   public function testGetLogger() {
-    $config = (new Config())->setLogger($this->getMock(Logger::class));
+    $logger = $this->getMockBuilder(Logger::class)->getMock();
+    $config = $this->config()->setLogger($logger);
     $this->assertInstanceOf(Logger::class, $config->getLogger());
   }
 
   /**
-   * @covers ::removeTermLinks
-   * @covers ::setRemoveTermLinks
+   * @covers \Drupal\dennis_link_checker\Dennis\Link\Checker\Config::removeTermLinks
+   * @covers \Drupal\dennis_link_checker\Dennis\Link\Checker\Config::setRemoveTermLinks
    */
   public function testRemoveTermLinks() {
-    $config = (new Config())->setRemoveTermLinks(TRUE);
+    $config = $this->config()->setRemoveTermLinks(TRUE);
     $this->assertEquals(TRUE, $config->removeTermLinks());
   }
 
   /**
-   * @covers ::getNodeList
-   * @covers ::setNodeList
+   * @covers \Drupal\dennis_link_checker\Dennis\Link\Checker\Config::getNodeList
+   * @covers \Drupal\dennis_link_checker\Dennis\Link\Checker\Config::setNodeList
    */
   public function testGetNodeList() {
-    $config = (new Config())->setNodeList([1,2,3]);
+    $config = $this->config()->setNodeList([1,2,3]);
     $this->assertEquals([1,2,3], $config->getNodeList());
   }
 
   /**
-   * @covers ::getFieldNames
-   * @covers ::setFieldNames
+   * @covers \Drupal\dennis_link_checker\Dennis\Link\Checker\Config::getFieldNames
+   * @covers \Drupal\dennis_link_checker\Dennis\Link\Checker\Config::setFieldNames
    */
   public function testGetFieldNames() {
-    $config = (new Config())->setNodeList(['a', 'b', 'c']);
+    $config = $this->config()->setNodeList(['a', 'b', 'c']);
     $this->assertEquals(['a', 'b', 'c'], $config->getNodeList());
+  }
+
+  /**
+   * Returns an Article object.
+   *
+   * @return \Drupal\dennis_link_checker\Dennis\Link\Checker\Config
+   */
+  protected function config() {
+    return new Config();
   }
 
 }

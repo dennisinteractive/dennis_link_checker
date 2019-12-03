@@ -1,15 +1,22 @@
 <?php
-/**
- * @file
- * Entity
- */
-namespace Dennis\Link\Checker;
+
+namespace Drupal\dennis_link_checker\Dennis\Link\Checker;
+
+use Drupal\Core\Database\Connection;
 
 /**
  * Class Entity
- * @package Dennis\Link\Checker
+ * @package Drupal\dennis_link_checker\Dennis\Link\Checker
  */
 class Entity implements EntityInterface {
+
+  protected $connection;
+
+  /**
+   * @var ConfigInterface
+   */
+  protected $config;
+
   /**
    * @var string
    */
@@ -21,14 +28,10 @@ class Entity implements EntityInterface {
   protected $entityId;
 
   /**
-   * @var ConfigInterface
-   */
-  protected $config;
-
-  /**
    * @inheritDoc
    */
-  public function __construct($config, $entity_type, $entity_id) {
+  public function __construct(Connection $connection, $config, $entity_type, $entity_id) {
+    $this->connection = $connection;
     $this->config = $config;
     $this->entityType = $entity_type;
     $this->entityId = $entity_id;
@@ -59,6 +62,6 @@ class Entity implements EntityInterface {
    * @inheritDoc
    */
   public function getField($field_name) {
-    return new Field($this, $field_name);
+    return new Field($this, $this->connection, $field_name);
   }
 }

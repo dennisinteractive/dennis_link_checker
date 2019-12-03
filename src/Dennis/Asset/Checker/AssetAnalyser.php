@@ -1,15 +1,16 @@
 <?php
 
-/**
- * @file
- * Asset Field
- */
-namespace Dennis\Asset\Checker;
-use Dennis\Link\Checker\Analyzer;
+namespace Drupal\dennis_link_checker\Dennis\Asset\Checker;
+
+use Drupal\dennis_link_checker\Dennis\Link\Checker\Analyzer;
+use Drupal\dennis_link_checker\Dennis\Link\Checker\TimeoutException;
+use Drupal\dennis_link_checker\Dennis\Link\Checker\ResourceFailException;
+use Drupal\dennis_link_checker\Dennis\Link\Checker\RequestTimeoutException;
 
 
 /**
  * Class AssetField
+ *
  * @package Dennis\Asset\Checker
  */
 class AssetAnalyser extends Analyzer {
@@ -19,7 +20,9 @@ class AssetAnalyser extends Analyzer {
    *
    * @param array $assets
    *   An array of Asset assets
-   * @return array
+   * @return mixed
+   * @throws RequestTimeoutException
+   * @throws TimeoutException
    */
   public function multipleAssets($assets) {
     $timeout = $this->linkTimeLimit + time();
@@ -35,8 +38,6 @@ class AssetAnalyser extends Analyzer {
       // Keep the DB connection alive whilst we are processing external links.
       $this->database->keepConnectionAlive();
     }
-
-
     return $assets;
   }
 

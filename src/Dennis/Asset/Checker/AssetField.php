@@ -1,12 +1,8 @@
 <?php
 
-/**
-* @file
-* Asset Field
-*/
-namespace Dennis\Asset\Checker;
-use Dennis\Link\Checker\Field;
+namespace Drupal\dennis_link_checker\Dennis\Asset\Checker;
 
+use Drupal\dennis_link_checker\Dennis\Link\Checker\Field;
 
 /**
  * Class AssetField

@@ -1,23 +1,41 @@
 <?php
-/**
- * @file
- * Test
- */
-namespace Dennis\Link\Checker;
 
-// Use our mocked versions of some global functions.
-include_once 'global_functions.php';
+namespace Drupal\dennis_link_checker\Unit\Dennis\Link\Checker;
 
-use PHPUnit\Framework\TestCase as PHPUnitTestCase;
+use Drupal\Component\Utility\Html;
+
+use Drupal\Tests\UnitTestCase;
+use \Drupal\Core\Database\Connection;
+use Drupal\dennis_link_checker\Dennis\Link\Checker\Config;
+use Drupal\dennis_link_checker\Dennis\Link\Checker\Link;
+use Drupal\dennis_link_checker\Dennis\Link\Checker\LinkLocalisation;
+
 
 /**
  * Class LinkTest
- * @package Dennis/Link/Checker
+ *
+ * @package Drupal\dennis_link_checker\Dennis\Link\Checker
+ * @group Link_checker
  */
-class LinkTest extends PHPUnitTestCase {
+class LinkTest extends UnitTestCase {
 
   /**
-   * @covers ::correctedHref
+   * @var Connection
+   */
+  protected $connection;
+
+  /**
+   * Setup mock objects.
+   */
+  public function setup() {
+    parent::setUp();
+    $this->connection = $this->getMockBuilder(Connection::class)
+      ->disableOriginalConstructor()
+      ->getMock();
+  }
+
+  /**
+   * @covers \Drupal\dennis_link_checker\Dennis\Link\Checker\Link::correctedHref
    * @dataProvider getCorrectedHrefOriginalProvider
    */
   public function testCorrectedHrefOriginal($data) {
@@ -28,7 +46,7 @@ class LinkTest extends PHPUnitTestCase {
       ->disableOriginalConstructor()
       ->getMock();
 
-    $link = new Link($config, $data['in'], $element);
+    $link = new Link($this->connection, $config, $data['in'], $element);
 
     $link->setFoundUrl($data['found']);
     $this->assertEquals($data['in'], $link->originalHref());
@@ -53,7 +71,7 @@ class LinkTest extends PHPUnitTestCase {
   }
 
   /**
-   * @covers ::correctedHref
+   * @covers \Drupal\dennis_link_checker\Dennis\Link\Checker\Link::correctedHref
    * @dataProvider getCorrectedHrefAbsoluteProvider
    */
   public function testCorrectedHrefAbsolute($data) {
@@ -65,7 +83,7 @@ class LinkTest extends PHPUnitTestCase {
       ->disableOriginalConstructor()
       ->getMock();
 
-    $link = new Link($config, $data['in'], $element);
+    $link = new Link($this->connection, $config, $data['in'], $element);
     $link->setFoundUrl($data['found']);
     $this->assertEquals($data['in'], $link->originalHref());
     $this->assertEquals($data['out'], $link->correctedHref());
@@ -89,7 +107,7 @@ class LinkTest extends PHPUnitTestCase {
   }
 
   /**
-   * @covers ::correctedHref
+   * @covers \Drupal\dennis_link_checker\Dennis\Link\Checker\Link::correctedHref
    * @dataProvider getCorrectedHrefRelativeProvider
    */
   public function testCorrectedHrefRelative($data) {
@@ -101,7 +119,7 @@ class LinkTest extends PHPUnitTestCase {
       ->disableOriginalConstructor()
       ->getMock();
 
-    $link = new Link($config, $data['in'], $element);
+    $link = new Link($this->connection, $config, $data['in'], $element);
     $link->setFoundUrl($data['found']);
     $this->assertEquals($data['in'], $link->originalHref());
     $this->assertEquals($data['out'], $link->correctedHref());
@@ -131,7 +149,7 @@ class LinkTest extends PHPUnitTestCase {
   }
 
   /**
-   * @covers ::correctedHref
+   * @covers \Drupal\dennis_link_checker\Dennis\Link\Checker\Link::correctedHref
    * @dataProvider getCorrectedHrefProtocolProvider
    */
   public function testCorrectedHrefProtocol($data) {
@@ -143,7 +161,7 @@ class LinkTest extends PHPUnitTestCase {
       ->disableOriginalConstructor()
       ->getMock();
 
-    $link = new Link($config, $data['in'], $element);
+    $link = new Link($this->connection, $config, $data['in'], $element);
 
     $link->setFoundUrl($data['found']);
     $this->assertEquals($data['in'], $link->originalHref());
@@ -174,7 +192,7 @@ class LinkTest extends PHPUnitTestCase {
   }
 
   /**
-   * @covers ::relativePath
+   * @covers \Drupal\dennis_link_checker\Dennis\Link\Checker\Link::relativePath
    * @dataProvider getRelativePathProvider
    */
   public function testRelativePath($data) {
@@ -184,6 +202,7 @@ class LinkTest extends PHPUnitTestCase {
 
     $field = $this->getMockBuilder('Dennis\Link\Checker\Field')
       ->disableOriginalConstructor()
+      ->setMethods(['getConfig'])
       ->getMock();
     $field->method('getConfig')->willReturn($config);
 
@@ -191,7 +210,7 @@ class LinkTest extends PHPUnitTestCase {
       ->disableOriginalConstructor()
       ->getMock();
 
-    $link = new Link($config, 'foo', $element);
+    $link = new Link($this->connection, $config, 'foo', $element);
 
     $this->assertEquals($data['out'], $link->relativePath($data['in']));
   }
@@ -216,16 +235,18 @@ class LinkTest extends PHPUnitTestCase {
 
 
   /**
-   * @covers ::strip
+   * @covers \Drupal\dennis_link_checker\Dennis\Link\Checker\Link::strip
    * @dataProvider getStripProvider
    */
   public function testStrip($data) {
     // Get all the links from the text and strip 'em.
-    $dom = filter_dom_load($data['text']);
+    $dom = Html::load($data['text']);
     $els = $dom->getElementsByTagName('a');
+    $config = $this->getMockBuilder(Config::class)->getMock();
+
     $links = [];
     foreach ($els as $linkElement) {
-      $links[] = new Link($this->getMock(Config::class), $linkElement->getAttribute('href'), $linkElement);
+      $links[] = new Link($this->connection, $config, $linkElement->getAttribute('href'), $linkElement);
       // Do not strip yet as php gets lost when deletions happen in foreach
     }
 
@@ -233,7 +254,7 @@ class LinkTest extends PHPUnitTestCase {
       $link->strip();
     }
 
-    $this->assertEquals($data['out'], filter_dom_serialize($dom));
+    $this->assertEquals($data['out'], Html::serialize($dom));
   }
 
   /**
@@ -271,7 +292,5 @@ class LinkTest extends PHPUnitTestCase {
       [['text' => 'Foo <a href="http://example.com"><span>An image <img src="image.png" /></span></a> bar',
         'out' => 'Foo <span>An image <img src="image.png" /></span> bar']],
     ];
-
   }
-
 }
