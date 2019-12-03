@@ -33,3 +33,8 @@ xmlrpc.php
 /profiles
 /scripts
 /themes
+
+# Ignore PHPStorm idea directory
+.idea/
+
+
