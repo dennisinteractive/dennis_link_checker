@@ -59,7 +59,6 @@ class Logger implements LoggerInterface {
   const VERBOSITY_HIGH = 2;
   const VERBOSITY_DEBUG = 3;
 
-
   /**
    * Urgent alert.
    */
@@ -122,6 +121,7 @@ class Logger implements LoggerInterface {
    */
   public function emergency($message, array $context = []) {
     $this->addRecord(self::EMERGENCY, (string) $message, $context);
+    $this->setDrupalLog()->emergency($message);
   }
 
   /**
@@ -129,6 +129,7 @@ class Logger implements LoggerInterface {
    */
   public function alert($message, array $context = []) {
     $this->addRecord(self::ALERT, (string) $message, $context);
+    $this->setDrupalLog()->critical($message);
   }
 
   /**
@@ -143,9 +144,7 @@ class Logger implements LoggerInterface {
    */
   public function error($message, array $context = []) {
     $this->addRecord(self::ERROR, (string) $message, $context);
-    watchdog('dennis_link_checker_seo', $message);
-
-   // \Drupal::logger('my_module')
+    $this->setDrupalLog()->error($message);
   }
 
   /**
@@ -154,7 +153,7 @@ class Logger implements LoggerInterface {
   public function warning($message, array $context = []) {
     $this->addRecord(self::WARNING, (string) $message, $context);
     // Special watchdog so the message can be automatically send to Slack.
-    watchdog('dennis_link_checker_seo', $message);
+    $this->setDrupalLog()->warning($message);
   }
 
   /**
@@ -162,7 +161,7 @@ class Logger implements LoggerInterface {
    */
   public function notice($message, array $context = []) {
     $this->addRecord(self::NOTICE, (string) $message, $context);
-    watchdog('dennis_link_checker_seo', $message);
+    $this->setDrupalLog()->notice($message);
   }
 
   /**
@@ -170,7 +169,7 @@ class Logger implements LoggerInterface {
    */
   public function info($message, array $context = []) {
     $this->addRecord(self::INFO, (string) $message, $context);
-    watchdog('dennis_link_checker_seo', $message);
+    $this->setDrupalLog()->info($message);
   }
 
   /**
@@ -187,4 +186,10 @@ class Logger implements LoggerInterface {
     $this->addRecord($level, (string) $message, $context);
   }
 
+  /**
+   * @return \Psr\Log\LoggerInterface
+   */
+  protected function setDrupalLog() {
+    return \Drupal::logger('dennis_link_checker');
+  }
 }
