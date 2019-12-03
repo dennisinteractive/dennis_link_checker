@@ -64,11 +64,11 @@ class Field implements FieldInterface {
     if (!isset($this->dom)) {
       $value_field = $this->field_name . '_value';
 
-      $query = $this->connection->select('field_data_' . $this->field_name, 't');
+      $query = $this->connection->select('node__' . $this->field_name, 't');
       $query->addField('t', $value_field);
       $query->addField('t', 'revision_id');
       $query->condition('entity_id', $this->getEntity()->entityId());
-      $query->condition('entity_type', $this->getEntity()->entityType());
+      $query->condition('bundle', $this->getEntity()->entityType());
       $query->condition('delta', 0);
       $result = $query->execute()->fetchObject();
 

@@ -14,7 +14,6 @@ use Drupal\dennis_link_checker\Dennis\Link\Checker\EntityHandler;
 use Drupal\dennis_link_checker\Dennis\Link\Checker\LinkLocalisation;
 
 
-
 /**
  * Class LinkCheckerSetUp
  *

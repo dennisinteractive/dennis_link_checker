@@ -5,6 +5,7 @@ namespace Drupal\dennis_link_checker\Dennis\Link\Checker;
 use Drupal\Core\State\State;
 use Drupal\Core\Database\Connection;
 use Drupal\Core\Queue\ReliableQueueInterface;
+
 /**
  * Class Processor
  *

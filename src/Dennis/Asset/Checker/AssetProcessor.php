@@ -2,6 +2,12 @@
 
 namespace Drupal\dennis_link_checker\Dennis\Asset\Checker;
 
+use Drupal\Core\Database\Connection;
+use Drupal\Core\Queue\ReliableQueueInterface;
+use Drupal\Core\State\State;
+use Drupal\dennis_link_checker\Dennis\Link\Checker\AnalyzerInterface;
+use Drupal\dennis_link_checker\Dennis\Link\Checker\ConfigInterface;
+use Drupal\dennis_link_checker\Dennis\Link\Checker\EntityHandlerInterface;
 use Drupal\dennis_link_checker\Dennis\Link\Checker\Processor;
 use Drupal\dennis_link_checker\Dennis\Link\Checker\ItemInterface;
 use Drupal\dennis_link_checker\Dennis\Link\Checker\EntityInterface;
@@ -16,6 +22,32 @@ use phpDocumentor\Reflection\Types\Boolean;
 class AssetProcessor extends Processor {
 
   /**
+   * @var Connection
+   */
+  protected $connection;
+
+
+  /**
+   * AssetProcessor constructor.
+   *
+   * @param ConfigInterface $config
+   * @param ReliableQueueInterface $queue
+   * @param EntityHandlerInterface $entity_handler
+   * @param AnalyzerInterface $analyzer
+   * @param Connection $connection
+   * @param State $state
+   */
+  public function __construct(ConfigInterface $config,
+                              ReliableQueueInterface $queue,
+                              EntityHandlerInterface $entity_handler,
+                              AnalyzerInterface $analyzer,
+                              Connection $connection,
+                              State $state){
+    parent::__construct($config, $queue, $entity_handler, $analyzer, $connection, $state);
+    $this->connection = $connection;
+  }
+
+  /**
    * @inheritDoc
    */
   public function queueWorker($item) {
@@ -23,7 +55,7 @@ class AssetProcessor extends Processor {
     if ($item instanceof ItemInterface) {
       $handler = $this->getEntityHandler();
       $entity = $handler->getEntity($item->entityType(), $item->entityId());
-      $field = new AssetField($entity, $item->fieldName());
+      $field = new AssetField($entity, $this->connection, $item->fieldName());
       $this->correctAssets($item, $field);
     }
   }

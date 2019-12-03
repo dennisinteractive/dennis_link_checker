@@ -8,7 +8,6 @@ interface LinkCheckerSetUpInterface {
   /**
    *
    * @param array $nids
-   * @return Processor
    */
   public function run(array $nids);
 }

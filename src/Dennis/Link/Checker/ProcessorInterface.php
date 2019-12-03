@@ -1,6 +1,7 @@
 <?php
 
 namespace Drupal\dennis_link_checker\Dennis\Link\Checker;
+
 use Drupal\Core\Queue\ReliableQueueInterface;
 
 /**

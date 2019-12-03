@@ -9,6 +9,4 @@ namespace Drupal\dennis_link_checker\Dennis\Link\Checker;
  */
 class RequestTimeoutException extends \Exception {
 
-
-
 }

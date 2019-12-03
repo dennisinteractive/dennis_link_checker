@@ -50,8 +50,8 @@ class FieldTest extends UnitTestCase {
     $entity->method('getConfig')->willReturn($config);
 
     $this->field = $this->getMockBuilder(Field::class)
-      ->setConstructorArgs(array($entity, $this->connection, 'body'))
-      ->setMethods(array('getDOM'))
+      ->setConstructorArgs([$entity, $this->connection, 'body'])
+      ->setMethods(['getDOM'])
       ->getMock();
   }
 

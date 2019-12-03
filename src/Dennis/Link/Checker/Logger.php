@@ -4,6 +4,7 @@ namespace Drupal\dennis_link_checker\Dennis\Link\Checker;
 
 /**
  * Class Logger
+ *
  * @package Drupal\dennis_link_checker\Dennis\Link\Checker
  */
 class Logger implements LoggerInterface {

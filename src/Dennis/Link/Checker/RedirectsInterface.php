@@ -20,15 +20,6 @@ interface RedirectsInterface {
    *   Array of URL query parameters.
    * @param $enabled_only
    *   Boolean that indicates whether to only load enabled redirects.
-   *
-   * @return
-   *   The first matched URL redirect object, or FALSE if there aren't any.
-   *
-   * @see redirect_load_multiple()
-   * @see _redirect_uasort()
-   * @see redirect_compare_array_recursive()
-   *
-   * @ingroup redirect_api
    */
   public function redirectLoadBySource($source, $language = LANGUAGE_NONE, array $query = [], $enabled_only = TRUE);
 
@@ -37,8 +28,6 @@ interface RedirectsInterface {
    *
    * @param $rids
    *   An array of redirect IDs.
-   * @return
-   *   An array of URL redirect objects indexed by redirect IDs.
    */
   public function redirectLoadMultiple($rids = []);
   /**
@@ -51,8 +40,6 @@ interface RedirectsInterface {
    * @param $enabled_only
    *   Boolean that indicates whether to only load enabled redirects.
    *
-   * @return array
-   *   An indexed array of IDs, or an empty array if there is no result set.
    */
   public function redirectFetchRidsByPath($source, $language, $enabled_only = FALSE);
 
@@ -65,9 +52,6 @@ interface RedirectsInterface {
    *   The array that has the values.
    * @param $haystack
    *   The array that will be searched for values.
-   * @return
-   *   TRUE if all the elements of $match were found in $haystack, or FALSE
-   *   otherwise.
    */
   public function redirectCompareArrayRecursive($match, $haystack);
 }
