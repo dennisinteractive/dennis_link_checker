@@ -5,6 +5,7 @@ namespace Drupal\dennis_link_checker\Dennis\Link\Checker;
 use Drupal\Core\State\State;
 use Drupal\Core\Database\Connection;
 use Drupal\Core\Queue\ReliableQueueInterface;
+use Drupal\dennis_link_checker\Dennis\CheckerManagers;
 
 /**
  * Class Processor
@@ -39,6 +40,12 @@ class Processor implements ProcessorInterface {
   protected $connection;
 
   /**
+   * @var CheckerManagers
+   */
+  protected $checker_managers;
+
+
+  /**
    * @var State
    */
   protected $state;
@@ -58,6 +65,7 @@ class Processor implements ProcessorInterface {
    */
   protected $notFounds = [];
 
+
   /**
    * Processor constructor.
    *
@@ -66,21 +74,23 @@ class Processor implements ProcessorInterface {
    * @param EntityHandlerInterface $entity_handler
    * @param AnalyzerInterface $analyzer
    * @param Connection $connection
+   * @param CheckerManagers $checkerManagers
    * @param State $state
    */
-  public function __construct(
-    ConfigInterface $config,
-    ReliableQueueInterface $queue,
-    EntityHandlerInterface $entity_handler,
-    AnalyzerInterface $analyzer,
-    Connection $connection,
-    State $state) {
-      $this->setConfig($config);
-      $this->setQueue($queue);
-      $this->setEntityHandler($entity_handler);
-      $this->setAnalyzer($analyzer);
-      $this->connection = $connection;
-      $this->state = $state;
+  public function __construct(ConfigInterface $config,
+                              ReliableQueueInterface $queue,
+                              EntityHandlerInterface $entity_handler,
+                              AnalyzerInterface $analyzer,
+                              Connection $connection,
+                              CheckerManagers $checkerManagers,
+                              State $state) {
+    $this->setConfig($config);
+    $this->setQueue($queue);
+    $this->setEntityHandler($entity_handler);
+    $this->setAnalyzer($analyzer);
+    $this->connection = $connection;
+    $this->checker_managers = $checkerManagers;
+    $this->state = $state;
   }
 
   /**

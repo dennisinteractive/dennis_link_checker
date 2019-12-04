@@ -21,7 +21,13 @@ class AssetField extends Field {
 
     foreach ($assets as $assetElement) {
       $src = $assetElement->getAttribute('src');
-      $found[] = new Asset($this->getConfig(), $src, $assetElement);
+      $found[] = new Asset(
+        $this->connection,
+        $this->checker_managers,
+        $this->getConfig(),
+        $src,
+        $assetElement
+      );
     }
     return $found;
   }

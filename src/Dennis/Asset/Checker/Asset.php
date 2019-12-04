@@ -2,24 +2,48 @@
 
 namespace Drupal\dennis_link_checker\Dennis\Asset\Checker;
 
+use Drupal\Core\Database\Connection;
 use Drupal\dennis_link_checker\Dennis\Link\Checker\Link;
 use Drupal\dennis_link_checker\Dennis\Link\Checker\ConfigInterface;
+use Drupal\dennis_link_checker\Dennis\CheckerManagers;
 
 
 /**
  * Class AssetField
+ *
  * @package Dennis\Asset\Checker
  *
  * To avoid a lot of very similar code this extends link.
  */
 class Asset extends Link {
+
   protected $data = [];
 
   /**
-   * @inheritDoc
+   * Asset constructor.
+   *
+   * @param Connection $connection
+   * @param CheckerManagers $checkerManagers
+   * @param ConfigInterface $config
+   * @param $href
+   * @param \DOMElement $element
    */
-  public function __construct(ConfigInterface $config, $src, \DOMElement $element) {
-    $this->setOriginalSrc($src);
+  public function __construct(
+    Connection $connection,
+    CheckerManagers $checkerManagers,
+    ConfigInterface $config,
+    $href,
+    \DOMElement $element) {
+
+    parent::__construct(
+      $connection,
+      $checkerManagers,
+      $config,
+      $href,
+      $element
+    );
+
+    $this->setOriginalSrc($href);
     $this->config = $config;
     $this->data['element'] = $element;
   }

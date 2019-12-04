@@ -7,3 +7,4 @@ services:
       - '@database'
       - '@request_stack'
       - '@state'
+      - '@dennis_link_checker.managers'

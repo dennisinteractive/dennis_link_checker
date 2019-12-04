@@ -3,9 +3,9 @@
 namespace Drupal\Tests\dennis_link_checker\Unit;
 
 use Drupal\Component\Utility\Html;
-
 use Drupal\Tests\UnitTestCase;
 use \Drupal\Core\Database\Connection;
+use Drupal\dennis_link_checker\Dennis\CheckerManagers;
 use Drupal\dennis_link_checker\Dennis\Link\Checker\Config;
 use Drupal\dennis_link_checker\Dennis\Link\Checker\Link;
 use Drupal\dennis_link_checker\Dennis\Link\Checker\LinkLocalisation;
@@ -27,11 +27,19 @@ class LinkTest extends UnitTestCase {
   protected $connection;
 
   /**
+   * @var CheckerManagers
+   */
+  protected $checker_managers;
+
+  /**
    * Setup mock objects.
    */
   public function setup() {
     parent::setUp();
     $this->connection = $this->getMockBuilder(Connection::class)
+      ->disableOriginalConstructor()
+      ->getMock();
+    $this->checker_managers = $this->getMockBuilder(CheckerManagers::class)
       ->disableOriginalConstructor()
       ->getMock();
   }
@@ -48,7 +56,8 @@ class LinkTest extends UnitTestCase {
       ->disableOriginalConstructor()
       ->getMock();
 
-    $link = new Link($this->connection, $config, $data['in'], $element);
+    $link = new Link($this->connection,$this->checker_managers, $config, $data['in'], $element);
+
 
     $link->setFoundUrl($data['found']);
     $this->assertEquals($data['in'], $link->originalHref());
@@ -85,7 +94,7 @@ class LinkTest extends UnitTestCase {
       ->disableOriginalConstructor()
       ->getMock();
 
-    $link = new Link($this->connection, $config, $data['in'], $element);
+    $link = new Link($this->connection,$this->checker_managers, $config, $data['in'], $element);
     $link->setFoundUrl($data['found']);
     $this->assertEquals($data['in'], $link->originalHref());
     $this->assertEquals($data['out'], $link->correctedHref());
@@ -121,7 +130,7 @@ class LinkTest extends UnitTestCase {
       ->disableOriginalConstructor()
       ->getMock();
 
-    $link = new Link($this->connection, $config, $data['in'], $element);
+    $link = new Link($this->connection,$this->checker_managers, $config, $data['in'], $element);
     $link->setFoundUrl($data['found']);
     $this->assertEquals($data['in'], $link->originalHref());
     $this->assertEquals($data['out'], $link->correctedHref());
@@ -163,7 +172,7 @@ class LinkTest extends UnitTestCase {
       ->disableOriginalConstructor()
       ->getMock();
 
-    $link = new Link($this->connection, $config, $data['in'], $element);
+    $link = new Link($this->connection,$this->checker_managers, $config, $data['in'], $element);
 
     $link->setFoundUrl($data['found']);
     $this->assertEquals($data['in'], $link->originalHref());
@@ -212,7 +221,7 @@ class LinkTest extends UnitTestCase {
       ->disableOriginalConstructor()
       ->getMock();
 
-    $link = new Link($this->connection, $config, 'foo', $element);
+    $link = new Link($this->connection,$this->checker_managers, $config, 'foo', $element);
 
     $this->assertEquals($data['out'], $link->relativePath($data['in']));
   }
@@ -248,7 +257,7 @@ class LinkTest extends UnitTestCase {
 
     $links = [];
     foreach ($els as $linkElement) {
-      $links[] = new Link($this->connection, $config, $linkElement->getAttribute('href'), $linkElement);
+      $links[] = new Link($this->connection,$this->checker_managers, $config, $linkElement->getAttribute('href'), $linkElement);
       // Do not strip yet as php gets lost when deletions happen in foreach
     }
 

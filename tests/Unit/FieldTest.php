@@ -5,6 +5,7 @@ namespace Drupal\Tests\dennis_link_checker\Unit;
 use Drupal\Tests\UnitTestCase;
 use Drupal\Component\Utility\Html;
 use \Drupal\Core\Database\Connection;
+use Drupal\dennis_link_checker\Dennis\CheckerManagers;
 use Drupal\dennis_link_checker\Dennis\Link\Checker\Field;
 use Drupal\dennis_link_checker\Dennis\Link\Checker\Config;
 use Drupal\dennis_link_checker\Dennis\Link\Checker\Logger;
@@ -31,6 +32,11 @@ class FieldTest extends UnitTestCase {
   protected $connection;
 
   /**
+   * @var CheckerManagers
+   */
+  protected $checker_managers;
+
+  /**
    * Setup mock objects.
    */
   public function setup() {
@@ -38,6 +44,10 @@ class FieldTest extends UnitTestCase {
     parent::setUp();
 
     $this->connection = $this->getMockBuilder(Connection::class)
+      ->disableOriginalConstructor()
+      ->getMock();
+
+    $this->checker_managers = $this->getMockBuilder(CheckerManagers::class)
       ->disableOriginalConstructor()
       ->getMock();
 
@@ -52,7 +62,7 @@ class FieldTest extends UnitTestCase {
     $entity->method('getConfig')->willReturn($config);
 
     $this->field = $this->getMockBuilder(Field::class)
-      ->setConstructorArgs([$entity, $this->connection, 'body'])
+      ->setConstructorArgs([$entity, $this->connection, $this->checker_managers, 'body'])
       ->setMethods(['getDOM'])
       ->getMock();
   }

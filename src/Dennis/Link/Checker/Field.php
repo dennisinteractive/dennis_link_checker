@@ -4,6 +4,7 @@ namespace Drupal\dennis_link_checker\Dennis\Link\Checker;
 
 use Drupal\Component\Utility\Html;
 use Drupal\Core\Database\Connection;
+use Drupal\dennis_link_checker\Dennis\CheckerManagers;
 
 /**
  * Class Field
@@ -20,6 +21,11 @@ class Field implements FieldInterface {
    * @var Connection
    */
   protected $connection;
+
+  /**
+   * @var CheckerManagers
+   */
+  protected $checker_managers;
 
   /**
    * @var int revision ID
@@ -41,12 +47,22 @@ class Field implements FieldInterface {
    */
   protected $config;
 
+
   /**
-   * @inheritDoc
+   * Field constructor.
+   *
+   * @param EntityInterface $entity
+   * @param Connection $connection
+   * @param CheckerManagers $checkerManagers
+   * @param $field_name
    */
-  public function __construct(EntityInterface $entity, Connection $connection, $field_name) {
+  public function __construct(EntityInterface $entity,
+                              Connection $connection,
+                              CheckerManagers $checkerManagers,
+                              $field_name) {
     $this->entity = $entity;
     $this->connection = $connection;
+    $this->checker_managers = $checkerManagers;
     $this->field_name = $field_name;
   }
 
@@ -99,18 +115,36 @@ class Field implements FieldInterface {
           if (empty($parsed['host'])) {
             if (!empty($parsed['path']) && $parsed['path'][0] == '/') {
               // A valid local link.
-              $found[] = new Link($this->connection, $this->getConfig(), $href, $linkElement);
+              $found[] = new Link(
+                $this->connection,
+                $this->checker_managers,
+                $this->getConfig(),
+                $href,
+                $linkElement
+              );
             }
           }
           elseif ($parsed['host'] == $this->getConfig()->getSiteHost()) {
             // A full url, but local
-            $found[] = new Link($this->connection, $this->getConfig(), $href, $linkElement);
+            $found[] = new Link(
+              $this->connection,
+              $this->checker_managers,
+              $this->getConfig(),
+              $href,
+              $linkElement
+            );
           }
         }
       }
       else {
         // All links.
-        $found[] = new Link($this->connection, $this->getConfig(), $href, $linkElement);
+        $found[] =new Link(
+          $this->connection,
+          $this->checker_managers,
+          $this->getConfig(),
+          $href,
+          $linkElement
+        );
       }
     }
 
@@ -124,7 +158,7 @@ class Field implements FieldInterface {
     $updated = 0;
 
     $updated_text = Html::serialize($this->getDOM());
-    
+
     foreach (['_', 'revision__'] as $table_type) {
       $table = 'node_' . $table_type . $this->field_name;
       if ($this->connection->schema()->tableExists($table)) {

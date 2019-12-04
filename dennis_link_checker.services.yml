@@ -1,7 +1,16 @@
 services:
+  dennis_link_checker.managers:
+    class: Drupal\dennis_link_checker\Dennis\CheckerManagers
+    arguments:
+      - '@entity_type.manager'
+      - '@path.alias_manager'
+      - '@language_manager'
+      - '@module_handler'
+      - '@config.factory'
   dennis_link_checker.commands:
     class: Drupal\dennis_link_checker\Command\LinkCheckerCommands
     arguments:
       - '@database'
       - '@request_stack'
       - '@state'
+      - '@dennis_link_checker.managers'

@@ -3,6 +3,7 @@
 namespace Drupal\dennis_link_checker\Dennis\Link\Checker;
 
 use Drupal\Core\Database\Connection;
+use Drupal\dennis_link_checker\Dennis\CheckerManagers;
 
 /**
  * Class EntityHandler
@@ -22,11 +23,23 @@ class EntityHandler implements EntityHandlerInterface {
   protected $connection;
 
   /**
-   * @inheritDoc
+   * @var CheckerManagers
    */
-  public function __construct(ConfigInterface $config, Connection $connection) {
+  protected $checker_managers;
+
+  /**
+   * EntityHandler constructor.
+   *
+   * @param ConfigInterface $config
+   * @param Connection $connection
+   * @param CheckerManagers $checkerManagers
+   */
+  public function __construct(ConfigInterface $config,
+                              Connection $connection,
+                              CheckerManagers $checkerManagers) {
     $this->config = $config;
     $this->connection = $connection;
+    $this->checker_managers = $checkerManagers;
   }
 
   /**
@@ -48,6 +61,12 @@ class EntityHandler implements EntityHandlerInterface {
    * @inheritDoc
    */
   public function getEntity($entity_type, $entity_id) {
-    return new Entity($this->connection, $this->config, $entity_type, $entity_id);
+    return new Entity(
+      $this->connection,
+      $this->checker_managers,
+      $this->config,
+      $entity_type,
+      $entity_id
+    );
   }
 }

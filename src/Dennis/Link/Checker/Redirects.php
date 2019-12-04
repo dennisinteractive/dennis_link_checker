@@ -3,6 +3,9 @@
 namespace Drupal\dennis_link_checker\Dennis\Link\Checker;
 
 use Drupal\Core\Database\Connection;
+use Drupal\Core\Config\ConfigFactory;
+use Drupal\Core\Extension\ModuleHandler;
+use Drupal\Core\Entity\EntityTypeManager;
 use Drupal\Core\Database\Query\Condition;
 
 /**
@@ -18,11 +21,36 @@ class Redirects implements RedirectsInterface {
   protected $connection;
 
   /**
-   * Redirects constructor.
-   * @param Connection $connection
+   * @var ModuleHandler
    */
-  public function __construct(Connection $connection) {
+  protected $module_handler;
+
+  /**
+   * @var ConfigFactory
+   */
+  protected $config_factory;
+
+  /**
+   * @var EntityTypeManager
+   */
+  protected $entity_type_manager;
+
+  /**
+   * Redirects constructor.
+   *
+   * @param Connection $connection
+   * @param ModuleHandler $moduleHandler
+   * @param ConfigFactory $configFactory
+   * @param EntityTypeManager $entityTypeManager
+   */
+  public function __construct(Connection $connection,
+                              ModuleHandler $moduleHandler,
+                              ConfigFactory $configFactory,
+                              EntityTypeManager $entityTypeManager) {
     $this->connection = $connection;
+    $this->module_handler = $moduleHandler;
+    $this->config_factory = $configFactory;
+    $this->entity_type_manager = $entityTypeManager;
   }
 
   /**
@@ -63,7 +91,7 @@ class Redirects implements RedirectsInterface {
 
         // Allow other modules to alter the redirect candidates before selecting the top one.
         $context = ['language' => $language, 'query' => $query];
-        \Drupal::moduleHandler()->alter('redirect_load_by_source', $redirects, $source, $context);
+        $this->module_handler->alter('redirect_load_by_source', $redirects, $source, $context);
         return !empty($redirects) ? reset($redirects) : FALSE;
       }
     }
@@ -82,9 +110,8 @@ class Redirects implements RedirectsInterface {
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
   public function redirectLoadMultiple($rids = []) {
-
     // Using the storage controller (recommended).
-    return \Drupal::entityTypeManager()->getStorage('redirect')->loadMultiple($rids);
+    return $this->entity_type_manager->getStorage('redirect')->loadMultiple($rids);
   }
 
 
@@ -108,14 +135,13 @@ class Redirects implements RedirectsInterface {
     }
 
     // Run a case-insensitive query for matching RIDs first.
-
     $rid_query = $this->connection->select('redirect');
     $rid_query->addField('redirect', 'rid');
     if ($enabled_only && $status_field_exists) {
       $rid_query->condition('status', 1);
     }
 
-    if ($source !=  \Drupal::config('system.site')->get('page.front')) {
+    if ($source != $this->config_factory->get('system.site')->get('page.front')) {
       $rid_query->condition('source', $rid_query->escapeLike($source), 'LIKE');
     }
     else {

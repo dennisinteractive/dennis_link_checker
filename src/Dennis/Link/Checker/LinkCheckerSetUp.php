@@ -4,7 +4,9 @@ namespace Drupal\dennis_link_checker\Dennis\Link\Checker;
 
 use Drupal\Core\State\State;
 use Drupal\Core\Database\Connection;
+use Drupal\dennis_link_checker\Dennis\CheckerManagers;
 use Symfony\Component\HttpFoundation\RequestStack;
+
 
 /**
  * Class LinkCheckerSetUp
@@ -12,6 +14,11 @@ use Symfony\Component\HttpFoundation\RequestStack;
  * @package Drupal\dennis_link_checker\Dennis\Link\Checker
  */
 class LinkCheckerSetUp implements LinkCheckerSetUpInterface {
+
+  /**
+   * @var RequestStack
+   */
+  protected $request;
 
   /***
    * @var Connection
@@ -24,9 +31,9 @@ class LinkCheckerSetUp implements LinkCheckerSetUpInterface {
   protected $state;
 
   /**
-   * @var RequestStack
+   * @var CheckerManagers
    */
-  protected $request;
+  protected $checker_managers;
 
   /**
    * LinkCheckerSetUp constructor.
@@ -34,17 +41,20 @@ class LinkCheckerSetUp implements LinkCheckerSetUpInterface {
    * @param RequestStack $request
    * @param Connection $connection
    * @param State $state
+   * @param CheckerManagers $checkerManagers
    */
-  public function __construct(RequestStack $request, Connection $connection, State $state) {
+  public function __construct(RequestStack $request,
+                              Connection $connection,
+                              State $state,
+                              CheckerManagers $checkerManagers) {
     $this->connection = $connection;
     $this->state = $state;
     $this->request = $request;
+    $this->checker_managers = $checkerManagers;
   }
 
   /**
-   *
    * @param array $nids
-   * @return Processor
    */
   public function run(array $nids) {
     $site_host = $this->request->getCurrentRequest()->getSchemeAndHttpHost();
@@ -58,13 +68,26 @@ class LinkCheckerSetUp implements LinkCheckerSetUpInterface {
       ->setNodeList($nids);
 
     $queue = new Queue('dennis_link_checker', $this->connection);
-    $entity_handler = new EntityHandler($config, $this->connection);
+    $entity_handler = new EntityHandler(
+      $config,
+      $this->connection,
+      $this->checker_managers
+    );
     // Make sure we don't request more than one page per second.
     $curl_throttler = new Throttler(1);
     // Database object that allows interaction with the DB.
     $database = new Database($this->connection);
     $analyzer = new Analyzer($config, $curl_throttler, $database);
-    $processor = new Processor($config, $queue, $entity_handler, $analyzer, $this->connection, $this->state);
+
+    $processor = new Processor(
+      $config,
+      $queue,
+      $entity_handler,
+      $analyzer,
+      $this->connection,
+      $this->checker_managers,
+      $this->state
+    );
     $processor->run();
   }
 }

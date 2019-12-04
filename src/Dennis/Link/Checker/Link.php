@@ -3,6 +3,7 @@
 namespace Drupal\dennis_link_checker\Dennis\Link\Checker;
 
 use Drupal\Core\Database\Connection;
+use Drupal\dennis_link_checker\Dennis\CheckerManagers;
 
 /**
  * Class Link
@@ -22,16 +23,32 @@ class Link implements LinkInterface {
   protected $connection;
 
   /**
+   * @var CheckerManagers
+   */
+  protected $checker_managers;
+
+  /**
    * @var ConfigInterface
    */
   protected $config;
 
   /**
-   * @inheritDoc
+   * Link constructor.
+   *
+   * @param Connection $connection
+   * @param CheckerManagers $checkerManagers
+   * @param ConfigInterface $config
+   * @param $href
+   * @param \DOMElement $element
    */
-  public function __construct(Connection $connection, ConfigInterface $config, $href, \DOMElement $element) {
+  public function __construct(Connection $connection,
+                              CheckerManagers $checkerManagers,
+                              ConfigInterface $config,
+                              $href,
+                              \DOMElement $element) {
     $this->setOriginalHref($href);
     $this->connection = $connection;
+    $this->checker_managers = $checkerManagers;
     $this->config = $config;
     $this->data['element'] = $element;
   }
@@ -232,7 +249,9 @@ class Link implements LinkInterface {
   /**
    * Check of the href redirects to a taxonomy term.
    *
-   * @return bool
+   * @return bool|mixed
+   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
+   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
   public function redirectsToTerm() {
     if ($this->data['redirects_to_term']) {
@@ -306,7 +325,12 @@ class Link implements LinkInterface {
   private function getInternalPath($path) {
     $internal_path = FALSE;
     // Check for redirect
-    $redirects = new Redirects($this->connection);
+    $redirects = new Redirects(
+      $this->connection,
+      $this->checker_managers->getModuleHandler(),
+      $this->checker_managers->getConfigFactory(),
+      $this->checker_managers->getEntityTypeManager()
+    );
     $redirect = $redirects->redirectLoadBySource($path);
     if (!empty($redirect)) {
       $internal_path = $redirect->redirect;
@@ -314,8 +338,8 @@ class Link implements LinkInterface {
 
     // Check for alias
     if (empty($internal_path)) {
-      $default_value = \Drupal::languageManager()->getDefaultLanguage()->getId();
-      $internal_path = \Drupal::service('path.alias_manager')->getPathByAlias($path, $default_value);
+      $default_value = $this->checker_managers->getLanguageManager()->getDefaultLanguage()->getId();
+      $this->checker_managers->getAliasManager()->getPathByAlias($path, $default_value);
     }
 
     return $internal_path;
@@ -366,11 +390,10 @@ class Link implements LinkInterface {
     if (count($parts)) {
       foreach ($parts as $part) {
         if (is_numeric($part)) {
-          return \Drupal::service('path.alias_manager')->getAliasByPath('/node/' . $part);
+          return $this->checker_managers->getAliasManager()->getAliasByPath('/node/' . $part);
         }
       }
     }
-
     return FALSE;
   }
 
