@@ -63,17 +63,16 @@ class Field implements FieldInterface {
   protected function getDOM() {
     if (!isset($this->dom)) {
       $value_field = $this->field_name . '_value';
-
-      $query = $this->connection->select('node__' . $this->field_name, 't');
-      $query->addField('t', $value_field);
-      $query->addField('t', 'revision_id');
-      $query->condition('entity_id', $this->getEntity()->entityId());
-      $query->condition('bundle', $this->getEntity()->entityType());
-      $query->condition('delta', 0);
-      $result = $query->execute()->fetchObject();
-
-      $this->revision_id = $result->revision_id;
-
+      if ($this->connection->schema()->tableExists('node__' . $this->field_name)) {
+        $query = $this->connection->select('node__' . $this->field_name, 't');
+        $query->addField('t', $value_field);
+        $query->addField('t', 'revision_id');
+        $query->condition('entity_id', $this->getEntity()->entityId());
+        $query->condition('bundle', $this->getEntity()->entityType());
+        $query->condition('delta', 0);
+        $result = $query->execute()->fetchObject();
+        $this->revision_id = $result->revision_id;
+      }
       // Convert all Windows and Mac newlines to a single newline, so filters only
       // need to deal with one possibility.
       // This has been copied from check_markup().

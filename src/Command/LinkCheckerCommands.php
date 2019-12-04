@@ -6,7 +6,6 @@ namespace Drupal\dennis_link_checker\Command;
 use Drupal\Core\State\State;
 use Drush\Commands\DrushCommands;
 use Drupal\Core\Database\Connection;
-use Drupal\Core\Logger\LoggerChannelFactoryInterface;
 use Drupal\dennis_link_checker\Dennis\Link\Checker\LinkCheckerSetUp;
 use Drupal\dennis_link_checker\Dennis\Asset\Checker\AssetCheckerSetUp;
 
@@ -16,21 +15,6 @@ use Symfony\Component\HttpFoundation\RequestStack;
  * A Drush command file for interacting with the Write API.
  */
 class LinkCheckerCommands extends DrushCommands {
-
-
-  /**
-   * The Key/Value Store to use for state.
-   *
-   * @var \Drupal\Core\State\StateInterface
-   */
-  protected $state;
-
-  /**
-   * Logger service.
-   *
-   * @var \Drupal\Core\Logger\LoggerChannelFactoryInterface
-   */
-  protected $loggerChannelFactory;
 
   /**
    * @var Connection
@@ -43,22 +27,26 @@ class LinkCheckerCommands extends DrushCommands {
   protected $request;
 
   /**
+   * The Key/Value Store to use for state.
+   *
+   * @var \Drupal\Core\State\StateInterface
+   */
+  protected $state;
+
+  /**
    * LinkCheckerCommands constructor.
    *
    * @param State $state
-   * @param LoggerChannelFactoryInterface $loggerChannelFactory
    * @param Connection $connection
    * @param RequestStack $request
    */
   public function __construct(
-    State $state,
-    LoggerChannelFactoryInterface $loggerChannelFactory,
     Connection $connection,
-    RequestStack $request) {
-    $this->state = $state;
-    $this->loggerChannelFactory = $loggerChannelFactory->get('polaris_drupal_content_api');
+    RequestStack $request,
+    State $state) {
     $this->connection = $connection;
     $this->request = $request;
+    $this->state = $state;
   }
 
   /**

@@ -233,31 +233,33 @@ class Processor implements ProcessorInterface {
   public function enqueue($field_name) {
     // entities that have a text area field with a link.
     // Just the body text field for now.
-    $query = $this->connection->select('node__' . $field_name, 'b');
-    // The entity may not be a node.
-    $query->leftJoin('node', 'n', 'n.nid = b.entity_id');
-    $query->leftJoin('node_field_data', 'd', 'n.nid = d.nid');
-    $query->addField('b', 'entity_id');
-    $query->addField('b', 'bundle');
-    // Nodes only if they are published.
-    $query->condition('d.status', 1);
-    // Crudely find things that could be links.
-    // Accurate link finding happens when the queue is processed.
-    $query->condition($field_name . '_value', '%' . $query->escapeLike('<a') . '%', 'LIKE');
+    if ($this->connection->schema()->tableExists('node__' . $field_name)) {
+      $query = $this->connection->select('node__' . $field_name, 'b');
+      // The entity may not be a node.
+      $query->leftJoin('node', 'n', 'n.nid = b.entity_id');
+      $query->leftJoin('node_field_data', 'd', 'n.nid = d.nid');
+      $query->addField('b', 'entity_id');
+      $query->addField('b', 'bundle');
+      // Nodes only if they are published.
+      $query->condition('d.status', 1);
+      // Crudely find things that could be links.
+      // Accurate link finding happens when the queue is processed.
+      $query->condition($field_name . '_value', '%' . $query->escapeLike('<a') . '%', 'LIKE');
 
-    // Optionally limit the result set
-    $nids = $this->config->getNodeList();
+      // Optionally limit the result set
+      $nids = $this->config->getNodeList();
 
-    if (!empty($nids)) {
-      $query->condition('n.nid', $nids, 'IN');
-    }
+      if (!empty($nids)) {
+        $query->condition('n.nid', $nids, 'IN');
+      }
 
-    $query->orderBy('b.entity_id', 'DESC');
+      $query->orderBy('b.entity_id', 'DESC');
 
-    $result = $query->execute();
+      $result = $query->execute();
 
-    foreach ($result as $record) {
-      $this->addItem(new Item($record->entity_type, $record->entity_id, $field_name));
+      foreach ($result as $record) {
+        $this->addItem(new Item($record->entity_type, $record->entity_id, $field_name));
+      }
     }
 
   }

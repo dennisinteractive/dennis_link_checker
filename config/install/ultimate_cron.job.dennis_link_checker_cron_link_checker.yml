@@ -1,0 +1,30 @@
+langcode: en
+status: true
+dependencies:
+  enforced:
+    module:
+      - dennis_link_checker
+title: 'Dennis Link Checker - Link'
+id: dennis_link_checker_cron_link_checker
+weight: 0
+module: dennis_link_checker
+callback: dennis_link_checker_cron_link_checker
+scheduler:
+  id: crontab
+  configuration:
+    rules:
+      - '30 01 * * *'
+    catch_up: 0
+launcher:
+  id: serial
+  configuration:
+    timeouts:
+      lock_timeout: 3600
+    launcher:
+      thread: 0
+logger:
+  id: database
+  configuration:
+    method: '3'
+    expire: 1209600
+    retain: 1000

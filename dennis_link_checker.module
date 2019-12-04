@@ -1,0 +1,24 @@
+<?php
+/**
+ * Custom cron job for running link checker.
+ *
+ * @throws Exception
+ */
+function dennis_link_checker_cron_link_checker() {
+  /** @var \Drupal\dennis_link_checker\Command\LinkCheckerCommands $checker */
+  $checker = Drupal::service('dennis_link_checker.commands');
+  $checker->link();
+}
+
+/**
+ * Custom cron job for running asset link checker.
+ *
+ * @throws Exception
+ */
+function dennis_link_checker_cron_asset_checker() {
+  /** @var \Drupal\dennis_link_checker\Command\LinkCheckerCommands $checker */
+  $checker = Drupal::service('dennis_link_checker.commands');
+  $checker->asset();
+}
+
+
