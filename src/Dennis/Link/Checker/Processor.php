@@ -258,7 +258,7 @@ class Processor implements ProcessorInterface {
       $result = $query->execute();
 
       foreach ($result as $record) {
-        $this->addItem(new Item($record->entity_type, $record->entity_id, $field_name));
+        $this->addItem(new Item($record->bundle, $record->entity_id, $field_name));
       }
     }
 

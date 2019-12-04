@@ -124,19 +124,21 @@ class Field implements FieldInterface {
     $updated = 0;
 
     $updated_text = Html::serialize($this->getDOM());
-
-    foreach (['data', 'revision'] as $table_type) {
-
-      $updated += $this->connection->update('field_' . $table_type . '_' . $this->field_name)
-        ->fields([
-          $this->field_name . '_value' => $updated_text
-        ])
-        ->condition('entity_id', $this->getEntity()->entityId())
-        ->condition('entity_type', $this->getEntity()->entityType())
-        ->condition('revision_id', $this->revision_id)
-        // Hardcoded delta so only the first value of a multivalue field is used.
-        ->condition('delta', 0)
-        ->execute();
+    
+    foreach (['_', 'revision__'] as $table_type) {
+      $table = 'node_' . $table_type . $this->field_name;
+      if ($this->connection->schema()->tableExists($table)) {
+        $updated += $this->connection->update($table)
+          ->fields([
+            $this->field_name . '_value' => $updated_text
+          ])
+          ->condition('entity_id', $this->getEntity()->entityId())
+          ->condition('bundle', $this->getEntity()->entityType())
+          ->condition('revision_id', $this->revision_id)
+          // Hardcoded delta so only the first value of a multivalue field is used.
+          ->condition('delta', 0)
+          ->execute();
+      }
     }
 
     return $updated;
