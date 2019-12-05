@@ -6,14 +6,20 @@ use Drupal\Core\State\State;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Messenger\Messenger;
 use Drupal\Core\Form\FormStateInterface;
+use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
- * Class LinkCheckerLinkConfigForm
+ * Class LinkCheckerConfigForm
  *
  * @package Drupal\dennis_link_checker\Form
  */
-class LinkCheckerLinkConfigForm extends FormBase {
+class LinkCheckerConfigForm extends FormBase {
+
+  /**
+   * @var RequestStack
+   */
+  protected $request;
 
   /**
    * @var \Drupal\Core\State\State
@@ -26,13 +32,16 @@ class LinkCheckerLinkConfigForm extends FormBase {
   protected $messenger;
 
   /**
-   * LinkCheckerLinkConfigForm constructor.
+   * LinkCheckerConfigForm constructor.
    *
+   * @param RequestStack $request
    * @param State $state
    * @param Messenger $messenger
    */
-  public function __construct(State $state,
+  public function __construct(RequestStack $request,
+                              State $state,
                               Messenger $messenger) {
+    $this->request = $request;
     $this->state = $state;
     $this->messenger = $messenger;
   }
@@ -41,9 +50,8 @@ class LinkCheckerLinkConfigForm extends FormBase {
    * {@inheritdoc}
    */
   public static function create(ContainerInterface $container) {
-    // Instantiates this form class.
     return new static(
-    // Load the service required to construct this class.
+      $container->get('request_stack'),
       $container->get('state'),
       $container->get('messenger')
     );
@@ -60,7 +68,7 @@ class LinkCheckerLinkConfigForm extends FormBase {
    *   The unique string identifying the form.
    */
   public function getFormId() {
-    return 'link_checker_link_config_form';
+    return 'link_checker_config_form';
   }
 
   /**
@@ -68,23 +76,18 @@ class LinkCheckerLinkConfigForm extends FormBase {
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
 
+    $default_site_url = $this->request->getCurrentRequest()->getHttpHost();
+    $defaultValue = $this->state->get('dennis_link_checker_site_url', $default_site_url);
 
-    $options = [
-      1 => $this->t('Yes (Internal Links Only).'),
-      0 => $this->t('No (Include external Links).'),
-    ];
-
-    $defaultValue = 1;
-    if ($this->state->get('dennis_link_checker_link_internal', 1) == 0) {
-      $defaultValue = $this->state->get('dennis_link_checker_link_internal');
-    }
-
-    $form['set_internal'] = [
-      '#type' => 'radios',
-      '#title' => t('Check Internal Links Only'),
-      '#options' => $options,
+    $form['link_checker_site_url'] = array(
+      '#type' => 'textfield',
+      '#title' => $this->t('Site URL: (protocol not required)'),
       '#default_value' => $defaultValue,
-    ];
+      '#size' => 60,
+      '#maxlength' => 128,
+      '#required' => TRUE,
+
+    );
     $form['actions'] = [
       '#type' => 'actions',
     ];
@@ -93,23 +96,13 @@ class LinkCheckerLinkConfigForm extends FormBase {
       '#value' => $this->t('Submit'),
     ];
     return $form;
-
   }
 
   /**
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    $this->state->set('dennis_link_checker_link_internal', $form_state->getValue('set_internal'));
-    if ($form_state->getValue('set_internal') == 1) {
-      $message = 'The Link checker has been set to check internal links only.';
-    } else {
-      $message = 'The Link checker has been set check internal and external links.';
-    }
-    $this->messenger->addMessage(t('@message',
-      [
-        '@message' => $message,
-      ]
-    ));
+    $this->state->set('dennis_link_checker_site_url', $form_state->getValue('link_checker_site_url'));
+    $this->messenger->addMessage($this->t('The Site URL for checking has been updated.'));
   }
 }

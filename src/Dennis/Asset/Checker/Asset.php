@@ -5,7 +5,7 @@ namespace Drupal\dennis_link_checker\Dennis\Asset\Checker;
 use Drupal\Core\Database\Connection;
 use Drupal\dennis_link_checker\Dennis\Link\Checker\Link;
 use Drupal\dennis_link_checker\Dennis\Link\Checker\ConfigInterface;
-use Drupal\dennis_link_checker\Dennis\CheckerManagers;
+use Drupal\dennis_link_checker\CheckerManagers;
 
 
 /**

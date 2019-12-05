@@ -4,7 +4,5 @@ services:
     tags:
       - { name: drush.command }
     arguments:
-      - '@database'
-      - '@request_stack'
-      - '@state'
-      - '@dennis_link_checker.managers'
+      - '@dennis_link_checker.link.setup'
+      - '@dennis_link_checker.asset.setup'

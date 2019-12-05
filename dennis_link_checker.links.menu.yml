@@ -4,15 +4,9 @@ dennis_link_checker.link_checker:
   description: 'Link Checker'
   parent: system.admin_config_system
   weight: -5
-dennis_link_checker.link_checker.link:
-  title: Link
-  route_name: dennis_link_checker.link_checker.link
-  description: 'Link Checker - Link'
+dennis_link_checker.link_checker.config:
+  title: Config
+  route_name: dennis_link_checker.link_checker.config
+  description: 'Link Checker - Config'
   parent: dennis_link_checker.link_checker
   weight: 0
-dennis_link_checker.link_checker.asset:
-  title: Asset
-  route_name: dennis_link_checker.link_checker.asset
-  description: 'Link Checker - Asset'
-  parent: dennis_link_checker.link_checker
-  weight: 1

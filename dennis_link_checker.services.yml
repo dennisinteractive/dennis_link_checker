@@ -1,6 +1,20 @@
 services:
+  dennis_link_checker.link.setup:
+    class: Drupal\dennis_link_checker\LinkCheckerSetUp
+    arguments:
+      - '@database'
+      - '@request_stack'
+      - '@state'
+      - '@dennis_link_checker.managers'
+  dennis_link_checker.asset.setup:
+    class: Drupal\dennis_link_checker\AssetCheckerSetUp
+    arguments:
+      - '@database'
+      - '@request_stack'
+      - '@state'
+      - '@dennis_link_checker.managers'
   dennis_link_checker.managers:
-    class: Drupal\dennis_link_checker\Dennis\CheckerManagers
+    class: Drupal\dennis_link_checker\CheckerManagers
     arguments:
       - '@path.alias_manager'
       - '@language_manager'
@@ -8,7 +22,5 @@ services:
   dennis_link_checker.commands:
     class: Drupal\dennis_link_checker\Command\LinkCheckerCommands
     arguments:
-      - '@database'
-      - '@request_stack'
-      - '@state'
-      - '@dennis_link_checker.managers'
+      - '@dennis_link_checker.link.setup'
+      - '@dennis_link_checker.asset.setup'

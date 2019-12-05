@@ -2,13 +2,10 @@
 
 namespace Drupal\dennis_link_checker\Command;
 
-use Drupal\Core\State\State;
 use Drush\Commands\DrushCommands;
-use Drupal\Core\Database\Connection;
-use Drupal\dennis_link_checker\Dennis\CheckerManagers;
-use Drupal\dennis_link_checker\Dennis\Link\Checker\LinkCheckerSetUp;
-use Drupal\dennis_link_checker\Dennis\Asset\Checker\AssetCheckerSetUp;
-use Symfony\Component\HttpFoundation\RequestStack;
+use Drupal\dennis_link_checker\LinkCheckerSetUp;
+use Drupal\dennis_link_checker\AssetCheckerSetUp;
+
 
 
 /**
@@ -17,44 +14,28 @@ use Symfony\Component\HttpFoundation\RequestStack;
 class LinkCheckerCommands extends DrushCommands {
 
   /**
-   * @var Connection
+   * @var LinkCheckerSetUp
    */
-  protected $connection;
+  protected $link_checker;
 
   /**
-   * @var RequestStack
+   * @var AssetCheckerSetUp
    */
-  protected $request;
+  protected $asset_checker;
 
-  /**
-   * The Key/Value Store to use for state.
-   *
-   * @var \Drupal\Core\State\StateInterface
-   */
-  protected $state;
-
-  /**
-   * @var CheckerManagers
-   */
-  protected $checker_managers;
 
   /**
    * LinkCheckerCommands constructor.
    *
-   * @param Connection $connection
-   * @param RequestStack $request
-   * @param State $state
-   * @param CheckerManagers $checkerManagers
+   * @param LinkCheckerSetUp $linkCheckerSetUp
+   * @param AssetCheckerSetUp $assetCheckerSetUp
    */
   public function __construct(
-    Connection $connection,
-    RequestStack $request,
-    State $state,
-    CheckerManagers $checkerManagers) {
-    $this->connection = $connection;
-    $this->request = $request;
-    $this->state = $state;
-    $this->checker_managers = $checkerManagers;
+    LinkCheckerSetUp $linkCheckerSetUp,
+    AssetCheckerSetUp $assetCheckerSetUp
+  ) {
+    $this->link_checker = $linkCheckerSetUp;
+    $this->asset_checker = $assetCheckerSetUp;
   }
 
   /**
@@ -73,13 +54,7 @@ class LinkCheckerCommands extends DrushCommands {
   public function link($nid = '') {
     $this->output()->writeln('Starting drush link-checker:link: ' . date(DATE_RFC2822));
     $nids = !empty($nid) ? explode(',', $nid) : [];
-    $set_up = new LinkCheckerSetUp(
-      $this->request,
-      $this->connection,
-      $this->state,
-      $this->checker_managers
-    );
-    $set_up->run($nids);
+    $this->link_checker->run($nids);
     $this->output()->writeln('Finished drush link-checker:link: ' . date(DATE_RFC2822));
   }
 
@@ -99,13 +74,7 @@ class LinkCheckerCommands extends DrushCommands {
   public function asset($nid = '') {
     $this->output()->writeln('Starting drush link-checker:asset: ' . date(DATE_RFC2822));
     $nids = !empty($nid) ? explode(',', $nid) : [];
-    $set_up = new AssetCheckerSetUp(
-      $this->request,
-      $this->connection,
-      $this->state,
-      $this->checker_managers
-    );
-    $set_up->run($nids);
+    $this->asset_checker->run($nids);
     $this->output()->writeln('Finished drush link-checker:asset: ' . date(DATE_RFC2822));
   }
 }

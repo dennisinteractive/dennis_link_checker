@@ -4,18 +4,11 @@ dennis_link_checker.link_checker:
     _controller: '\Drupal\system\Controller\SystemController::systemAdminMenuBlockPage'
     _title: 'Link Checker'
   requirements:
-    _permission: 'access administration pages'
-dennis_link_checker.link_checker.link:
-  path: '/admin/config/system/link-checker/link'
+    _role: 'administrator'
+dennis_link_checker.link_checker.config:
+  path: '/admin/config/system/link-checker/config'
   defaults:
-    _form: 'Drupal\dennis_link_checker\Form\LinkCheckerLinkConfigForm'
-    _title: 'Links'
+    _form: 'Drupal\dennis_link_checker\Form\LinkCheckerConfigForm'
+    _title: 'Config'
   requirements:
-    _permission: 'access link checker'
-dennis_link_checker.link_checker.asset:
-  path: '/admin/config/system/link-checker/asset'
-  defaults:
-    _form: 'Drupal\dennis_link_checker\Form\LinkCheckerAssetConfigForm'
-    _title: 'Assets'
-  requirements:
-    _permission: 'access link checker'
+    _role: 'administrator'

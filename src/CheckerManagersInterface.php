@@ -1,7 +1,10 @@
 <?php
 
+namespace Drupal\dennis_link_checker;
 
-namespace Drupal\dennis_link_checker\Dennis;
+use Drupal\Core\Path\AliasManager;
+use Drupal\redirect\RedirectRepository;
+use Drupal\Core\Language\LanguageManager;
 
 
 interface CheckerManagersInterface {
@@ -17,7 +20,7 @@ interface CheckerManagersInterface {
   public function getLanguageManager();
 
   /**
-   * @return ConfigFactory
+   * @return RedirectRepository
    */
   public function getRedirectRepository();
 

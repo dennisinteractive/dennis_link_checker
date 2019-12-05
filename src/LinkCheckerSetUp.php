@@ -1,16 +1,17 @@
 <?php
 
-namespace Drupal\dennis_link_checker\Dennis\Asset\Checker;
+namespace Drupal\dennis_link_checker;
 
 use Drupal\Core\State\State;
 use Drupal\Core\Database\Connection;
 use Symfony\Component\HttpFoundation\RequestStack;
-use Drupal\dennis_link_checker\Dennis\CheckerManagers;
 use Drupal\dennis_link_checker\Dennis\Link\Checker\Queue;
 use Drupal\dennis_link_checker\Dennis\Link\Checker\Config;
 use Drupal\dennis_link_checker\Dennis\Link\Checker\Logger;
 use Drupal\dennis_link_checker\Dennis\Link\Checker\Database;
+use Drupal\dennis_link_checker\Dennis\Link\Checker\Analyzer;
 use Drupal\dennis_link_checker\Dennis\Link\Checker\Throttler;
+use Drupal\dennis_link_checker\Dennis\Link\Checker\Processor;
 use Drupal\dennis_link_checker\Dennis\Link\Checker\EntityHandler;
 use Drupal\dennis_link_checker\Dennis\Link\Checker\LinkLocalisation;
 
@@ -18,9 +19,9 @@ use Drupal\dennis_link_checker\Dennis\Link\Checker\LinkLocalisation;
 /**
  * Class LinkCheckerSetUp
  *
- * @package Drupal\dennis_link_checker\Dennis\Link\Checker
+ * @package Drupal\dennis_link_checker
  */
-class AssetCheckerSetUp implements AssetCheckerSetUpInterface {
+class LinkCheckerSetUp implements LinkCheckerSetUpInterface {
 
   /**
    * @var RequestStack
@@ -43,15 +44,15 @@ class AssetCheckerSetUp implements AssetCheckerSetUpInterface {
   protected $checker_managers;
 
   /**
-   * AssetCheckerSetUp constructor.
+   * LinkCheckerSetUp constructor.
    *
-   * @param RequestStack $request
    * @param Connection $connection
+   * @param RequestStack $request
    * @param State $state
    * @param CheckerManagers $checkerManagers
    */
-  public function __construct(RequestStack $request,
-                              Connection $connection,
+  public function __construct(Connection $connection,
+                              RequestStack $request,
                               State $state,
                               CheckerManagers $checkerManagers) {
     $this->connection = $connection;
@@ -64,21 +65,24 @@ class AssetCheckerSetUp implements AssetCheckerSetUpInterface {
    * @param array $nids
    */
   public function run(array $nids) {
-    $site_host = $this->request->getCurrentRequest()->getSchemeAndHttpHost();
-    $set_internal = TRUE;
-    if ($this->state->get('dennis_link_checker_asset_internal', 1) == 0) {
-      $set_internal = FALSE;
-    }
+    $this->setUp($nids)->run();
+  }
+
+  /**
+   * @param $nids
+   * @return Processor
+   */
+  public function setUp($nids) {
     $config = (new Config())
       ->setLogger((new Logger())->setVerbosity(Logger::VERBOSITY_HIGH))
-      ->setSiteHost($site_host)
+      ->setSiteHost($this->siteUrl())
       ->setMaxRedirects(10)
-      ->setInternalOnly($set_internal)
+      ->setInternalOnly(TRUE)
       ->setLocalisation(LinkLocalisation::ORIGINAL)
       ->setFieldNames($this->state->get('dennis_link_checker_fields', ['body']))
       ->setNodeList($nids);
 
-    $queue = new Queue('dennis_asset_checker', $this->connection);
+    $queue = new Queue('dennis_link_checker', $this->connection);
     $entity_handler = new EntityHandler(
       $config,
       $this->connection,
@@ -88,8 +92,9 @@ class AssetCheckerSetUp implements AssetCheckerSetUpInterface {
     $curl_throttler = new Throttler(1);
     // Database object that allows interaction with the DB.
     $database = new Database($this->connection);
-    $analyzer = new AssetAnalyser($config, $curl_throttler, $database);
-    $processor = new AssetProcessor(
+    $analyzer = new Analyzer($config, $curl_throttler, $database);
+
+    return new Processor(
       $config,
       $queue,
       $entity_handler,
@@ -98,18 +103,15 @@ class AssetCheckerSetUp implements AssetCheckerSetUpInterface {
       $this->checker_managers,
       $this->state
     );
-    $processor->run();
   }
+
+  /**
+   * Return the configurable site url for checking.
+   * @return mixed|null
+   */
+  protected function siteUrl() {
+    $default_site_url = $this->request->getCurrentRequest()->getHttpHost();
+    return $this->state->get('dennis_link_checker_site_url', $default_site_url);
+  }
+
 }
-
-
-
-
-
-
-
-
-
-
-
-

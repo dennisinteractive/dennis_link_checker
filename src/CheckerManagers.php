@@ -1,14 +1,10 @@
 <?php
 
-namespace Drupal\dennis_link_checker\Dennis;
+namespace Drupal\dennis_link_checker;
 
 use Drupal\Core\Path\AliasManager;
-use Drupal\Core\Config\ConfigFactory;
-use Drupal\Core\Extension\ModuleHandler;
-use Drupal\Core\Language\LanguageManager;
-use Drupal\Core\Entity\EntityTypeManager;
 use Drupal\redirect\RedirectRepository;
-
+use Drupal\Core\Language\LanguageManager;
 
 /**
  * Class CheckerManagers
@@ -67,5 +63,4 @@ class CheckerManagers implements CheckerManagersInterface {
   public function getRedirectRepository() {
     return $this->redirect_repository;
   }
-
 }

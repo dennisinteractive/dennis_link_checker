@@ -4,7 +4,7 @@ namespace Drupal\Tests\dennis_link_checker\Unit;
 
 use Drupal\Tests\UnitTestCase;
 use Drupal\Core\Database\Connection;
-use Drupal\dennis_link_checker\Dennis\CheckerManagers;
+use Drupal\dennis_link_checker\CheckerManagers;
 use Drupal\dennis_link_checker\Dennis\Link\Checker\Field;
 use Drupal\dennis_link_checker\Dennis\Link\Checker\Config;
 use Drupal\dennis_link_checker\Dennis\Link\Checker\Entity;

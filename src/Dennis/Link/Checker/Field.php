@@ -4,7 +4,7 @@ namespace Drupal\dennis_link_checker\Dennis\Link\Checker;
 
 use Drupal\Component\Utility\Html;
 use Drupal\Core\Database\Connection;
-use Drupal\dennis_link_checker\Dennis\CheckerManagers;
+use Drupal\dennis_link_checker\CheckerManagers;
 
 /**
  * Class Field
