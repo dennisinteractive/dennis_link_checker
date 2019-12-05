@@ -65,11 +65,15 @@ class AssetCheckerSetUp implements AssetCheckerSetUpInterface {
    */
   public function run(array $nids) {
     $site_host = $this->request->getCurrentRequest()->getSchemeAndHttpHost();
+    $set_internal = TRUE;
+    if ($this->state->get('dennis_link_checker_asset_internal', 1) == 0) {
+      $set_internal = FALSE;
+    }
     $config = (new Config())
       ->setLogger((new Logger())->setVerbosity(Logger::VERBOSITY_HIGH))
       ->setSiteHost($site_host)
       ->setMaxRedirects(10)
-      ->setInternalOnly(TRUE)
+      ->setInternalOnly($set_internal)
       ->setLocalisation(LinkLocalisation::ORIGINAL)
       ->setFieldNames($this->state->get('dennis_link_checker_fields', ['body']))
       ->setNodeList($nids);

@@ -7,6 +7,7 @@ use Drupal\Core\Config\ConfigFactory;
 use Drupal\Core\Extension\ModuleHandler;
 use Drupal\Core\Language\LanguageManager;
 use Drupal\Core\Entity\EntityTypeManager;
+use Drupal\redirect\RedirectRepository;
 
 
 /**
@@ -27,40 +28,23 @@ class CheckerManagers implements CheckerManagersInterface {
   protected $language_manger;
 
   /**
-   * @var EntityTypeManager
+   * @var RedirectRepository
    */
-  protected $entity_type_manager;
-
-  /**
-   * @var ModuleHandler
-   */
-  protected $module_handler;
-
-  /**
-   * @var ConfigFactory
-   */
-  protected $config_factory;
-
+  protected $redirect_repository;
 
   /**
    * CheckerManagers constructor.
    *
-   * @param EntityTypeManager $entityTypeManager
    * @param AliasManager $aliasManager
    * @param LanguageManager $languageManager
-   * @param ModuleHandler $moduleHandler
-   * @param ConfigFactory $configFactory
+   * @param RedirectRepository $redirectRepository
    */
-  public function __construct(EntityTypeManager $entityTypeManager,
-                              AliasManager $aliasManager,
+  public function __construct(AliasManager $aliasManager,
                               LanguageManager $languageManager,
-                              ModuleHandler $moduleHandler,
-                              ConfigFactory $configFactory) {
+                              RedirectRepository $redirectRepository) {
     $this->alias_manger = $aliasManager;
     $this->language_manger = $languageManager;
-    $this->entity_type_manager = $entityTypeManager;
-    $this->module_handler = $moduleHandler;
-    $this->config_factory = $configFactory;
+    $this->redirect_repository = $redirectRepository;
   }
 
   /**
@@ -78,24 +62,10 @@ class CheckerManagers implements CheckerManagersInterface {
   }
 
   /**
-   * @return EntityTypeManager
+   * @return RedirectRepository
    */
-  public function getEntityTypeManager() {
-    return $this->entity_type_manager;
-  }
-
-  /**
-   * @return ModuleHandler
-   */
-  public function getModuleHandler() {
-    return $this->module_handler;
-  }
-
-  /**
-   * @return ConfigFactory
-   */
-  public function getConfigFactory() {
-    return $this->config_factory;
+  public function getRedirectRepository() {
+    return $this->redirect_repository;
   }
 
 }

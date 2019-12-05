@@ -17,18 +17,8 @@ interface CheckerManagersInterface {
   public function getLanguageManager();
 
   /**
-   * @return EntityTypeManager
-   */
-  public function getEntityTypeManager();
-
-  /**
-   * @return ModuleHandler
-   */
-  public function getModuleHandler();
-
-  /**
    * @return ConfigFactory
    */
-  public function getConfigFactory();
+  public function getRedirectRepository();
 
 }

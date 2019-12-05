@@ -126,4 +126,11 @@ interface ConfigInterface {
    * @return array
    */
   public function getFieldNames();
+
+  /**
+   * Check if front links should be removed.
+   *
+   * @return boolean
+   */
+  public function removeFrontLinks();
 }

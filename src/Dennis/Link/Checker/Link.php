@@ -177,7 +177,6 @@ class Link implements LinkInterface {
         }
       }
     }
-
     return $this->data['corrected_href'];
   }
 
@@ -250,8 +249,6 @@ class Link implements LinkInterface {
    * Check of the href redirects to a taxonomy term.
    *
    * @return bool|mixed
-   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
-   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
   public function redirectsToTerm() {
     if ($this->data['redirects_to_term']) {
@@ -319,19 +316,12 @@ class Link implements LinkInterface {
    *
    * @param $path
    * @return bool
-   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
-   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
   private function getInternalPath($path) {
     $internal_path = FALSE;
     // Check for redirect
-    $redirects = new Redirects(
-      $this->connection,
-      $this->checker_managers->getModuleHandler(),
-      $this->checker_managers->getConfigFactory(),
-      $this->checker_managers->getEntityTypeManager()
-    );
-    $redirect = $redirects->redirectLoadBySource($path);
+    $redirect = $this->checker_managers->getRedirectRepository()->findBySourcePath($path);
+
     if (!empty($redirect)) {
       $internal_path = $redirect->redirect;
     }

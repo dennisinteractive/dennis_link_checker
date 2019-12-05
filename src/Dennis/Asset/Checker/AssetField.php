@@ -19,7 +19,9 @@ class AssetField extends Field {
 
     $assets = $this->getDOM()->getElementsByTagName($dom_tag_name);
 
+    /** @var \DOMElement $assetElement */
     foreach ($assets as $assetElement) {
+
       $src = $assetElement->getAttribute('src');
       $found[] = new Asset(
         $this->connection,

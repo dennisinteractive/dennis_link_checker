@@ -113,10 +113,10 @@ class Processor implements ProcessorInterface {
     // Remove any old items from the queue.
     $this->prune();
 
-      // Make sure there is something to do.
-      $this->ensureEnqueued();
+    // Make sure there is something to do.
+    $this->ensureEnqueued();
 
-      $more = TRUE;
+    $more = TRUE;
 
     while ($more && time() < $end) {
       try {
@@ -343,6 +343,7 @@ class Processor implements ProcessorInterface {
    * @inheritDoc
    */
   public function correctLinks(ItemInterface $item, FieldInterface $field) {
+
     if ($links = $field->getLinks()) {
       // Check all the links.
       try {
@@ -354,7 +355,6 @@ class Processor implements ProcessorInterface {
           . $item->entityType() . '/' . $item->entityId());
         return;
       }
-
       $do_field_save = FALSE;
       $entity = $field->getEntity();
       /** @var \Drupal\dennis_link_checker\Dennis\Link\Checker\Link $link */

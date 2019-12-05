@@ -128,7 +128,7 @@ class Analyzer implements AnalyzerInterface {
       // If the request timed out,
       // throw a RequestTimeoutException so the processor can give up for this process.
       if ($e->getCode() == CURLE_OPERATION_TIMEDOUT || $e->getCode() == CURLOPT_TIMEOUT) {
-        throw new RequestTimeoutException($e->getMessage(), $e->getCode());
+        throw new RequestTimeoutException('timedout', $e->getCode());
       }
     }
 

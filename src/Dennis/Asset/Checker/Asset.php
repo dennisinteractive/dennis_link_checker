@@ -71,18 +71,14 @@ class Asset extends Link {
     return TRUE;
   }
 
-  /*
+  /**
    * Custom function which just compares the original source with the URL thats been found.
    */
   public function corrected() {
-    if($this->originalSrc() != $this->getFoundUrl()) {
-      return TRUE;
-    } else {
-      return FALSE;
-    }
+    return $this->originalSrc() != $this->getFoundUrl() ? TRUE : FALSE;
   }
 
-  /*
+  /**
    * Replace src of an asset if necessary.
    */
   public function replace() {

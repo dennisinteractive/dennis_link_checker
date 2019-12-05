@@ -177,6 +177,7 @@ class Logger implements LoggerInterface {
    */
   public function debug($message, array $context = []) {
     $this->addRecord(self::DEBUG, (string) $message, $context);
+    $this->setDrupalLog()->debug($message);
   }
 
   /**

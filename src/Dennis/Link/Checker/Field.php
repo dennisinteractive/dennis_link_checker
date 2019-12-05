@@ -107,6 +107,9 @@ class Field implements FieldInterface {
     $found = [];
 
     $links = $this->getDOM()->getElementsByTagName('a');
+
+
+    /** @var \DOMElement $linkElement */
     foreach ($links as $linkElement) {
       $href = $linkElement->getAttribute('href');
       if ($this->getConfig()->internalOnly()) {
@@ -138,7 +141,7 @@ class Field implements FieldInterface {
       }
       else {
         // All links.
-        $found[] =new Link(
+        $found[] = new Link(
           $this->connection,
           $this->checker_managers,
           $this->getConfig(),
@@ -147,7 +150,6 @@ class Field implements FieldInterface {
         );
       }
     }
-
     return $found;
   }
 
@@ -174,7 +176,6 @@ class Field implements FieldInterface {
           ->execute();
       }
     }
-
     return $updated;
   }
 

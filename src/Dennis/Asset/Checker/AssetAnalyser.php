@@ -41,11 +41,13 @@ class AssetAnalyser extends Analyzer {
     return $assets;
   }
 
-  /*
-   * @param Asset
-   *
+  /**
    * Borrowed heavily from Analyser link().
    * If asset is a redirect or not secure update url.
+   *
+   * @param Asset $asset
+   * @return Asset
+   * @throws RequestTimeoutException
    */
   public function asset(Asset $asset) {
     $this->throttle();
