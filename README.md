@@ -1,8 +1,8 @@
 # dennis_link_checker
 Monitors links to reduce redirects
 
-##Configuration:
-#####The site URL for scanning can be configured at:
+## Configuration:
+##### The site URL for scanning can be configured at:
 `/admin/config/system/link-checker/config`
 
 ## Drush commands:
