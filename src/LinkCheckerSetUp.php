@@ -90,8 +90,6 @@ class LinkCheckerSetUp implements LinkCheckerSetUpInterface {
       ->setFieldNames($this->state->get('dennis_link_checker_fields', ['body']))
       ->setNodeList($nids);
 
-    \Drupal::logger('some_channel_name')->warning('<pre><code>' . print_r($this->siteUrl(), TRUE) . '</code></pre>');
-
     $queue = new Queue('dennis_link_checker', $this->connection);
     $entity_handler = new EntityHandler(
       $config,
