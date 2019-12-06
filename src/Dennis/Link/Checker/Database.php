@@ -2,7 +2,6 @@
 
 namespace Drupal\dennis_link_checker\Dennis\Link\Checker;
 
-use Drupal\Core\Database\Connection;
 
 /**
  * Class Database.
@@ -10,11 +9,6 @@ use Drupal\Core\Database\Connection;
  * @package Dennis\Link\Database
  */
 class Database implements DatabaseInterface {
-
-  /**
-   * @var Connection
-   */
-  protected $connection;
 
   /**
    * How often the DB should be pinged in seconds.
@@ -26,14 +20,6 @@ class Database implements DatabaseInterface {
    */
   protected $pingTime = 0;
 
-  /**
-   * Database constructor.
-   *
-   * @param Connection $connection
-   */
-  public function __construct(Connection $connection) {
-    $this->connection = $connection;
-  }
 
   /**
    * @inheritDoc
@@ -42,7 +28,6 @@ class Database implements DatabaseInterface {
     $now = time();
     // If it's been more than 15 seconds... Ping!
     if (($now - $this->pingTime) > self::INTERVAL) {
-      $this->connection->query('SELECT CURTIME()');
       // Set the ping time.
       $this->pingTime = $now;
     }

@@ -59,7 +59,7 @@ class ConfigTest extends UnitTestCase {
    * @covers \Drupal\dennis_link_checker\Dennis\Link\Checker\Config::setLogger
    */
   public function testGetLogger() {
-    $logger = $this->getMockBuilder(Logger::class)->getMock();
+    $logger = $this->getMockBuilder(Logger::class)->disableOriginalConstructor()->getMock();
     $config = $this->config()->setLogger($logger);
     $this->assertInstanceOf(Logger::class, $config->getLogger());
   }

@@ -2,7 +2,6 @@
 
 namespace Drupal\dennis_link_checker\Dennis\Link\Checker;
 
-use Drupal\Core\Database\Connection;
 use Drupal\dennis_link_checker\CheckerManagers;
 
 /**
@@ -10,11 +9,6 @@ use Drupal\dennis_link_checker\CheckerManagers;
  * @package Drupal\dennis_link_checker\Dennis\Link\Checker
  */
 class Entity implements EntityInterface {
-
-  /**
-   * @var Connection
-   */
-  protected $connection;
 
   /**
    * @var CheckerManagers
@@ -38,18 +32,15 @@ class Entity implements EntityInterface {
 
   /**
    * Entity constructor.
-   * @param Connection $connection
    * @param CheckerManagers $checkerManagers
    * @param $config
    * @param $entity_type
    * @param $entity_id
    */
-  public function __construct(Connection $connection,
-                              CheckerManagers $checkerManagers,
+  public function __construct(CheckerManagers $checkerManagers,
                               $config,
                               $entity_type,
                               $entity_id) {
-    $this->connection = $connection;
     $this->checker_managers = $checkerManagers;
     $this->config = $config;
     $this->entityType = $entity_type;
@@ -83,7 +74,6 @@ class Entity implements EntityInterface {
   public function getField($field_name) {
     return new Field(
       $this,
-      $this->connection,
       $this->checker_managers,
       $field_name
     );

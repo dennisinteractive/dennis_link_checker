@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\dennis_link_checker\Dennis\Link\Checker;
+namespace Drupal\dennis_link_checker;
 
 /**
  * Class QueueInterface

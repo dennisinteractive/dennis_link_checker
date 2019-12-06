@@ -3,7 +3,6 @@
 namespace Drupal\dennis_link_checker\Dennis\Link\Checker;
 
 use Drupal\Core\State\State;
-use Drupal\Core\Database\Connection;
 use Drupal\Core\Queue\ReliableQueueInterface;
 use Drupal\dennis_link_checker\CheckerManagers;
 
@@ -33,11 +32,6 @@ class Processor implements ProcessorInterface {
    * @var AnalyzerInterface
    */
   protected $analyzer;
-
-  /**
-   * @var Connection
-   */
-  protected $connection;
 
   /**
    * @var CheckerManagers
@@ -73,7 +67,6 @@ class Processor implements ProcessorInterface {
    * @param ReliableQueueInterface $queue
    * @param EntityHandlerInterface $entity_handler
    * @param AnalyzerInterface $analyzer
-   * @param Connection $connection
    * @param CheckerManagers $checkerManagers
    * @param State $state
    */
@@ -81,14 +74,12 @@ class Processor implements ProcessorInterface {
                               ReliableQueueInterface $queue,
                               EntityHandlerInterface $entity_handler,
                               AnalyzerInterface $analyzer,
-                              Connection $connection,
                               CheckerManagers $checkerManagers,
                               State $state) {
     $this->setConfig($config);
     $this->setQueue($queue);
     $this->setEntityHandler($entity_handler);
     $this->setAnalyzer($analyzer);
-    $this->connection = $connection;
     $this->checker_managers = $checkerManagers;
     $this->state = $state;
   }
@@ -213,7 +204,6 @@ class Processor implements ProcessorInterface {
    */
   public function setLocalisation($localisation) {
     $this->localisation = $localisation;
-
     return $this;
   }
 
@@ -241,37 +231,14 @@ class Processor implements ProcessorInterface {
    * @inheritDoc
    */
   public function enqueue($field_name) {
-    // entities that have a text area field with a link.
-    // Just the body text field for now.
-    if ($this->connection->schema()->tableExists('node__' . $field_name)) {
-      $query = $this->connection->select('node__' . $field_name, 'b');
-      // The entity may not be a node.
-      $query->leftJoin('node', 'n', 'n.nid = b.entity_id');
-      $query->leftJoin('node_field_data', 'd', 'n.nid = d.nid');
-      $query->addField('b', 'entity_id');
-      $query->addField('b', 'bundle');
-      // Nodes only if they are published.
-      $query->condition('d.status', 1);
-      // Crudely find things that could be links.
-      // Accurate link finding happens when the queue is processed.
-      $query->condition($field_name . '_value', '%' . $query->escapeLike('<a') . '%', 'LIKE');
-
-      // Optionally limit the result set
-      $nids = $this->config->getNodeList();
-
-      if (!empty($nids)) {
-        $query->condition('n.nid', $nids, 'IN');
-      }
-
-      $query->orderBy('b.entity_id', 'DESC');
-
-      $result = $query->execute();
-
+    if ($result = $this->checker_managers->getCheckerQueriesManager()->enqueue(
+      $field_name,
+      $this->config->getNodeList()
+    )) {
       foreach ($result as $record) {
         $this->addItem(new Item($record->bundle, $record->entity_id, $field_name));
       }
     }
-
   }
 
   /**

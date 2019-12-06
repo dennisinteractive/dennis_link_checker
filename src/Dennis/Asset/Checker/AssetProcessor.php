@@ -25,9 +25,9 @@ class AssetProcessor extends Processor {
       $entity = $handler->getEntity($item->entityType(), $item->entityId());
       $field = new AssetField(
         $entity,
-        $this->connection,
         $this->checker_managers,
-        $item->fieldName()
+        $item->fieldName(),
+        'foo'
       );
       $this->correctAssets($item, $field);
     }

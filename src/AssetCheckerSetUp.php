@@ -2,7 +2,7 @@
 
 namespace Drupal\dennis_link_checker;
 
-use Drupal\dennis_link_checker\Dennis\Link\Checker\Queue;
+
 use Drupal\dennis_link_checker\Dennis\Link\Checker\Config;
 use Drupal\dennis_link_checker\Dennis\Link\Checker\Logger;
 use Drupal\dennis_link_checker\Dennis\Link\Checker\Database;
@@ -32,7 +32,7 @@ class AssetCheckerSetUp extends LinkCheckerSetUp implements AssetCheckerSetUpInt
    */
   public function setUp ($nids) {
     $config = (new Config())
-      ->setLogger((new Logger())->setVerbosity(Logger::VERBOSITY_HIGH))
+      ->setLogger((new Logger($this->logger_Factory))->setVerbosity(Logger::VERBOSITY_HIGH))
       ->setSiteHost($this->siteUrl())
       ->setMaxRedirects(10)
       ->setInternalOnly(TRUE)
@@ -43,13 +43,12 @@ class AssetCheckerSetUp extends LinkCheckerSetUp implements AssetCheckerSetUpInt
     $queue = new Queue('dennis_asset_checker', $this->connection);
     $entity_handler = new EntityHandler(
       $config,
-      $this->connection,
       $this->checker_managers
     );
     // Make sure we don't request more than one page per second.
     $curl_throttler = new Throttler(1);
     // Database object that allows interaction with the DB.
-    $database = new Database($this->connection);
+    $database = new Database();
     $analyzer = new AssetAnalyser($config, $curl_throttler, $database);
 
     return new AssetProcessor(
@@ -57,7 +56,6 @@ class AssetCheckerSetUp extends LinkCheckerSetUp implements AssetCheckerSetUpInt
       $queue,
       $entity_handler,
       $analyzer,
-      $this->connection,
       $this->checker_managers,
       $this->state
     );

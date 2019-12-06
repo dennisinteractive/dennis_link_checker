@@ -24,7 +24,6 @@ class AssetField extends Field {
 
       $src = $assetElement->getAttribute('src');
       $found[] = new Asset(
-        $this->connection,
         $this->checker_managers,
         $this->getConfig(),
         $src,

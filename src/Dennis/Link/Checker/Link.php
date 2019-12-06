@@ -2,7 +2,6 @@
 
 namespace Drupal\dennis_link_checker\Dennis\Link\Checker;
 
-use Drupal\Core\Database\Connection;
 use Drupal\dennis_link_checker\CheckerManagers;
 
 /**
@@ -18,11 +17,6 @@ class Link implements LinkInterface {
   protected $data = [];
 
   /**
-   * @var Connection
-   */
-  protected $connection;
-
-  /**
    * @var CheckerManagers
    */
   protected $checker_managers;
@@ -35,19 +29,17 @@ class Link implements LinkInterface {
   /**
    * Link constructor.
    *
-   * @param Connection $connection
    * @param CheckerManagers $checkerManagers
    * @param ConfigInterface $config
    * @param $href
    * @param \DOMElement $element
    */
-  public function __construct(Connection $connection,
+  public function __construct(
                               CheckerManagers $checkerManagers,
                               ConfigInterface $config,
                               $href,
                               \DOMElement $element) {
     $this->setOriginalHref($href);
-    $this->connection = $connection;
     $this->checker_managers = $checkerManagers;
     $this->config = $config;
     $this->data['element'] = $element;

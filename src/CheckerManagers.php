@@ -29,18 +29,26 @@ class CheckerManagers implements CheckerManagersInterface {
   protected $redirect_repository;
 
   /**
+   * @var CheckerQueriesManager
+   */
+  protected $checker_queries_manager;
+
+  /**
    * CheckerManagers constructor.
    *
    * @param AliasManager $aliasManager
    * @param LanguageManager $languageManager
    * @param RedirectRepository $redirectRepository
+   * @param CheckerQueriesManager $checkerQueriesManager
    */
   public function __construct(AliasManager $aliasManager,
                               LanguageManager $languageManager,
-                              RedirectRepository $redirectRepository) {
+                              RedirectRepository $redirectRepository,
+                              CheckerQueriesManager $checkerQueriesManager) {
     $this->alias_manger = $aliasManager;
     $this->language_manger = $languageManager;
     $this->redirect_repository = $redirectRepository;
+    $this->checker_queries_manager = $checkerQueriesManager;
   }
 
   /**
@@ -62,5 +70,12 @@ class CheckerManagers implements CheckerManagersInterface {
    */
   public function getRedirectRepository() {
     return $this->redirect_repository;
+  }
+
+  /**
+   * @return CheckerQueriesManager
+   */
+  public function getCheckerQueriesManager() {
+    return  $this->checker_queries_manager;
   }
 }

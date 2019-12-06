@@ -2,7 +2,6 @@
 
 namespace Drupal\dennis_link_checker\Dennis\Asset\Checker;
 
-use Drupal\Core\Database\Connection;
 use Drupal\dennis_link_checker\Dennis\Link\Checker\Link;
 use Drupal\dennis_link_checker\Dennis\Link\Checker\ConfigInterface;
 use Drupal\dennis_link_checker\CheckerManagers;
@@ -22,21 +21,18 @@ class Asset extends Link {
   /**
    * Asset constructor.
    *
-   * @param Connection $connection
    * @param CheckerManagers $checkerManagers
    * @param ConfigInterface $config
    * @param $href
    * @param \DOMElement $element
    */
   public function __construct(
-    Connection $connection,
     CheckerManagers $checkerManagers,
     ConfigInterface $config,
     $href,
     \DOMElement $element) {
 
     parent::__construct(
-      $connection,
       $checkerManagers,
       $config,
       $href,

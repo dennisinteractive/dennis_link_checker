@@ -3,12 +3,10 @@
 namespace Drupal\Tests\dennis_link_checker\Unit;
 
 use Drupal\Tests\UnitTestCase;
-use Drupal\Core\Database\Connection;
 use Drupal\dennis_link_checker\CheckerManagers;
 use Drupal\dennis_link_checker\Dennis\Link\Checker\Field;
 use Drupal\dennis_link_checker\Dennis\Link\Checker\Config;
 use Drupal\dennis_link_checker\Dennis\Link\Checker\Entity;
-
 
 
 /**
@@ -27,11 +25,6 @@ class EntityTest extends UnitTestCase {
   protected $config;
 
   /**
-   * @var Connection
-   */
-  protected $connection;
-
-  /**
    * @var CheckerManagers
    */
   protected $checker_managers;
@@ -41,21 +34,17 @@ class EntityTest extends UnitTestCase {
    */
   protected function setUp() {
     parent::setUp();
-    $this->connection = $this->getMockBuilder(Connection::class)
-      ->disableOriginalConstructor()
-      ->getMock();
     $this->config = $this->getMockBuilder(Config::class)->getMock();
     $this->checker_managers = $this->getMockBuilder(CheckerManagers::class)
       ->disableOriginalConstructor()
       ->getMock();
   }
 
-
   /**
    * @covers \Drupal\dennis_link_checker\Dennis\Link\Checker\Entity::getConfig
    */
   public function testGetConfig() {
-    $entity = new Entity($this->connection, $this->checker_managers, $this->config, 'node', '1');
+    $entity = new Entity($this->checker_managers, $this->config, 'node', '1');
     $this->assertInstanceOf(Config::class, $entity->getConfig());
   }
 
@@ -63,7 +52,7 @@ class EntityTest extends UnitTestCase {
    * @covers \Drupal\dennis_link_checker\Dennis\Link\Checker\Entity::entityType
    */
   public function testEntityType() {
-    $entity = new Entity($this->connection, $this->checker_managers, $this->config, 'node', '1');
+    $entity = new Entity($this->checker_managers, $this->config, 'node', '1');
     $this->assertEquals('node', $entity->entityType());
   }
 
@@ -71,7 +60,7 @@ class EntityTest extends UnitTestCase {
    * @covers \Drupal\dennis_link_checker\Dennis\Link\Checker\Entity::entityId
    */
   public function testEntityId() {
-    $entity = new Entity($this->connection, $this->checker_managers, $this->config, 'node', '1');
+    $entity = new Entity($this->checker_managers, $this->config, 'node', '1');
     $this->assertEquals('1', $entity->entityId());
   }
 
@@ -79,7 +68,7 @@ class EntityTest extends UnitTestCase {
    * @covers \Drupal\dennis_link_checker\Dennis\Link\Checker\Entity::getField
    */
   public function testGetField() {
-    $entity = new Entity($this->connection, $this->checker_managers, $this->config, 'node', '1');
+    $entity = new Entity($this->checker_managers, $this->config, 'node', '1');
     $field = $entity->getField('body');
     $this->assertInstanceOf(Field::class, $field);
   }

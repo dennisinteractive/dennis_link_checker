@@ -2,12 +2,25 @@
 
 namespace Drupal\dennis_link_checker\Dennis\Link\Checker;
 
+use Drupal\Core\Logger\LoggerChannelFactoryInterface;
+
 /**
  * Class Logger
  *
  * @package Drupal\dennis_link_checker\Dennis\Link\Checker
  */
 class Logger implements LoggerInterface {
+
+
+  /**
+   * @var LoggerChannelFactoryInterface
+   */
+  protected $logger;
+
+
+  public function __construct(LoggerChannelFactoryInterface $loggerFactory) {
+    $this->logger = $loggerFactory;
+  }
 
   /**
    * Detailed debug information
@@ -191,6 +204,6 @@ class Logger implements LoggerInterface {
    * @return \Psr\Log\LoggerInterface
    */
   protected function setDrupalLog() {
-    return \Drupal::logger('dennis_link_checker');
+    return $this->logger->get('dennis_link_checker');
   }
 }

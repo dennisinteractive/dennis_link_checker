@@ -4,8 +4,8 @@ namespace Drupal\Tests\dennis_link_checker\Unit;
 
 use Drupal\Tests\UnitTestCase;
 use Drupal\Component\Utility\Html;
-use \Drupal\Core\Database\Connection;
 use Drupal\dennis_link_checker\CheckerManagers;
+use Drupal\Core\Logger\LoggerChannelFactoryInterface;
 use Drupal\dennis_link_checker\Dennis\Link\Checker\Field;
 use Drupal\dennis_link_checker\Dennis\Link\Checker\Config;
 use Drupal\dennis_link_checker\Dennis\Link\Checker\Logger;
@@ -27,14 +27,14 @@ class FieldTest extends UnitTestCase {
   protected $field;
 
   /**
-   * @var Connection
-   */
-  protected $connection;
-
-  /**
    * @var CheckerManagers
    */
   protected $checker_managers;
+
+  /**
+   * @var LoggerChannelFactoryInterface
+   */
+  protected $logger_Factory;
 
   /**
    * Setup mock objects.
@@ -43,7 +43,7 @@ class FieldTest extends UnitTestCase {
 
     parent::setUp();
 
-    $this->connection = $this->getMockBuilder(Connection::class)
+    $this->logger_Factory = $this->getMockBuilder(LoggerChannelFactoryInterface::class)
       ->disableOriginalConstructor()
       ->getMock();
 
@@ -53,7 +53,7 @@ class FieldTest extends UnitTestCase {
 
     $config = (new Config())
       ->setSiteHost('www.theweek.co.uk')
-      ->setLogger((new Logger())->setVerbosity(Logger::VERBOSITY_LOW));
+      ->setLogger((new Logger($this->logger_Factory))->setVerbosity(Logger::VERBOSITY_LOW));
 
     $entity = $this->getMockBuilder(Entity::class)
       ->disableOriginalConstructor()
@@ -62,7 +62,7 @@ class FieldTest extends UnitTestCase {
     $entity->method('getConfig')->willReturn($config);
 
     $this->field = $this->getMockBuilder(Field::class)
-      ->setConstructorArgs([$entity, $this->connection, $this->checker_managers, 'body'])
+      ->setConstructorArgs([$entity, $this->checker_managers, 'body'])
       ->setMethods(['getDOM'])
       ->getMock();
   }

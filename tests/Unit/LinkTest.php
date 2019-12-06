@@ -56,7 +56,7 @@ class LinkTest extends UnitTestCase {
       ->disableOriginalConstructor()
       ->getMock();
 
-    $link = new Link($this->connection,$this->checker_managers, $config, $data['in'], $element);
+    $link = new Link($this->checker_managers, $config, $data['in'], $element);
 
 
     $link->setFoundUrl($data['found']);
@@ -94,7 +94,7 @@ class LinkTest extends UnitTestCase {
       ->disableOriginalConstructor()
       ->getMock();
 
-    $link = new Link($this->connection,$this->checker_managers, $config, $data['in'], $element);
+    $link = new Link($this->checker_managers, $config, $data['in'], $element);
     $link->setFoundUrl($data['found']);
     $this->assertEquals($data['in'], $link->originalHref());
     $this->assertEquals($data['out'], $link->correctedHref());
@@ -130,7 +130,7 @@ class LinkTest extends UnitTestCase {
       ->disableOriginalConstructor()
       ->getMock();
 
-    $link = new Link($this->connection,$this->checker_managers, $config, $data['in'], $element);
+    $link = new Link($this->checker_managers, $config, $data['in'], $element);
     $link->setFoundUrl($data['found']);
     $this->assertEquals($data['in'], $link->originalHref());
     $this->assertEquals($data['out'], $link->correctedHref());
@@ -172,7 +172,7 @@ class LinkTest extends UnitTestCase {
       ->disableOriginalConstructor()
       ->getMock();
 
-    $link = new Link($this->connection,$this->checker_managers, $config, $data['in'], $element);
+    $link = new Link($this->checker_managers, $config, $data['in'], $element);
 
     $link->setFoundUrl($data['found']);
     $this->assertEquals($data['in'], $link->originalHref());
@@ -221,7 +221,7 @@ class LinkTest extends UnitTestCase {
       ->disableOriginalConstructor()
       ->getMock();
 
-    $link = new Link($this->connection,$this->checker_managers, $config, 'foo', $element);
+    $link = new Link($this->checker_managers, $config, 'foo', $element);
 
     $this->assertEquals($data['out'], $link->relativePath($data['in']));
   }
@@ -257,7 +257,7 @@ class LinkTest extends UnitTestCase {
 
     $links = [];
     foreach ($els as $linkElement) {
-      $links[] = new Link($this->connection,$this->checker_managers, $config, $linkElement->getAttribute('href'), $linkElement);
+      $links[] = new Link($this->checker_managers, $config, $linkElement->getAttribute('href'), $linkElement);
       // Do not strip yet as php gets lost when deletions happen in foreach
     }
 
