@@ -51,11 +51,11 @@ class LinkCheckerSetUp implements LinkCheckerSetUpInterface {
   /**
    * LinkCheckerSetUp constructor.
    *
-   * @param Connection $connection
-   * @param RequestStack $request
-   * @param State $state
-   * @param CheckerManagers $checkerManagers
-   * @param LoggerChannelFactoryInterface $loggerFactory
+   * @param \Drupal\Core\Database\Connection $connection
+   * @param \Symfony\Component\HttpFoundation\RequestStack $request
+   * @param \Drupal\Core\State\State $state
+   * @param \Drupal\dennis_link_checker\CheckerManagers $checkerManagers
+   * @param \Drupal\Core\Logger\LoggerChannelFactoryInterface $loggerFactory
    */
   public function __construct(Connection $connection,
                               RequestStack $request,
@@ -63,8 +63,8 @@ class LinkCheckerSetUp implements LinkCheckerSetUpInterface {
                               CheckerManagers $checkerManagers,
                               LoggerChannelFactoryInterface $loggerFactory) {
     $this->connection = $connection;
-    $this->state = $state;
     $this->request = $request;
+    $this->state = $state;
     $this->checker_managers = $checkerManagers;
     $this->logger_Factory = $loggerFactory;
   }
@@ -116,7 +116,7 @@ class LinkCheckerSetUp implements LinkCheckerSetUpInterface {
    * @return mixed|null
    */
   protected function siteUrl() {
-    $default_site_url = $this->request->getCurrentRequest()->getHttpHost();
-    return $this->state->get('dennis_link_checker_site_url', $default_site_url);
+    $site_url = \Drupal::service('config.factory')->getEditable('link_checker.settings')->get('link_checker_site_url');
+    return $site_url;
   }
 }
