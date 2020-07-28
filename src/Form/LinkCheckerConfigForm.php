@@ -2,11 +2,11 @@
 
 namespace Drupal\dennis_link_checker\Form;
 
-use Drupal\Core\State\State;
-use Drupal\Core\Form\FormBase;
+
+use Drupal\Core\Config\ConfigFactoryInterface;
+use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Messenger\Messenger;
 use Drupal\Core\Form\FormStateInterface;
-use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -14,17 +14,12 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *
  * @package Drupal\dennis_link_checker\Form
  */
-class LinkCheckerConfigForm extends FormBase {
+class LinkCheckerConfigForm extends ConfigFormBase {
 
   /**
-   * @var RequestStack
+   * @var \Drupal\Core\Config\ConfigFactoryInterface
    */
-  protected $request;
-
-  /**
-   * @var \Drupal\Core\State\State
-   */
-  protected $state;
+  protected $configFactory;
 
   /**
    * @var \Drupal\Core\Messenger\Messenger
@@ -34,15 +29,12 @@ class LinkCheckerConfigForm extends FormBase {
   /**
    * LinkCheckerConfigForm constructor.
    *
-   * @param RequestStack $request
-   * @param State $state
-   * @param Messenger $messenger
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
+   * @param \Drupal\Core\Messenger\Messenger $messenger
    */
-  public function __construct(RequestStack $request,
-                              State $state,
-                              Messenger $messenger) {
-    $this->request = $request;
-    $this->state = $state;
+  public function __construct(ConfigFactoryInterface $config_factory, Messenger $messenger) {
+    parent::__construct($config_factory);
+    $this->configFactory = $config_factory;
     $this->messenger = $messenger;
   }
 
@@ -51,10 +43,13 @@ class LinkCheckerConfigForm extends FormBase {
    */
   public static function create(ContainerInterface $container) {
     return new static(
-      $container->get('request_stack'),
-      $container->get('state'),
+      $container->get('config.factory'),
       $container->get('messenger')
     );
+  }
+
+  protected function getEditableConfigNames() {
+    return ['link_checker.settings'];
   }
 
   /**
@@ -75,9 +70,7 @@ class LinkCheckerConfigForm extends FormBase {
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
-
-    $default_site_url = $this->request->getCurrentRequest()->getHttpHost();
-    $defaultValue = $this->state->get('dennis_link_checker_site_url', $default_site_url);
+    $defaultValue = $this->config('link_checker.settings')->get('link_checker_site_url');
 
     $form['link_checker_site_url'] = array(
       '#type' => 'textfield',
@@ -102,7 +95,13 @@ class LinkCheckerConfigForm extends FormBase {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    $this->state->set('dennis_link_checker_site_url', $form_state->getValue('link_checker_site_url'));
+    $link_checker_site_url = $form_state->getValue('link_checker_site_url');
+
+    parent::submitForm($form, $form_state);
+    // Saving the module configuration.
+    $this->config('link_checker.settings')
+      ->set('link_checker_site_url', $link_checker_site_url)
+      ->save();
     $this->messenger->addMessage($this->t('The Site URL for checking has been updated.'));
   }
 }
