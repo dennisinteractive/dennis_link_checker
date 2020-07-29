@@ -20,6 +20,7 @@ services:
     class: Drupal\dennis_link_checker\CheckerQueriesManager
     arguments:
       - '@database'
+      - '@entity_type.manager'
   dennis_link_checker.managers:
     class: Drupal\dennis_link_checker\CheckerManagers
     arguments:

@@ -3,6 +3,8 @@
 namespace Drupal\dennis_link_checker;
 
 use Drupal\Core\Database\Connection;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\node\Entity\Node;
 
 /**
  * Class CheckerQueriesManager
@@ -17,12 +19,19 @@ class CheckerQueriesManager implements CheckerQueriesManagerInterface {
   protected $connection;
 
   /**
+   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
+   */
+  protected $entityTypeManager;
+
+  /**
    * CheckerQueriesManager constructor.
    *
-   * @param Connection $connection
+   * @param \Drupal\Core\Database\Connection $connection
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    */
-  public function __construct(Connection $connection) {
+  public function __construct(Connection $connection, EntityTypeManagerInterface $entityTypeManager) {
     $this->connection = $connection;
+    $this->entityTypeManager = $entityTypeManager;
   }
 
   /**
@@ -89,21 +98,27 @@ class CheckerQueriesManager implements CheckerQueriesManagerInterface {
    */
   public function fieldSave($id, $type, $fieldName, $revisionId, $updatedText) {
     $updated = 0;
-    foreach (['_', 'revision__'] as $table_type) {
-      $table = 'node_' . $table_type . $fieldName;
-      if ($this->connection->schema()->tableExists($table)) {
-        $updated += $this->connection->update($table)
-          ->fields([
-            $fieldName . '_value' => $updatedText
-          ])
-          ->condition('entity_id', $id)
-          ->condition('bundle', $type)
-          ->condition('revision_id', $revisionId)
-          // Hardcoded delta so only the first value of a multivalue field is used.
-          ->condition('delta', 0)
-          ->execute();
-      }
-    }
+    $entity_storage = $this->entityTypeManager->getStorage('node');
+    $node = $entity_storage->load($id);
+    /** @var $node \Drupal\node\NodeInterface */
+    $node->set($fieldName, $updatedText);
+    $node->save();
+    $updated = 1;
+//    foreach (['_', 'revision__'] as $table_type) {
+//      $table = 'node_' . $table_type . $fieldName;
+//      if ($this->connection->schema()->tableExists($table)) {
+//        $updated += $this->connection->update($table)
+//          ->fields([
+//            $fieldName . '_value' => $updatedText
+//          ])
+//          ->condition('entity_id', $id)
+//          ->condition('bundle', $type)
+//          ->condition('revision_id', $revisionId)
+//          // Hardcoded delta so only the first value of a multivalue field is used.
+//          ->condition('delta', 0)
+//          ->execute();
+//      }
+//    }
     return $updated;
   }
 }
