@@ -49,7 +49,7 @@ class LinkCheckerConfigForm extends ConfigFormBase {
   }
 
   protected function getEditableConfigNames() {
-    return ['link_checker.settings'];
+    return ['dennis_link_checker.settings'];
   }
 
   /**
@@ -70,7 +70,7 @@ class LinkCheckerConfigForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
-    $defaultValue = $this->config('link_checker.settings')->get('link_checker_site_url');
+    $defaultValue = $this->config('dennis_link_checker.settings')->get('link_checker_site_url');
 
     $form['link_checker_site_url'] = array(
       '#type' => 'textfield',
@@ -99,7 +99,7 @@ class LinkCheckerConfigForm extends ConfigFormBase {
 
     parent::submitForm($form, $form_state);
     // Saving the module configuration.
-    $this->config('link_checker.settings')
+    $this->config('dennis_link_checker.settings')
       ->set('link_checker_site_url', $link_checker_site_url)
       ->save();
     $this->messenger->addMessage($this->t('The Site URL for checking has been updated.'));
