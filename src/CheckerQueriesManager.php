@@ -98,27 +98,15 @@ class CheckerQueriesManager implements CheckerQueriesManagerInterface {
    */
   public function fieldSave($id, $type, $fieldName, $revisionId, $updatedText) {
     $updated = 0;
-    $entity_storage = $this->entityTypeManager->getStorage('node');
-    $node = $entity_storage->load($id);
-    /** @var $node \Drupal\node\NodeInterface */
-    $node->set($fieldName, $updatedText);
-    $node->save();
-    $updated = 1;
-//    foreach (['_', 'revision__'] as $table_type) {
-//      $table = 'node_' . $table_type . $fieldName;
-//      if ($this->connection->schema()->tableExists($table)) {
-//        $updated += $this->connection->update($table)
-//          ->fields([
-//            $fieldName . '_value' => $updatedText
-//          ])
-//          ->condition('entity_id', $id)
-//          ->condition('bundle', $type)
-//          ->condition('revision_id', $revisionId)
-//          // Hardcoded delta so only the first value of a multivalue field is used.
-//          ->condition('delta', 0)
-//          ->execute();
-//      }
-//    }
+    $entity_storage = $this->entityTypeManager->getStorage($type);
+    // Check the node exists, update the field and save.
+    if ($node = $entity_storage->load($id)) {
+      /** @var $node \Drupal\node\NodeInterface */
+      $node->set($fieldName, $updatedText);
+      $node->save();
+      $updated = 1;
+    }
+
     return $updated;
   }
 }
