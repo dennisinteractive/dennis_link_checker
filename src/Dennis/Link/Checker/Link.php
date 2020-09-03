@@ -243,7 +243,7 @@ class Link implements LinkInterface {
    * @return bool|mixed
    */
   public function redirectsToTerm() {
-    if ($this->data['redirects_to_term']) {
+    if (isset($this->data['redirects_to_term'])) {
       return $this->data['redirects_to_term'];
     }
 
