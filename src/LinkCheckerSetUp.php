@@ -116,7 +116,7 @@ class LinkCheckerSetUp implements LinkCheckerSetUpInterface {
    * @return mixed|null
    */
   protected function siteUrl() {
-    $site_url = \Drupal::service('config.factory')->getEditable('link_checker.settings')->get('link_checker_site_url');
+    $site_url = \Drupal::service('config.factory')->getEditable('dennis_link_checker.settings')->get('link_checker_site_url');
     return $site_url;
   }
 }
