@@ -16,6 +16,7 @@ services:
       - '@state'
       - '@dennis_link_checker.managers'
       - '@logger.factory'
+      - '@config.factory'
   dennis_link_checker.queries.manager:
     class: Drupal\dennis_link_checker\CheckerQueriesManager
     arguments:

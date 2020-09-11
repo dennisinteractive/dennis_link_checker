@@ -14,7 +14,7 @@ use Drupal\dennis_link_checker\Dennis\Asset\Checker\AssetProcessor;
 
 
 /**
- * Class LinkCheckerSetUp
+ * Class AssetCheckerSetUp
  *
  * @package Drupal\dennis_link_checker
  */
