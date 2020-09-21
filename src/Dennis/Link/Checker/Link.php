@@ -243,7 +243,7 @@ class Link implements LinkInterface {
    * @return bool|mixed
    */
   public function redirectsToTerm() {
-    if ($this->data['redirects_to_term']) {
+    if (isset($this->data['redirects_to_term'])) {
       return $this->data['redirects_to_term'];
     }
 
@@ -289,7 +289,7 @@ class Link implements LinkInterface {
     $parsed_url = parse_url($this->originalHref());
     $baseurl = $parsed_url['scheme'] . '://' . $parsed_url['host'] . '/';
 
-    if ($this->data['redirects_to_home']) {
+    if (isset($this->data['redirects_to_home'])) {
       return $this->data['redirects_to_home'];
     }
 
@@ -315,7 +315,9 @@ class Link implements LinkInterface {
     $redirect = $this->checker_managers->getRedirectRepository()->findBySourcePath($path);
 
     if (!empty($redirect)) {
-      $internal_path = $redirect->redirect;
+      if (isset($redirect->redirect)) {
+        $internal_path = $redirect->redirect;
+      }
     }
 
     // Check for alias

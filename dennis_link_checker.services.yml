@@ -7,6 +7,7 @@ services:
       - '@state'
       - '@dennis_link_checker.managers'
       - '@logger.factory'
+      - '@config.factory'
   dennis_link_checker.asset.setup:
     class: Drupal\dennis_link_checker\AssetCheckerSetUp
     arguments:
@@ -15,10 +16,12 @@ services:
       - '@state'
       - '@dennis_link_checker.managers'
       - '@logger.factory'
+      - '@config.factory'
   dennis_link_checker.queries.manager:
     class: Drupal\dennis_link_checker\CheckerQueriesManager
     arguments:
       - '@database'
+      - '@entity_type.manager'
   dennis_link_checker.managers:
     class: Drupal\dennis_link_checker\CheckerManagers
     arguments:

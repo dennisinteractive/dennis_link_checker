@@ -1,0 +1,7 @@
+dennis_link_checker.settings:
+  type: config_object
+  label: 'Link Checker settings'
+  mapping:
+    link_checker_site_url:
+      type: string
+      label: 'Site URL: (protocol not required)'
