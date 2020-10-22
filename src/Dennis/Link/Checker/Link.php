@@ -286,12 +286,11 @@ class Link implements LinkInterface {
    * @return bool
    */
   public function redirectsToFront() {
-    $parsed_url = parse_url($this->originalHref());
-    $baseurl = $parsed_url['scheme'] . '://' . $parsed_url['host'] . '/';
-
     if (isset($this->data['redirects_to_home'])) {
       return $this->data['redirects_to_home'];
     }
+
+    $baseurl = $this->getConfig()->getSiteHost();
 
     $this->data['redirects_to_home'] = FALSE;
 
