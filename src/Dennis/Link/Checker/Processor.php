@@ -100,7 +100,6 @@ class Processor implements ProcessorInterface {
     }
     $end = time() + $this->timeLimit;
 
-
     // Remove any old items from the queue.
     $this->prune();
 
@@ -113,9 +112,8 @@ class Processor implements ProcessorInterface {
       try {
         $more = $this->doNextItem();
       } catch (RequestTimeoutException $e) {
-        // Don't try to process any more items for this run.
+        // Log the timeout, but keep going.
         $this->config->getLogger()->warning($e->getMessage());
-        return FALSE;
       }
     }
 
