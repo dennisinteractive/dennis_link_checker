@@ -99,7 +99,7 @@ class CheckerQueriesManager implements CheckerQueriesManagerInterface {
   public function fieldSave($id, $type, $fieldName, $revisionId, $updatedText) {
     $updated = 0;
     // This is a fix for an edge case where the $type is article.
-    if ($type === 'article') {
+    if ($type === 'article' || $type === 'gallery') {
       $type = 'node';
     }
     $entity_storage = $this->entityTypeManager->getStorage($type);
