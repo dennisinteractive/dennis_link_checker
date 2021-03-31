@@ -146,7 +146,7 @@ class Field implements FieldInterface {
     $updated_text = Html::serialize($this->getDOM());
     return $this->checker_managers->getCheckerQueriesManager()->fieldSave(
       $this->getEntity()->entityId(),
-      $this->getEntity()->entityType(),
+      'node',
       $this->field_name,
       $this->revision_id,
       $updated_text
