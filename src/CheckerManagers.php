@@ -2,7 +2,7 @@
 
 namespace Drupal\dennis_link_checker;
 
-use Drupal\Core\Path\AliasManager;
+use Drupal\path_alias\AliasManager;
 use Drupal\redirect\RedirectRepository;
 use Drupal\Core\Language\LanguageManager;
 
