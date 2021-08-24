@@ -3,33 +3,38 @@
 namespace Drupal\dennis_link_checker\Dennis\Link\Checker;
 
 /**
- * Class Throttler
+ * Class Throttler.
  *
  * @package Drupal\dennis_link_checker\Dennis\Link\Checker
  */
 class Throttler implements ThrottlerInterface {
 
   /**
+   * Start time.
+   *
    * @var int
    */
   protected $startTime = 0;
 
   /**
-   * @var int number of seconds to throttle for.
+   * Number of seconds to throttle for.
+   *
+   * @var int
    */
   protected $seconds;
 
   /**
    * Throttler constructor.
    *
-   * @param $seconds
+   * @param string $seconds
+   *   Number of seconds.
    */
   public function __construct($seconds) {
     $this->seconds = $seconds;
   }
 
   /**
-   * @inheritDoc
+   * {@inheritDoc}
    */
   public function throttle() {
     $wait_until = $this->startTime + $this->seconds;
@@ -38,4 +43,5 @@ class Throttler implements ThrottlerInterface {
     }
     $this->startTime = microtime(TRUE);
   }
+
 }

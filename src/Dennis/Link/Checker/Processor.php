@@ -7,68 +7,90 @@ use Drupal\Core\Queue\ReliableQueueInterface;
 use Drupal\dennis_link_checker\CheckerManagers;
 
 /**
- * Class Processor
+ * Class Processor.
  *
  * @package Drupal\dennis_link_checker\Dennis\Link\Checker
  */
 class Processor implements ProcessorInterface {
 
   /**
+   * Config interface.
+   *
    * @var ConfigInterface
    */
   protected $config;
 
   /**
-   * @var \Drupal\Core\Queue\ReliableQueueInterface $queue
+   * Reliable queue interface.
+   *
+   * @var \Drupal\Core\Queue\ReliableQueueInterface
    */
   protected $queue;
 
   /**
+   * Entity handler interface.
+   *
    * @var EntityHandlerInterface
    */
   protected $entityHandeler;
 
   /**
+   * Analyzer interface.
+   *
    * @var AnalyzerInterface
    */
   protected $analyzer;
 
   /**
-   * @var CheckerManagers
+   * Checker managers.
+   *
+   * @var \Drupal\dennis_link_checker\CheckerManagers
    */
-  protected $checker_managers;
-
+  protected $checkerManagers;
 
   /**
-   * @var State
+   * State.
+   *
+   * @var \Drupal\Core\State\State
    */
   protected $state;
 
   /**
+   * Time limit.
+   *
    * @var int
    */
   protected $timeLimit = 2700;
 
   /**
+   * Localisation string.
+   *
    * @var string
    */
   protected $localisation;
 
   /**
+   * Not found array.
+   *
    * @var array
    */
   protected $notFounds = [];
-
 
   /**
    * Processor constructor.
    *
    * @param ConfigInterface $config
-   * @param ReliableQueueInterface $queue
+   *   Config interface.
+   * @param \Drupal\Core\Queue\ReliableQueueInterface $queue
+   *   Reliable Queue Interface.
    * @param EntityHandlerInterface $entity_handler
+   *   Entity handler interface.
    * @param AnalyzerInterface $analyzer
-   * @param CheckerManagers $checkerManagers
-   * @param State $state
+   *   Analyzer interface.
+   * @param \Drupal\dennis_link_checker\CheckerManagers $checkerManagers
+   *   Checker Managers.
+   * @param \Drupal\Core\State\State $state
+   *   State.
    */
   public function __construct(ConfigInterface $config,
                               ReliableQueueInterface $queue,
@@ -80,12 +102,12 @@ class Processor implements ProcessorInterface {
     $this->setQueue($queue);
     $this->setEntityHandler($entity_handler);
     $this->setAnalyzer($analyzer);
-    $this->checker_managers = $checkerManagers;
+    $this->checkerManagers = $checkerManagers;
     $this->state = $state;
   }
 
   /**
-   * @inheritDoc
+   * {@inheritDoc}
    */
   public function run() {
     // Prevent processing of links when site is in maintenance mode.
@@ -111,7 +133,8 @@ class Processor implements ProcessorInterface {
     while ($more && time() < $end) {
       try {
         $more = $this->doNextItem();
-      } catch (RequestTimeoutException $e) {
+      }
+      catch (RequestTimeoutException $e) {
         // Log the timeout, but keep going.
         $this->config->getLogger()->warning($e->getMessage());
       }
@@ -128,7 +151,7 @@ class Processor implements ProcessorInterface {
   }
 
   /**
-   * @inheritDoc
+   * {@inheritDoc}
    */
   public function getQueue() {
     return $this->queue;
@@ -142,63 +165,63 @@ class Processor implements ProcessorInterface {
   }
 
   /**
-   * @inheritDoc
+   * {@inheritDoc}
    */
   public function setTimeLimit($time_limit) {
     $this->timeLimit = $time_limit;
   }
 
   /**
-   * @inheritDoc
+   * {@inheritDoc}
    */
   public function getTimeLimit() {
     return $this->timeLimit;
   }
 
   /**
-   * @inheritDoc
+   * {@inheritDoc}
    */
   public function setConfig(ConfigInterface $config) {
     $this->config = $config;
   }
 
   /**
-   * @inheritDoc
+   * {@inheritDoc}
    */
   public function setQueue(ReliableQueueInterface $queue) {
     $this->queue = $queue;
   }
 
   /**
-   * @inheritDoc
+   * {@inheritDoc}
    */
   public function setEntityHandler(EntityHandlerInterface $entity_handler) {
     $this->entityHandeler = $entity_handler;
   }
 
   /**
-   * @inheritDoc
+   * {@inheritDoc}
    */
   public function setAnalyzer(AnalyzerInterface $analyzer) {
     $this->analyzer = $analyzer;
   }
 
   /**
-   * @inheritDoc
+   * {@inheritDoc}
    */
   public function getEntityHandler() {
     return $this->entityHandeler;
   }
 
   /**
-   * @inheritDoc
+   * {@inheritDoc}
    */
   public function getAnalyzer() {
     return $this->analyzer;
   }
 
   /**
-   * @inheritDoc
+   * {@inheritDoc}
    */
   public function setLocalisation($localisation) {
     $this->localisation = $localisation;
@@ -206,14 +229,14 @@ class Processor implements ProcessorInterface {
   }
 
   /**
-   * @inheritDoc
+   * {@inheritDoc}
    */
   public function localisation() {
     return $this->localisation;
   }
 
   /**
-   * @inheritDoc
+   * {@inheritDoc}
    */
   public function ensureEnqueued() {
     // Check for anything in the queue to process.
@@ -226,10 +249,10 @@ class Processor implements ProcessorInterface {
   }
 
   /**
-   * @inheritDoc
+   * {@inheritDoc}
    */
   public function enqueue($field_name) {
-    if ($result = $this->checker_managers->getCheckerQueriesManager()->enqueue(
+    if ($result = $this->checkerManagers->getCheckerQueriesManager()->enqueue(
       $field_name,
       $this->config->getNodeList()
     )) {
@@ -240,22 +263,22 @@ class Processor implements ProcessorInterface {
   }
 
   /**
-   * @inheritDoc
+   * {@inheritDoc}
    */
   public function addItem(ItemInterface $item) {
-    // Add the item to the queue
+    // Add the item to the queue.
     return $this->queue->createItem($item);
   }
 
   /**
-   * @inheritDoc
+   * {@inheritDoc}
    */
   public function numberOfItems() {
     return $this->queue->numberOfItems();
   }
 
   /**
-   * @inheritDoc
+   * {@inheritDoc}
    */
   public function doNextItem() {
     if (!$queue_item = $this->getQueueItem()) {
@@ -270,7 +293,7 @@ class Processor implements ProcessorInterface {
   }
 
   /**
-   * @inheritDoc
+   * {@inheritDoc}
    */
   public function queueWorker($item) {
     // Not forcing the instance on the function param so that it can fail silently.
@@ -283,10 +306,10 @@ class Processor implements ProcessorInterface {
   }
 
   /**
-   * @inheritDoc
+   * {@inheritDoc}
    */
   public function getQueueItem() {
-    // Claim item from queue
+    // Claim item from queue.
     if ($queue_item = $this->queue->claimItem()) {
       $item = $queue_item->data;
       if ($item instanceof Item) {
@@ -305,7 +328,7 @@ class Processor implements ProcessorInterface {
   }
 
   /**
-   * @inheritDoc
+   * {@inheritDoc}
    */
   public function correctLinks(ItemInterface $item, FieldInterface $field) {
 
@@ -325,7 +348,7 @@ class Processor implements ProcessorInterface {
       /** @var \Drupal\dennis_link_checker\Dennis\Link\Checker\Link $link */
       foreach ($links as $link) {
         // If url is protocol neutral, force it to use http.
-        if (substr( $link->originalHref(), 0, 2 ) === "//") {
+        if (substr($link->originalHref(), 0, 2) === "//") {
           $url = ltrim($link->originalHref(), '//');
           $link->setOriginalHref('http://' . $url);
         }
@@ -356,7 +379,7 @@ class Processor implements ProcessorInterface {
             $this->notFounds = $link;
             $this->config->getLogger()->warning('Page Not Found | '
               . $entity->entityType() . '/' . $entity->entityId()
-              . ' | '. $link->originalHref()
+              . ' | ' . $link->originalHref()
               . ' => ' . $suggested);
           }
 
@@ -384,8 +407,12 @@ class Processor implements ProcessorInterface {
    * Updates a link.
    *
    * @param EntityInterface $entity
+   *   Entity interface.
    * @param LinkInterface $link
+   *   Link interface.
+   *
    * @return bool
+   *   Returns TRUE.
    */
   public function updateLink(EntityInterface $entity, LinkInterface $link) {
     // Before doing the replacement, check if the link originally pointed to a node, and
@@ -393,7 +420,7 @@ class Processor implements ProcessorInterface {
     if (($this->config->removeTermLinks() && $link->redirectsToTerm())
        || ($this->config->removeFrontLinks() && $link->redirectsToFront()
     )) {
-      // Strip link and keep the text part
+      // Strip link and keep the text part.
       $link->strip();
       $this->config->getLogger()->warning('LINK REMOVED | '
         . $entity->entityType() . '/' . $entity->entityId()
@@ -414,4 +441,5 @@ class Processor implements ProcessorInterface {
     }
     return TRUE;
   }
+
 }

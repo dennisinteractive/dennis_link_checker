@@ -3,19 +3,19 @@
 namespace Drupal\dennis_link_checker\Dennis\Link\Checker;
 
 /**
- * Class Field
+ * Class Field.
  *
  * @package Drupal\dennis_link_checker\Dennis\Link\Checker
  */
 interface FieldInterface {
+
   /**
-   * @return EntityInterface
+   * Get entity.
    */
   public function getEntity();
 
   /**
    * Get links from field.
-   * @return array
    */
   public function getLinks();
 
@@ -25,7 +25,8 @@ interface FieldInterface {
   public function save();
 
   /**
-   * @return Config
+   * Get config.
    */
   public function getConfig();
+
 }

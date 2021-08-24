@@ -8,10 +8,8 @@ use Drupal\dennis_link_checker\Dennis\Link\Checker\Analyzer;
 use Drupal\dennis_link_checker\Dennis\Link\Checker\ResourceFailException;
 use Drupal\dennis_link_checker\Dennis\Link\Checker\RequestTimeoutException;
 
-
-
 /**
- * Class AnalyzerTest
+ * Class AnalyzerTest.
  *
  * @coversDefaultClass \Drupal\dennis_link_checker\Dennis\Link\Checker\Analyzer
  *
@@ -19,7 +17,6 @@ use Drupal\dennis_link_checker\Dennis\Link\Checker\RequestTimeoutException;
  * @group Link_checker
  */
 class AnalyzerTest extends UnitTestCase {
-
 
   /**
    * @covers \Drupal\dennis_link_checker\Dennis\Link\Checker\Analyzer::getInfo
@@ -77,4 +74,5 @@ class AnalyzerTest extends UnitTestCase {
       ->getMock();
     $analyzer->link($link);
   }
+
 }

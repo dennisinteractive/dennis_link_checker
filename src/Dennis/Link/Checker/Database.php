@@ -2,7 +2,6 @@
 
 namespace Drupal\dennis_link_checker\Dennis\Link\Checker;
 
-
 /**
  * Class Database.
  *
@@ -16,13 +15,14 @@ class Database implements DatabaseInterface {
   const INTERVAL = 15;
 
   /**
-   * @var int last time the DB was pinged.
+   * Last time the DB was pinged.
+   *
+   * @var int
    */
   protected $pingTime = 0;
 
-
   /**
-   * @inheritDoc
+   * {@inheritDoc}
    */
   public function keepConnectionAlive() {
     $now = time();
@@ -32,4 +32,5 @@ class Database implements DatabaseInterface {
       $this->pingTime = $now;
     }
   }
+
 }

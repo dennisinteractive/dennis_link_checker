@@ -3,34 +3,56 @@
 namespace Drupal\dennis_link_checker;
 
 /**
- * Interface CheckerQueriesManagerInterface
+ * Interface CheckerQueriesManagerInterface.
+ *
  * @package Drupal\dennis_link_checker
  */
 interface CheckerQueriesManagerInterface {
 
   /**
-   * @param $field_name
-   * @param $nodeList
+   * Enqueue.
+   *
+   * @param string $field_name
+   *   Field name.
+   * @param array $nodeList
+   *   Node list.
+   *
    * @return bool|\Drupal\Core\Database\StatementInterface|null
+   *   Return value.
    */
-  public function enqueue($field_name, $nodeList);
-
+  public function enqueue($field_name, array $nodeList);
 
   /**
-   * @param $id
-   * @param $type
-   * @param $fieldName
+   * Get the field dom.
+   *
+   * @param string $id
+   *   Id.
+   * @param string $type
+   *   Type.
+   * @param string $fieldName
+   *   Field name.
+   *
    * @return array
+   *   Returns an array.
    */
   public function fieldGetDom($id, $type, $fieldName);
 
   /**
-   * @param $id
-   * @param $type
-   * @param $fieldName
-   * @param $revisionId
-   * @param $updatedText
+   * Save the field.
+   *
+   * @param string $id
+   *   Id.
+   * @param string $type
+   *   Type.
+   * @param string $fieldName
+   *   Field name.
+   * @param string $revisionId
+   *   Revision id.
+   * @param string $updatedText
+   *   Updated text.
+   *
    * @return \Drupal\Core\Database\StatementInterface|int|null
+   *   Return value.
    */
   public function fieldSave($id, $type, $fieldName, $revisionId, $updatedText);
 

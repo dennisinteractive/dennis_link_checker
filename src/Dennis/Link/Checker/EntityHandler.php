@@ -5,36 +5,42 @@ namespace Drupal\dennis_link_checker\Dennis\Link\Checker;
 use Drupal\dennis_link_checker\CheckerManagers;
 
 /**
- * Class EntityHandler
+ * Class EntityHandler.
  *
  * @package Drupal\dennis_link_checker\Dennis\Link\Checker
  */
 class EntityHandler implements EntityHandlerInterface {
 
   /**
+   * Config interface.
+   *
    * @var ConfigInterface
    */
   protected $config;
 
   /**
-   * @var CheckerManagers
+   * Checker managers.
+   *
+   * @var \Drupal\dennis_link_checker\CheckerManagers
    */
-  protected $checker_managers;
+  protected $checkerManagers;
 
   /**
    * EntityHandler constructor.
    *
    * @param ConfigInterface $config
-   * @param CheckerManagers $checkerManagers
+   *   Config interface.
+   * @param \Drupal\dennis_link_checker\CheckerManagers $checkerManagers
+   *   Checker managers.
    */
   public function __construct(ConfigInterface $config,
                               CheckerManagers $checkerManagers) {
     $this->config = $config;
-    $this->checker_managers = $checkerManagers;
+    $this->checkerManagers = $checkerManagers;
   }
 
   /**
-   * @inheritDoc
+   * {@inheritDoc}
    */
   public function setConfig(ConfigInterface $config) {
     $this->config = $config;
@@ -42,21 +48,22 @@ class EntityHandler implements EntityHandlerInterface {
   }
 
   /**
-   * @inheritDoc
+   * {@inheritDoc}
    */
   public function getSiteHost() {
     return $this->config->getSiteHost();
   }
 
   /**
-   * @inheritDoc
+   * {@inheritDoc}
    */
   public function getEntity($entity_type, $entity_id) {
     return new Entity(
-      $this->checker_managers,
+      $this->checkerManagers,
       $this->config,
       $entity_type,
       $entity_id
     );
   }
+
 }

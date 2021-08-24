@@ -3,7 +3,7 @@
 namespace Drupal\dennis_link_checker\Dennis\Link\Checker;
 
 /**
- * Interface EntityHandlerInterface
+ * Interface EntityHandlerInterface.
  *
  * @package Drupal\dennis_link_checker\Dennis\Link\Checker
  */
@@ -13,14 +13,12 @@ interface EntityHandlerInterface {
    * The configuration object.
    *
    * @param ConfigInterface $config
-   * @return self
+   *   Config interface.
    */
   public function setConfig(ConfigInterface $config);
 
   /**
    * Gets the host domain of the site.
-   *
-   * @return string
    */
   public function getSiteHost();
 
@@ -28,8 +26,10 @@ interface EntityHandlerInterface {
    * Return the requested Entity.
    *
    * @param string $entity_type
+   *   Entity type.
    * @param int $entity_id
-   * @return EntityInterface
+   *   Entity id.
    */
   public function getEntity($entity_type, $entity_id);
+
 }

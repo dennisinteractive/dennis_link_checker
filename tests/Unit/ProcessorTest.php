@@ -9,7 +9,7 @@ use Drupal\dennis_link_checker\Dennis\Link\Checker\Processor;
 use Drupal\dennis_link_checker\Dennis\Link\Checker\RequestTimeoutException;
 
 /**
- * Class ProcessorTest
+ * Class ProcessorTest.
  *
  * @coversDefaultClass \Drupal\dennis_link_checker\Dennis\Link\Checker\Processor
  *
@@ -37,7 +37,11 @@ class ProcessorTest extends UnitTestCase {
 
     $proc = $this->getMockBuilder(Processor::class)
       ->disableOriginalConstructor()
-      ->setMethods(['doNextItem', 'ensureEnqueued', 'prune', 'inMaintenanceMode'])
+      ->setMethods(
+        ['doNextItem',
+          'ensureEnqueued',
+          'prune', 'inMaintenanceMode'
+        ])
       ->getMock();
     $proc->setConfig($config);
     $proc->method('ensureEnqueued')->willReturn(TRUE);
@@ -57,4 +61,5 @@ class ProcessorTest extends UnitTestCase {
     $proc->method('inMaintenanceMode')->willReturn(TRUE);
     $this->assertFalse($proc->run());
   }
+
 }

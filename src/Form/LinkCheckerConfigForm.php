@@ -2,7 +2,6 @@
 
 namespace Drupal\dennis_link_checker\Form;
 
-
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Messenger\Messenger;
@@ -10,18 +9,22 @@ use Drupal\Core\Form\FormStateInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
- * Class LinkCheckerConfigForm
+ * Class LinkCheckerConfigForm.
  *
  * @package Drupal\dennis_link_checker\Form
  */
 class LinkCheckerConfigForm extends ConfigFormBase {
 
   /**
+   * Config factory interface.
+   *
    * @var \Drupal\Core\Config\ConfigFactoryInterface
    */
   protected $configFactory;
 
   /**
+   * Messenger.
+   *
    * @var \Drupal\Core\Messenger\Messenger
    */
   protected $messenger;
@@ -30,7 +33,9 @@ class LinkCheckerConfigForm extends ConfigFormBase {
    * LinkCheckerConfigForm constructor.
    *
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
+   *   Config factory.
    * @param \Drupal\Core\Messenger\Messenger $messenger
+   *   Messenger.
    */
   public function __construct(ConfigFactoryInterface $config_factory, Messenger $messenger) {
     parent::__construct($config_factory);
@@ -48,6 +53,9 @@ class LinkCheckerConfigForm extends ConfigFormBase {
     );
   }
 
+  /**
+   * GEt editable config names.
+   */
   protected function getEditableConfigNames() {
     return ['dennis_link_checker.settings'];
   }
@@ -72,7 +80,7 @@ class LinkCheckerConfigForm extends ConfigFormBase {
   public function buildForm(array $form, FormStateInterface $form_state) {
     $defaultValue = $this->config('dennis_link_checker.settings')->get('link_checker_site_url');
 
-    $form['link_checker_site_url'] = array(
+    $form['link_checker_site_url'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Site URL: (protocol not required)'),
       '#default_value' => $defaultValue,
@@ -80,7 +88,7 @@ class LinkCheckerConfigForm extends ConfigFormBase {
       '#maxlength' => 128,
       '#required' => TRUE,
 
-    );
+    ];
     $form['actions'] = [
       '#type' => 'actions',
     ];
@@ -104,4 +112,5 @@ class LinkCheckerConfigForm extends ConfigFormBase {
       ->save();
     $this->messenger->addMessage($this->t('The Site URL for checking has been updated.'));
   }
+
 }

@@ -11,9 +11,8 @@ use Drupal\dennis_link_checker\Dennis\Link\Checker\Config;
 use Drupal\dennis_link_checker\Dennis\Link\Checker\Logger;
 use Drupal\dennis_link_checker\Dennis\Link\Checker\Entity;
 
-
 /**
- * Class FieldTest
+ * Class FieldTest.
  *
  * @coversDefaultClass \Drupal\dennis_link_checker\Dennis\Link\Checker\Field
  *
@@ -21,20 +20,27 @@ use Drupal\dennis_link_checker\Dennis\Link\Checker\Entity;
  * @group Link_checker
  */
 class FieldTest extends UnitTestCase {
+
   /**
-   * @var Field
+   * Field.
+   *
+   * @var \Drupal\dennis_link_checker\Dennis\Link\Checker\Field
    */
   protected $field;
 
   /**
-   * @var CheckerManagers
+   * Checker managers.
+   *
+   * @var \Drupal\dennis_link_checker\CheckerManagers
    */
-  protected $checker_managers;
+  protected $checkerManagers;
 
   /**
-   * @var LoggerChannelFactoryInterface
+   * Logger channel factory interface.
+   *
+   * @var \Drupal\Core\Logger\LoggerChannelFactoryInterface
    */
-  protected $logger_Factory;
+  protected $loggerFactory;
 
   /**
    * Setup mock objects.
@@ -43,17 +49,17 @@ class FieldTest extends UnitTestCase {
 
     parent::setUp();
 
-    $this->logger_Factory = $this->getMockBuilder(LoggerChannelFactoryInterface::class)
+    $this->loggerFactory = $this->getMockBuilder(LoggerChannelFactoryInterface::class)
       ->disableOriginalConstructor()
       ->getMock();
 
-    $this->checker_managers = $this->getMockBuilder(CheckerManagers::class)
+    $this->checkerManagers = $this->getMockBuilder(CheckerManagers::class)
       ->disableOriginalConstructor()
       ->getMock();
 
     $config = (new Config())
       ->setSiteHost('www.theweek.co.uk')
-      ->setLogger((new Logger($this->logger_Factory))->setVerbosity(Logger::VERBOSITY_LOW));
+      ->setLogger((new Logger($this->loggerFactory))->setVerbosity(Logger::VERBOSITY_LOW));
 
     $entity = $this->getMockBuilder(Entity::class)
       ->disableOriginalConstructor()
@@ -62,7 +68,7 @@ class FieldTest extends UnitTestCase {
     $entity->method('getConfig')->willReturn($config);
 
     $this->field = $this->getMockBuilder(Field::class)
-      ->setConstructorArgs([$entity, $this->checker_managers, 'body'])
+      ->setConstructorArgs([$entity, $this->checkerManagers, 'body'])
       ->setMethods(['getDOM'])
       ->getMock();
   }
@@ -81,20 +87,25 @@ class FieldTest extends UnitTestCase {
   }
 
   /**
-   * Data provider for testGetLinks();
+   * Data provider for testGetLinks().
    */
   public function getLinksProvider() {
     return [
-      //
-      [['text' => 'notorious <a href="http://www.theweek.co.uk/foo" target="_self">encounter</a> in ',
-        'links' => ['http://www.theweek.co.uk/foo'],
-      ]],
-      [['text' => '<a href="/bar" target="_self">b</a>',
-        'links' => ['/bar'],
-      ]],
-      [['text' => '<a href="/foo">foo</a> & <a href="/bar">bar</a>',
-        'links' => ['/foo', '/bar'],
-      ]],
+            [[
+              'text' => 'notorious <a href="http://www.theweek.co.uk/foo" target="_self">encounter</a> in ',
+              'links' => ['http://www.theweek.co.uk/foo'],
+            ]
+],
+            [[
+              'text' => '<a href="/bar" target="_self">b</a>',
+              'links' => ['/bar'],
+            ]
+],
+            [[
+              'text' => '<a href="/foo">foo</a> & <a href="/bar">bar</a>',
+              'links' => ['/foo', '/bar'],
+            ]
+],
 
     ];
   }
@@ -110,7 +121,7 @@ class FieldTest extends UnitTestCase {
   }
 
   /**
-   * Data provider for testExternalGetLinks();
+   * Data provider for testExternalGetLinks().
    */
   public function getExternalLinksProvider() {
     return [
@@ -121,4 +132,5 @@ class FieldTest extends UnitTestCase {
       [['text' => '<a href="%22http://www.theweek.co.uk/foo">foo</a>']],
     ];
   }
+
 }

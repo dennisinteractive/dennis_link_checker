@@ -5,14 +5,17 @@ namespace Drupal\dennis_link_checker\Dennis\Asset\Checker;
 use Drupal\dennis_link_checker\Dennis\Link\Checker\Field;
 
 /**
- * Class AssetField
+ * Class AssetField.
+ *
  * @package Dennis\Asset\Checker
  */
 class AssetField extends Field {
 
   /**
    * Get Assets from field.
+   *
    * @return array
+   *   Returns array of found assets.
    */
   public function getAssets($dom_tag_name) {
     $found = [];
@@ -24,7 +27,7 @@ class AssetField extends Field {
 
       $src = $assetElement->getAttribute('src');
       $found[] = new Asset(
-        $this->checker_managers,
+        $this->checkerManagers,
         $this->getConfig(),
         $src,
         $assetElement
@@ -32,4 +35,5 @@ class AssetField extends Field {
     }
     return $found;
   }
+
 }

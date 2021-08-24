@@ -3,53 +3,70 @@
 namespace Drupal\dennis_link_checker\Dennis\Link\Checker;
 
 /**
- * Class Analyzer
+ * Class Analyzer.
  *
  * @package Drupal\dennis_link_checker\Dennis\Link\Checker
  */
 class Analyzer implements AnalyzerInterface {
+
   /**
+   * Config interface.
+   *
    * @var ConfigInterface
    */
   protected $config;
 
   /**
-   * @var number of redirects in current chain.
+   * Number of redirects in current chain.
+   *
+   * @var int
    */
   protected $redirectCount;
 
   /**
-   * @var int maximum number of seconds to spend resolving links.
+   * Maximum number of seconds to spend resolving links.
+   *
+   * @var int
    */
   protected $linkTimeLimit = 480;
 
   /**
+   * Throttler.
+   *
    * @var Throttler
    */
   protected $curlThrottler;
 
   /**
+   * Database.
+   *
    * @var Database
    */
   protected $database;
 
   /**
-   * @var array Static cache of info from url calls.
+   * Static cache of info from url calls.
+   *
+   * @var array
    */
   protected $urlInfo = [];
 
   /**
    * The number of seconds to wait while trying to connect.
+   *
+   * @var int
    */
   protected $connectionTimeout = 5;
 
   /**
    * The maximum number of seconds to allow cURL functions to execute.
+   *
+   * @var int
    */
   protected $timeout = 10;
 
   /**
-   * @inheritDoc
+   * {@inheritDoc}
    */
   public function __construct(ConfigInterface $config, Throttler $curl_throttler, Database $database) {
     $this->config = $config;
@@ -58,19 +75,16 @@ class Analyzer implements AnalyzerInterface {
   }
 
   /**
-   * @inheritDoc
+   * {@inheritDoc}
    */
   public function getSiteHost() {
     return $this->config->getSiteHost();
   }
 
   /**
-   * @param array $links
-   * @return array
-   * @throws RequestTimeoutException
-   * @throws TimeoutException
+   * {@inheritDoc}
    */
-  public function multipleLinks($links) {
+  public function multipleLinks(array $links) {
     $current_timeout = $this->linkTimeLimit + time();
     foreach ($links as $link) {
       if (time() >= $current_timeout) {
@@ -95,12 +109,12 @@ class Analyzer implements AnalyzerInterface {
   }
 
   /**
-   * @inheritDoc
+   * {@inheritDoc}
    */
   public function link(LinkInterface $link) {
     $this->throttle();
 
-    // Only redirect 301's so cannot use CURLOPT_FOLLOWLOCATION
+    // Only redirect 301's so cannot use CURLOPT_FOLLOWLOCATION.
     $this->redirectCount = 0;
 
     $src = trim($link->originalHref());
@@ -112,7 +126,7 @@ class Analyzer implements AnalyzerInterface {
       $url = $src;
     }
     // If url is protocol neutral, force it to use http.
-    if (substr( $url, 0, 2 ) === "//") {
+    if (substr($url, 0, 2) === "//") {
       $url = ltrim($url, '//');
       $url = 'http://' . $url;
     }
@@ -121,7 +135,8 @@ class Analyzer implements AnalyzerInterface {
       $link->setFoundUrl($info['url'])
         ->setHttpCode($info['http_code'])
         ->setNumberOfRedirects($this->redirectCount);
-    } catch (ResourceFailException $e) {
+    }
+    catch (ResourceFailException $e) {
       $link->setNumberOfRedirects($this->redirectCount)
         ->setError($e->getMessage(), $e->getCode());
 
@@ -138,7 +153,9 @@ class Analyzer implements AnalyzerInterface {
   /**
    * Recursively follow 301 redirects only.
    *
-   * @param $url
+   * @param string $url
+   *   The url to follow.
+   *
    * @return array
    *   The curl_getinfo() array.
    */
@@ -151,7 +168,7 @@ class Analyzer implements AnalyzerInterface {
         if ($this->redirectCount > $this->config->getMaxRedirects()) {
           throw new ResourceFailException(sprintf('Maximum of %s redirects reached.', $this->config->getMaxRedirects()));
         }
-        // Do the redirect
+        // Do the redirect.
         $this->redirectCount++;
         return $this->followRedirects($info['redirect_url']);
       }
@@ -163,16 +180,19 @@ class Analyzer implements AnalyzerInterface {
   /**
    * Makes an http call and returns info about what it found.
    *
-   * @param $url
+   * @param string $url
+   *   The url to get info from.
    *
    * @return array
+   *   Returns an array of url info.
+   *
    * @throws ResourceFailException
    */
   public function getInfo($url) {
     $md5 = md5($url);
     if (isset($this->urlInfo[$md5])) {
       if (isset($this->urlInfo[$md5]['exception'])) {
-        // Throw the exception again
+        // Throw the exception again.
         throw $this->urlInfo[$md5]['exception'];
       }
       return $this->urlInfo[$md5];
@@ -181,10 +201,11 @@ class Analyzer implements AnalyzerInterface {
     try {
       $this->urlInfo[$md5] = $this->doInfoRequest($url);
       return $this->urlInfo[$md5];
-    } catch (ResourceFailException $e) {
+    }
+    catch (ResourceFailException $e) {
       // Statically cache the exception happened.
       $this->urlInfo[$md5] = ['exception' => $e];
-      // Re-throw the exception
+      // Re-throw the exception.
       throw $e;
     }
   }
@@ -192,13 +213,16 @@ class Analyzer implements AnalyzerInterface {
   /**
    * Performs a HEAD request.
    *
-   * @param $url
+   * @param string $url
+   *   The url to curl.
    *
    * @return array
+   *   Returns array of curl info.
+   *
    * @throws ResourceFailException
    */
   protected function doInfoRequest($url) {
-    // Only redirect 301's so cannot use CURLOPT_FOLLOWLOCATION
+    // Only redirect 301's so cannot use CURLOPT_FOLLOWLOCATION.
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_URL, $url);
     curl_setopt($ch, CURLOPT_USERAGENT, 'dennis_link_checker');

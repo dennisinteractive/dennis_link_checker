@@ -5,77 +5,92 @@ namespace Drupal\dennis_link_checker\Dennis\Link\Checker;
 use Drupal\dennis_link_checker\CheckerManagers;
 
 /**
- * Class Entity
+ * Class Entity.
+ *
  * @package Drupal\dennis_link_checker\Dennis\Link\Checker
  */
 class Entity implements EntityInterface {
 
   /**
-   * @var CheckerManagers
+   * Checker managers.
+   *
+   * @var \Drupal\dennis_link_checker\CheckerManagers
    */
-  protected $checker_managers;
+  protected $checkerManagers;
 
   /**
+   * Config interface.
+   *
    * @var ConfigInterface
    */
   protected $config;
 
   /**
+   * Entity type.
+   *
    * @var string
    */
   protected $entityType;
 
   /**
+   * Entity id.
+   *
    * @var int
    */
   protected $entityId;
 
   /**
    * Entity constructor.
-   * @param CheckerManagers $checkerManagers
-   * @param $config
-   * @param $entity_type
-   * @param $entity_id
+   *
+   * @param \Drupal\dennis_link_checker\CheckerManagers $checkerManagers
+   *   Checker managers.
+   * @param ConfigInterface $config
+   *   Config.
+   * @param string $entity_type
+   *   Entity type.
+   * @param string $entity_id
+   *   Entity id.
    */
   public function __construct(CheckerManagers $checkerManagers,
-                              $config,
+                              ConfigInterface $config,
                               $entity_type,
                               $entity_id) {
-    $this->checker_managers = $checkerManagers;
+    $this->checkerManagers = $checkerManagers;
     $this->config = $config;
     $this->entityType = $entity_type;
     $this->entityId = $entity_id;
   }
 
   /**
-   * @inheritDoc
+   * {@inheritDoc}
    */
   public function getConfig() {
     return $this->config;
   }
 
   /**
-   * @inheritDoc
+   * {@inheritDoc}
    */
   public function entityId() {
     return $this->entityId;
   }
 
   /**
-   * @inheritDoc
+   * {@inheritDoc}
    */
   public function entityType() {
     return $this->entityType;
   }
 
   /**
-   * @inheritDoc
+   * {@inheritDoc}
    */
   public function getField($field_name) {
     return new Field(
       $this,
-      $this->checker_managers,
+      $this->checkerManagers,
       $field_name
     );
   }
+
 }

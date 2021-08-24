@@ -2,7 +2,6 @@
 
 namespace Drupal\dennis_link_checker;
 
-
 use Drupal\dennis_link_checker\Dennis\Link\Checker\Config;
 use Drupal\dennis_link_checker\Dennis\Link\Checker\Logger;
 use Drupal\dennis_link_checker\Dennis\Link\Checker\Database;
@@ -12,27 +11,26 @@ use Drupal\dennis_link_checker\Dennis\Link\Checker\LinkLocalisation;
 use Drupal\dennis_link_checker\Dennis\Asset\Checker\AssetAnalyser;
 use Drupal\dennis_link_checker\Dennis\Asset\Checker\AssetProcessor;
 
-
 /**
- * Class AssetCheckerSetUp
+ * Class AssetCheckerSetUp.
  *
  * @package Drupal\dennis_link_checker
  */
 class AssetCheckerSetUp extends LinkCheckerSetUp implements AssetCheckerSetUpInterface {
 
   /**
-   * @inheritDoc
+   * {@inheritDoc}
    */
   public function run(array $nids) {
     $this->setUp($nids)->run();
   }
 
   /**
-   * @inheritDoc
+   * {@inheritDoc}
    */
-  public function setUp ($nids) {
+  public function setUp(array $nids) {
     $config = (new Config())
-      ->setLogger((new Logger($this->logger_Factory))->setVerbosity(Logger::VERBOSITY_HIGH))
+      ->setLogger((new Logger($this->loggerFactory))->setVerbosity(Logger::VERBOSITY_HIGH))
       ->setSiteHost($this->siteUrl())
       ->setMaxRedirects(10)
       ->setInternalOnly(TRUE)
@@ -43,7 +41,7 @@ class AssetCheckerSetUp extends LinkCheckerSetUp implements AssetCheckerSetUpInt
     $queue = new Queue('dennis_asset_checker', $this->connection);
     $entity_handler = new EntityHandler(
       $config,
-      $this->checker_managers
+      $this->checkerManagers
     );
     // Make sure we don't request more than one page per second.
     $curl_throttler = new Throttler(1);
@@ -56,8 +54,9 @@ class AssetCheckerSetUp extends LinkCheckerSetUp implements AssetCheckerSetUpInt
       $queue,
       $entity_handler,
       $analyzer,
-      $this->checker_managers,
+      $this->checkerManagers,
       $this->state
     );
   }
+
 }

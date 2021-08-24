@@ -5,23 +5,29 @@ namespace Drupal\dennis_link_checker\Dennis\Link\Checker;
 use Drupal\dennis_link_checker\CheckerManagers;
 
 /**
- * Class Link
+ * Class Link.
  *
  * @package Drupal\dennis_link_checker\Dennis\Link\Checker
  */
 class Link implements LinkInterface {
 
   /**
+   * Array of data.
+   *
    * @var array
    */
   protected $data = [];
 
   /**
-   * @var CheckerManagers
+   * Checker managers.
+   *
+   * @var \Drupal\dennis_link_checker\CheckerManagers
    */
-  protected $checker_managers;
+  protected $checkerManagers;
 
   /**
+   * Config interface.
+   *
    * @var ConfigInterface
    */
   protected $config;
@@ -29,10 +35,14 @@ class Link implements LinkInterface {
   /**
    * Link constructor.
    *
-   * @param CheckerManagers $checkerManagers
+   * @param \Drupal\dennis_link_checker\CheckerManagers $checkerManagers
+   *   Checker managers.
    * @param ConfigInterface $config
-   * @param $href
+   *   Config interface.
+   * @param string $href
+   *   Href string.
    * @param \DOMElement $element
+   *   Dom element.
    */
   public function __construct(
                               CheckerManagers $checkerManagers,
@@ -40,34 +50,34 @@ class Link implements LinkInterface {
                               $href,
                               \DOMElement $element) {
     $this->setOriginalHref($href);
-    $this->checker_managers = $checkerManagers;
+    $this->checkerManagers = $checkerManagers;
     $this->config = $config;
     $this->data['element'] = $element;
   }
 
   /**
-   * @inheritDoc
+   * {@inheritDoc}
    */
   public function getConfig() {
     return $this->config;
   }
 
   /**
-   * @inheritDoc
+   * {@inheritDoc}
    */
   public function getNumberOfRedirects() {
     return $this->data['redirect_count'];
   }
 
   /**
-   * @inheritDoc
+   * {@inheritDoc}
    */
   public function element() {
     return $this->data['element'];
   }
 
   /**
-   * @inheritDoc
+   * {@inheritDoc}
    */
   public function setNumberOfRedirects($int) {
     $this->data['redirect_count'] = (int) $int;
@@ -76,7 +86,7 @@ class Link implements LinkInterface {
   }
 
   /**
-   * @inheritDoc
+   * {@inheritDoc}
    */
   public function corrected() {
     if ($this->getHttpCode() != 200) {
@@ -96,7 +106,7 @@ class Link implements LinkInterface {
   }
 
   /**
-   * @inheritDoc
+   * {@inheritDoc}
    */
   public function setOriginalHref($href) {
     $this->data['original_href'] = $href;
@@ -104,14 +114,14 @@ class Link implements LinkInterface {
   }
 
   /**
-   * @inheritDoc
+   * {@inheritDoc}
    */
   public function originalHref() {
     return $this->data['original_href'];
   }
 
   /**
-   * @inheritDoc
+   * {@inheritDoc}
    */
   public function correctedHref() {
     if (!empty($this->data['corrected_href'])) {
@@ -176,9 +186,12 @@ class Link implements LinkInterface {
    * Build the relative path from the output of parse_url().
    *
    * @param array $parsed
+   *   Array of parsed data.
+   *
    * @return string
+   *   Returns the path query fragment.
    */
-  public function relativePath($parsed) {
+  public function relativePath(array $parsed) {
     $path = isset($parsed['path']) ? $parsed['path'] : '';
     $query = isset($parsed['query']) ? '?' . $parsed['query'] : '';
     $fragment = isset($parsed['fragment']) ? '#' . $parsed['fragment'] : '';
@@ -186,7 +199,7 @@ class Link implements LinkInterface {
   }
 
   /**
-   * @inheritDoc
+   * {@inheritDoc}
    */
   public function setFoundUrl($url) {
     $this->data['found_url'] = $url;
@@ -194,14 +207,14 @@ class Link implements LinkInterface {
   }
 
   /**
-   * @inheritDoc
+   * {@inheritDoc}
    */
   public function getFoundUrl() {
     return isset($this->data['found_url']) ? $this->data['found_url'] : '';
   }
 
   /**
-   * @inheritDoc
+   * {@inheritDoc}
    */
   public function setHttpCode($code) {
     $this->data['http_code'] = $code;
@@ -210,14 +223,14 @@ class Link implements LinkInterface {
   }
 
   /**
-   * @inheritDoc
+   * {@inheritDoc}
    */
   public function getHttpCode() {
     return isset($this->data['http_code']) ? $this->data['http_code'] : '';
   }
 
   /**
-   * @inheritDoc
+   * {@inheritDoc}
    */
   public function setError($code, $msg) {
     $this->data['error']['code'] = $code;
@@ -227,7 +240,7 @@ class Link implements LinkInterface {
   }
 
   /**
-   * @inheritDoc
+   * {@inheritDoc}
    */
   public function getError() {
     if (isset($this->data['error'])) {
@@ -238,9 +251,7 @@ class Link implements LinkInterface {
   }
 
   /**
-   * Check of the href redirects to a taxonomy term.
-   *
-   * @return bool|mixed
+   * {@inheritDoc}
    */
   public function redirectsToTerm() {
     if (isset($this->data['redirects_to_term'])) {
@@ -250,27 +261,28 @@ class Link implements LinkInterface {
     $this->data['redirects_to_term'] = FALSE;
     if ($this->correctedHref() != $this->originalHref()) {
       // This is definitely a redirected href
-      // So the original href will either have a redirect record, or an alias
+      // So the original href will either have a redirect record, or an alias.
       $parsed = parse_url($this->originalHref());
       $original_path = ltrim($this->relativePath($parsed), '/');
       $internal_path = $this->getInternalPath($original_path);
 
-      // If we found a internal path, try and get the entity type
+      // If we found a internal path, try and get the entity type.
       if (!empty($internal_path)) {
         if ($this->typeFromPath($internal_path) == 'node') {
 
-          // Check the corrected path entity type
+          // Check the corrected path entity type.
           $parsed = parse_url($this->correctedHref());
           $corrected_path = ltrim($this->relativePath($parsed), '/');
 
-          // Corrected path should be a current alias
+          // Corrected path should be a current alias.
           $internal_path = $this->getInternalPath($corrected_path);
           if (!empty($internal_path)) {
             if ($this->typeFromPath($internal_path) == 'taxonomy_term') {
               $this->data['redirects_to_term'] = TRUE;
             }
           }
-        } else {
+        }
+        else {
           // Alias entity type can not be established.
           $this->getConfig()->getLogger()->warning('ENTITY TYPE COULD NOT BE DETERMINED: ' . $internal_path);
         }
@@ -281,9 +293,7 @@ class Link implements LinkInterface {
   }
 
   /**
-   * Check of the href redirects to a <front>.
-   *
-   * @return bool
+   * {@inheritDoc}
    */
   public function redirectsToFront() {
     if (isset($this->data['redirects_to_home'])) {
@@ -305,13 +315,16 @@ class Link implements LinkInterface {
   /**
    * Helper function to try find a record for a given path.
    *
-   * @param $path
-   * @return bool
+   * @param string $path
+   *   PAth string.
+   *
+   * @return mixed
+   *   Returns the internal path redirect if the redirect is not empty, else FALSE.
    */
   private function getInternalPath($path) {
     $internal_path = FALSE;
-    // Check for redirect
-    $redirect = $this->checker_managers->getRedirectRepository()->findBySourcePath($path);
+    // Check for redirect.
+    $redirect = $this->checkerManagers->getRedirectRepository()->findBySourcePath($path);
 
     if (!empty($redirect)) {
       if (isset($redirect->redirect)) {
@@ -319,33 +332,35 @@ class Link implements LinkInterface {
       }
     }
 
-    // Check for alias
+    // Check for alias.
     if (empty($internal_path)) {
-      $default_value = $this->checker_managers->getLanguageManager()->getDefaultLanguage()->getId();
-      $this->checker_managers->getAliasManager()->getPathByAlias($path, $default_value);
+      $default_value = $this->checkerManagers->getLanguageManager()->getDefaultLanguage()->getId();
+      $this->checkerManagers->getAliasManager()->getPathByAlias($path, $default_value);
     }
 
     return $internal_path;
   }
 
-
   /**
    * Helper function to try work out the entity type from the first component of a path.
    *
-   * @param $path
+   * @param string $path
+   *   PAth string.
+   *
    * @return bool|mixed|string
+   *   Returns entity tpye string i the path parts are not empty, else FALSE.
    */
   private function typeFromPath($path) {
 
     $entity_type = FALSE;
 
-    // Strip off leading /
+    // Strip off leading /.
     $path = ltrim($path, '/');
     // Grab the first element of path to determine entity type (no need to load the whole entity)
     $parts = explode('/', $path);
     if (!empty($parts)) {
       $entity_type = reset($parts);
-      // Special handling for taxonomy terms
+      // Special handling for taxonomy terms.
       if ($entity_type == 'taxonomy') {
         $bundle = isset($parts[1]) ? $parts[1] : FALSE;
         if ($bundle == 'term') {
@@ -360,8 +375,11 @@ class Link implements LinkInterface {
   /**
    * Suggest a possible alternative to the given href.
    *
-   * @param $href
+   * @param string $href
+   *   Href string.
+   *
    * @return bool|string
+   *   Returns path alias if path has multiple paths, else FALSE.
    */
   public function suggestLink($href) {
     $parsed = parse_url($href);
@@ -373,7 +391,7 @@ class Link implements LinkInterface {
     if (count($parts)) {
       foreach ($parts as $part) {
         if (is_numeric($part)) {
-          return $this->checker_managers->getAliasManager()->getAliasByPath('/node/' . $part);
+          return $this->checkerManagers->getAliasManager()->getAliasByPath('/node/' . $part);
         }
       }
     }
@@ -381,7 +399,7 @@ class Link implements LinkInterface {
   }
 
   /**
-   * @inheritDoc
+   * {@inheritDoc}
    */
   public function strip($keep_link_text = TRUE) {
     if ($keep_link_text) {
@@ -397,7 +415,7 @@ class Link implements LinkInterface {
   }
 
   /**
-   * @inheritDoc
+   * {@inheritDoc}
    */
   public function replace() {
     if ($this->correctedHref() != $this->originalHref()) {
@@ -408,8 +426,7 @@ class Link implements LinkInterface {
   }
 
   /**
-   * Remove attribute mce_href, added by tinymce.
-   * @return bool
+   * {@inheritDoc}
    */
   public function removeMceHref() {
     if (!empty($this->element()->getAttribute('mce_href'))) {
@@ -418,4 +435,5 @@ class Link implements LinkInterface {
     }
     return FALSE;
   }
+
 }
