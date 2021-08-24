@@ -103,7 +103,7 @@ jobs:
         name: Run tests
         command: |
           cd /var/www/polaris/web
-          sudo -u www-data ../vendor/bin/phpunit -c ../ modules/contrib/dennis_link_checker/tests/ --group dennis_link_checker
+          sudo -u www-data ../vendor/bin/phpunit -c ../ modules/contrib/dennis_link_checker/tests/ --group Link_checker
 
     - store_artifacts:
         path: /var/www/polaris/web/sites/default/files/simpletest
