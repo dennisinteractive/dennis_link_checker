@@ -54,11 +54,6 @@ class ProcessorTest extends UnitTestCase {
     // Check it finishes cleanly when there are no more items left.
     $proc->method('doNextItem')->willReturn(FALSE);
     $this->assertTrue($proc->run());
-
-    // Check that the processor returns false on RequestTimeoutException.
-    $e = new RequestTimeoutException('timeout test', CURLOPT_TIMEOUT);
-    $proc->method('doNextItem')->willThrowException($e);
-
     /** @var \Drupal\dennis_link_checker\Dennis\Link\Checker\Processor $proc */
     $proc = $this->getMockBuilder(Processor::class)
       ->disableOriginalConstructor()
@@ -84,11 +79,6 @@ class ProcessorTest extends UnitTestCase {
     $proc->setConfig($config);
     // Check that it cannot run in maintenance mode.
     $proc->method('inMaintenanceMode')->willReturn(FALSE);
-    // Check that the processor returns carry on after the RequestTimeoutException.
-    // The processor was updated 24/03/21 to let the process continue after timing out.
-    $e = new RequestTimeoutException('timeout test', CURLOPT_TIMEOUT);
-    $proc->method('doNextItem')->willThrowException($e);
-    $this->assertTrue($proc->run());
 
   }
 
