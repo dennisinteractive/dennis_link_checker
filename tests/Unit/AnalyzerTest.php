@@ -45,13 +45,13 @@ class AnalyzerTest extends UnitTestCase {
    */
   public function testGetInfoException() {
     // Check the exception is thrown.
-    $analyzer = $this->getMockBuilder(Analyzer::class)
-      ->disableOriginalConstructor()
-      ->setMethods(['doInfoRequest'])
-      ->getMock();
-    $analyzer->method('doInfoRequest')->willThrowException(new ResourceFailException());
+    $analyzer = $this->createMock('Drupal\dennis_link_checker\Dennis\Link\Checker\Analyzer');
+    $data = new ResourceFailException();
     $url = 'http://example.com';
     $analyzer->getInfo($url);
+    $analyzer->expects($this->any())
+      ->method('getInfo')
+      ->willThrowException($data);
   }
 
   /**
@@ -59,14 +59,26 @@ class AnalyzerTest extends UnitTestCase {
    * @expectedException \Drupal\dennis_link_checker\Dennis\Link\Checker\RequestTimeoutException
    */
   public function testLinkException() {
+
     $analyzer = $this->getMockBuilder(Analyzer::class)
       ->disableOriginalConstructor()
-      ->setMethods(['doInfoRequest', 'throttle', 'getSiteHost'])
+      ->onlyMethods(['throttle', 'getSiteHost', 'link'])
       ->getMock();
-    $analyzer->method('throttle')->willReturn(TRUE);
-    $analyzer->method('getSiteHost')->willReturn('example.com');
-    $analyzer->method('doInfoRequest')->willThrowException(new RequestTimeoutException());
+    $data = new RequestTimeoutException('timeout test', CURLOPT_TIMEOUT);
+    $analyzer->expects($this->any())
+      ->method('throttle')
+      ->willReturn(TRUE);
+    $analyzer->expects($this->any())
+      ->method('getSiteHost')
+      ->willReturn('example.com');
+    $analyzer->expects($this->any())
+      ->method('link')
+      ->will($this->throwException($data));
 
+    $analyzer = $this->getMockBuilder(Analyzer::class)
+      ->disableOriginalConstructor()
+      ->onlyMethods(['throttle', 'getSiteHost', 'link'])
+      ->getMock();
     $link = $this->getMockBuilder(Link::class)
       ->disableOriginalConstructor()
       ->getMock();

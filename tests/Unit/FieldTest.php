@@ -91,21 +91,21 @@ class FieldTest extends UnitTestCase {
    */
   public function getLinksProvider() {
     return [
-            [[
-              'text' => 'notorious <a href="http://www.theweek.co.uk/foo" target="_self">encounter</a> in ',
-              'links' => ['http://www.theweek.co.uk/foo'],
-            ]
-],
-            [[
-              'text' => '<a href="/bar" target="_self">b</a>',
-              'links' => ['/bar'],
-            ]
-],
-            [[
-              'text' => '<a href="/foo">foo</a> & <a href="/bar">bar</a>',
-              'links' => ['/foo', '/bar'],
-            ]
-],
+      [[
+        'text' => 'notorious <a href="http://www.theweek.co.uk/foo" target="_self">encounter</a> in ',
+        'links' => ['http://www.theweek.co.uk/foo'],
+      ]
+      ],
+      [[
+        'text' => '<a href="/bar" target="_self">b</a>',
+        'links' => ['/bar'],
+      ]
+      ],
+      [[
+        'text' => '<a href="/foo">foo</a> & <a href="/bar">bar</a>',
+        'links' => ['/foo', '/bar'],
+      ]
+      ],
 
     ];
   }
