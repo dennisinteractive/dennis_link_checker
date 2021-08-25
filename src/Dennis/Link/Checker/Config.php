@@ -27,7 +27,7 @@ class Config implements ConfigInterface {
   /**
    * Localisation.
    *
-   * @var intstring
+   * @var string
    */
   protected $localisation = LinkLocalisation::ORIGINAL;
 

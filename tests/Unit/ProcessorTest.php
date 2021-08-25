@@ -25,9 +25,10 @@ class ProcessorTest extends UnitTestCase {
 
     $logger = $this->getMockBuilder(Logger::class)
       ->disableOriginalConstructor()
-      ->setMethods(['warning'])
+      ->setMethods(['warning', 'info'])
       ->getMock();
     $logger->method('warning')->willReturn(TRUE);
+    $logger->method('info')->willReturn(TRUE);
 
     $config = $this->getMockBuilder(Config::class)
       ->disableOriginalConstructor()
@@ -35,12 +36,14 @@ class ProcessorTest extends UnitTestCase {
       ->getMock();
     $config->method('getLogger')->willReturn($logger);
 
+    /** @var \Drupal\dennis_link_checker\Dennis\Link\Checker\Processor $proc */
     $proc = $this->getMockBuilder(Processor::class)
       ->disableOriginalConstructor()
       ->setMethods(
         ['doNextItem',
           'ensureEnqueued',
-          'prune', 'inMaintenanceMode'
+          'prune',
+          'inMaintenanceMode',
         ])
       ->getMock();
     $proc->setConfig($config);
@@ -55,11 +58,40 @@ class ProcessorTest extends UnitTestCase {
     // Check that the processor returns false on RequestTimeoutException.
     $e = new RequestTimeoutException('timeout test', CURLOPT_TIMEOUT);
     $proc->method('doNextItem')->willThrowException($e);
-    $this->assertFalse($proc->run());
 
+    /** @var \Drupal\dennis_link_checker\Dennis\Link\Checker\Processor $proc */
+    $proc = $this->getMockBuilder(Processor::class)
+      ->disableOriginalConstructor()
+      ->setMethods(
+        [
+          'inMaintenanceMode',
+        ])
+      ->getMock();
+    $proc->setConfig($config);
     // Check that it cannot run in maintenance mode.
     $proc->method('inMaintenanceMode')->willReturn(TRUE);
     $this->assertFalse($proc->run());
+
+
+    /** @var \Drupal\dennis_link_checker\Dennis\Link\Checker\Processor $proc */
+    $proc = $this->getMockBuilder(Processor::class)
+      ->disableOriginalConstructor()
+      ->setMethods(
+        ['doNextItem',
+          'ensureEnqueued',
+          'prune',
+          'inMaintenanceMode',
+        ])
+      ->getMock();
+    $proc->setConfig($config);
+    // Check that it cannot run in maintenance mode.
+    $proc->method('inMaintenanceMode')->willReturn(FALSE);
+    // Check that the processor returns carry on after the RequestTimeoutException.
+    // The processor was updated 24/03/21 to let the process continue after timing out.
+    $e = new RequestTimeoutException('timeout test', CURLOPT_TIMEOUT);
+    $proc->method('doNextItem')->willThrowException($e);
+    $this->assertTrue($proc->run());
+
   }
 
 }

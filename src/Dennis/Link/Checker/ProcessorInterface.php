@@ -54,6 +54,7 @@ interface ProcessorInterface {
    *
    * @return bool
    *   Returns FALSE if in maintenance mode, else TRUE.
+   * @throws TimeoutException
    */
   public function run();
 
@@ -159,9 +160,8 @@ interface ProcessorInterface {
 
   /**
    * Process the next item.
-   *
-   * @return ProcessorInterface
-   *   Returns the processor interface.
+   * @throws RequestTimeoutException
+   * @throws TimeoutException
    */
   public function doNextItem();
 

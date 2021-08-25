@@ -282,7 +282,7 @@ class Processor implements ProcessorInterface {
    */
   public function doNextItem() {
     if (!$queue_item = $this->getQueueItem()) {
-      return FALSE;
+      throw new RequestTimeoutException();
     }
 
     $this->queueWorker($queue_item->data);

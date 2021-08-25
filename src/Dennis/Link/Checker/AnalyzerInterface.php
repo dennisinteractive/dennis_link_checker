@@ -42,6 +42,9 @@ interface AnalyzerInterface {
    *
    * @return array
    *   Returns an array of multiple arrays.
+   *
+   * @throws RequestTimeoutException
+   * @throws TimeoutException
    */
   public function multipleLinks(array $links);
 
