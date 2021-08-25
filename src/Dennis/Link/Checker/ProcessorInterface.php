@@ -161,6 +161,7 @@ interface ProcessorInterface {
 
   /**
    * Process the next item.
+   *
    * @throws RequestTimeoutException
    *
    * @throws TimeoutException
