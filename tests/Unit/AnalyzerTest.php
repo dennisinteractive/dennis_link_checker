@@ -49,10 +49,7 @@ class AnalyzerTest extends UnitTestCase {
       ->disableOriginalConstructor()
       ->setMethods(['doInfoRequest'])
       ->getMock();
-    $data = $this->getMockBuilder(ResourceFailException::class)
-      ->disableOriginalConstructor()
-      ->getMock();
-    $analyzer->method('doInfoRequest')->willThrowException($data);
+    $analyzer->method('doInfoRequest')->willThrowException(new ResourceFailException());
     $url = 'http://example.com';
     $analyzer->getInfo($url);
   }
@@ -66,12 +63,9 @@ class AnalyzerTest extends UnitTestCase {
       ->disableOriginalConstructor()
       ->setMethods(['doInfoRequest', 'throttle', 'getSiteHost'])
       ->getMock();
-    $data = $this->getMockBuilder(RequestTimeoutException::class)
-      ->disableOriginalConstructor()
-      ->getMock();
     $analyzer->method('throttle')->willReturn(TRUE);
     $analyzer->method('getSiteHost')->willReturn('example.com');
-    $analyzer->method('doInfoRequest')->willThrowException($data);
+    $analyzer->method('doInfoRequest')->willThrowException(new RequestTimeoutException());
 
     $link = $this->getMockBuilder(Link::class)
       ->disableOriginalConstructor()
