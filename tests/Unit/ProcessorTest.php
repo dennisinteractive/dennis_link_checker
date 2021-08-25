@@ -71,8 +71,7 @@ class ProcessorTest extends UnitTestCase {
     // Check that it cannot run in maintenance mode.
     $proc->method('inMaintenanceMode')->willReturn(TRUE);
     $this->assertFalse($proc->run());
-
-
+    
     /** @var \Drupal\dennis_link_checker\Dennis\Link\Checker\Processor $proc */
     $proc = $this->getMockBuilder(Processor::class)
       ->disableOriginalConstructor()
