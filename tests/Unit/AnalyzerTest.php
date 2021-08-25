@@ -38,5 +38,6 @@ class AnalyzerTest extends UnitTestCase {
     $this->assertEquals($data, $analyzer->getInfo($url));
     $this->assertEquals($data, $analyzer->getInfo($url));
   }
-  
+
 }
+
