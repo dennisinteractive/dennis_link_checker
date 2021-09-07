@@ -8,13 +8,14 @@ use Drupal\dennis_link_checker\Dennis\Link\Checker\EntityInterface;
 use Drupal\dennis_link_checker\Dennis\Link\Checker\TimeoutException;
 
 /**
- * Class Processor
+ * Class Processor.
+ *
  * @package Dennis\Asset\Checker
  */
 class AssetProcessor extends Processor {
 
   /**
-   * @inheritDoc
+   * {@inheritDoc}
    *
    * @throws \Drupal\dennis_link_checker\Dennis\Link\Checker\RequestTimeoutException
    */
@@ -25,7 +26,7 @@ class AssetProcessor extends Processor {
       $entity = $handler->getEntity($item->entityType(), $item->entityId());
       $field = new AssetField(
         $entity,
-        $this->checker_managers,
+        $this->checkerManagers,
         $item->fieldName()
       );
       $this->correctAssets($item, $field);
@@ -33,15 +34,19 @@ class AssetProcessor extends Processor {
   }
 
   /**
-   * correct Assets
+   * Correct Assets.
    *
    * Heavily borrowed from Processor correctLinks().
-   * @param ItemInterface $item
+   *
+   * @param \Drupal\dennis_link_checker\Dennis\Link\Checker\ItemInterface $item
+   *   Item interface.
    * @param AssetField $field
+   *   Asset field.
+   *
    * @throws \Drupal\dennis_link_checker\Dennis\Link\Checker\RequestTimeoutException
    */
   public function correctAssets(ItemInterface $item, AssetField $field) {
-    // Potentially the asset types could be moved to a config
+    // Potentially the asset types could be moved to a config.
     $do_field_save = FALSE;
     $asset_types = ['embed', 'img'];
     foreach ($asset_types as $asset_type) {
@@ -50,7 +55,8 @@ class AssetProcessor extends Processor {
           /** @var \Drupal\dennis_link_checker\Dennis\Asset\Checker\AssetAnalyser $analyzer */
           $analyzer = $this->getAnalyzer();
           $assets = $analyzer->multipleAssets($assets);
-        } catch (TimeoutException $e) {
+        }
+        catch (TimeoutException $e) {
           // Log timeout and stop processing this item so that it gets deleted from the queue.
           $this->config->getLogger()->warning($e->getMessage() . ' | '
             . $item->entityType() . '/' . $item->entityId());
@@ -87,10 +93,12 @@ class AssetProcessor extends Processor {
   }
 
   /**
-   * @param EntityInterface $entity
-   * @param Asset $asset
+   * Removes an asset, no point having an embed / image which 404s.
    *
-   * Removes an asset, no point having an embed / image which 404s
+   * @param \Drupal\dennis_link_checker\Dennis\Link\Checker\EntityInterface $entity
+   *   Entity interface.
+   * @param Asset $asset
+   *   Asset object.
    */
   public function removeAsset(EntityInterface $entity, Asset $asset) {
     $asset->remove();
@@ -103,9 +111,13 @@ class AssetProcessor extends Processor {
   /**
    * If possible update our asset with a new URL.
    *
-   * @param EntityInterface $entity
+   * @param \Drupal\dennis_link_checker\Dennis\Link\Checker\EntityInterface $entity
+   *   Entity interface.
    * @param Asset $asset
+   *   Asset object.
+   *
    * @return bool
+   *   If asset corrected returns TRUE, else FALSE.
    */
   public function updateAsset(EntityInterface $entity, Asset $asset) {
     if ($asset->replace()) {
@@ -121,4 +133,5 @@ class AssetProcessor extends Processor {
       return FALSE;
     }
   }
+
 }

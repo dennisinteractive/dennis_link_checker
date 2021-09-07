@@ -6,9 +6,8 @@ use Drupal\dennis_link_checker\Dennis\Link\Checker\Link;
 use Drupal\dennis_link_checker\Dennis\Link\Checker\ConfigInterface;
 use Drupal\dennis_link_checker\CheckerManagers;
 
-
 /**
- * Class AssetField
+ * Class AssetField.
  *
  * @package Dennis\Asset\Checker
  *
@@ -16,15 +15,24 @@ use Drupal\dennis_link_checker\CheckerManagers;
  */
 class Asset extends Link {
 
+  /**
+   * Data array.
+   *
+   * @var array
+   */
   protected $data = [];
 
   /**
    * Asset constructor.
    *
-   * @param CheckerManagers $checkerManagers
-   * @param ConfigInterface $config
-   * @param $href
+   * @param \Drupal\dennis_link_checker\CheckerManagers $checkerManagers
+   *   Checker managers.
+   * @param \Drupal\dennis_link_checker\Dennis\Link\Checker\ConfigInterface $config
+   *   Config interface.
+   * @param string $href
+   *   Href string.
    * @param \DOMElement $element
+   *   Dom element.
    */
   public function __construct(
     CheckerManagers $checkerManagers,
@@ -45,7 +53,7 @@ class Asset extends Link {
   }
 
   /**
-   * @inheritDoc
+   * {@inheritDoc}
    */
   public function setOriginalSrc($src) {
     $this->data['original_src'] = $src;
@@ -53,14 +61,14 @@ class Asset extends Link {
   }
 
   /**
-   * @inheritDoc
+   * {@inheritDoc}
    */
   public function originalSrc() {
     return $this->data['original_src'];
   }
 
   /**
-   * @inheritDoc
+   * {@inheritDoc}
    */
   public function remove() {
     $this->element()->parentNode->removeChild($this->element());
@@ -84,4 +92,5 @@ class Asset extends Link {
     }
     return FALSE;
   }
+
 }

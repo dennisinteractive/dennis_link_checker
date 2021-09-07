@@ -25,7 +25,7 @@ services:
   dennis_link_checker.managers:
     class: Drupal\dennis_link_checker\CheckerManagers
     arguments:
-      - '@path.alias_manager'
+      - '@path_alias.manager'
       - '@language_manager'
       - '@redirect.repository'
       - '@dennis_link_checker.queries.manager'

@@ -3,7 +3,7 @@
 namespace Drupal\dennis_link_checker\Dennis\Link\Checker;
 
 /**
- * Class RequestTimeoutException
+ * Class RequestTimeoutException.
  *
  * @package Drupal\dennis_link_checker\Dennis\Link\Checker
  */

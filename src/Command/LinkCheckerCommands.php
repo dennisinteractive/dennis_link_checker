@@ -6,40 +6,43 @@ use Drush\Commands\DrushCommands;
 use Drupal\dennis_link_checker\LinkCheckerSetUp;
 use Drupal\dennis_link_checker\AssetCheckerSetUp;
 
-
-
 /**
  * A Drush command file for interacting with the Write API.
  */
 class LinkCheckerCommands extends DrushCommands {
 
   /**
-   * @var LinkCheckerSetUp
+   * Link checker set up.
+   *
+   * @var \Drupal\dennis_link_checker\LinkCheckerSetUp
    */
-  protected $link_checker;
+  protected $linkChecker;
 
   /**
-   * @var AssetCheckerSetUp
+   * Asset checker Set up.
+   *
+   * @var \Drupal\dennis_link_checker\AssetCheckerSetUp
    */
-  protected $asset_checker;
-
+  protected $assetChecker;
 
   /**
    * LinkCheckerCommands constructor.
    *
-   * @param LinkCheckerSetUp $linkCheckerSetUp
-   * @param AssetCheckerSetUp $assetCheckerSetUp
+   * @param \Drupal\dennis_link_checker\LinkCheckerSetUp $linkCheckerSetUp
+   *   Link checker set up.
+   * @param \Drupal\dennis_link_checker\AssetCheckerSetUp $assetCheckerSetUp
+   *   Asset checker Set up.
    */
   public function __construct(
     LinkCheckerSetUp $linkCheckerSetUp,
     AssetCheckerSetUp $assetCheckerSetUp
   ) {
-    $this->link_checker = $linkCheckerSetUp;
-    $this->asset_checker = $assetCheckerSetUp;
+    $this->linkChecker = $linkCheckerSetUp;
+    $this->assetChecker = $assetCheckerSetUp;
   }
 
   /**
-   * Link Checker
+   * Link Checker.
    *
    * @param string $nid
    *   Type of node to update
@@ -49,17 +52,18 @@ class LinkCheckerCommands extends DrushCommands {
    *
    * @usage link-checker:link
    * @usage link-checker:link '1,2,3'
+   *
    * @throws \Exception
    */
   public function link($nid = '') {
     $this->output()->writeln('Starting drush link-checker:link: ' . date(DATE_RFC2822));
     $nids = !empty($nid) ? explode(',', $nid) : [];
-    $this->link_checker->run($nids);
+    $this->linkChecker->run($nids);
     $this->output()->writeln('Finished drush link-checker:link: ' . date(DATE_RFC2822));
   }
 
   /**
-   * Asset Checker
+   * Asset Checker.
    *
    * @param string $nid
    *   Type of node to update
@@ -69,12 +73,14 @@ class LinkCheckerCommands extends DrushCommands {
    *
    * @usage link-checker:asset
    * @usage link-checker:asset '1,2,3'
+   *
    * @throws \Exception
    */
   public function asset($nid = '') {
     $this->output()->writeln('Starting drush link-checker:asset: ' . date(DATE_RFC2822));
     $nids = !empty($nid) ? explode(',', $nid) : [];
-    $this->asset_checker->run($nids);
+    $this->assetChecker->run($nids);
     $this->output()->writeln('Finished drush link-checker:asset: ' . date(DATE_RFC2822));
   }
+
 }

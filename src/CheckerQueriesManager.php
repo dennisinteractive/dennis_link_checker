@@ -7,18 +7,22 @@ use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\node\Entity\Node;
 
 /**
- * Class CheckerQueriesManager
+ * Class CheckerQueriesManager.
  *
  * @package Drupal\dennis_link_checker
  */
 class CheckerQueriesManager implements CheckerQueriesManagerInterface {
 
-  /***
-   * @var Connection
+  /**
+   * Database connection.
+   *
+   * @var \Drupal\Core\Database\Connection
    */
   protected $connection;
 
   /**
+   * Entity type manager interface.
+   *
    * @var \Drupal\Core\Entity\EntityTypeManagerInterface
    */
   protected $entityTypeManager;
@@ -27,7 +31,9 @@ class CheckerQueriesManager implements CheckerQueriesManagerInterface {
    * CheckerQueriesManager constructor.
    *
    * @param \Drupal\Core\Database\Connection $connection
+   *   Database connection.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
+   *   Entity type manager interface.
    */
   public function __construct(Connection $connection, EntityTypeManagerInterface $entityTypeManager) {
     $this->connection = $connection;
@@ -35,10 +41,10 @@ class CheckerQueriesManager implements CheckerQueriesManagerInterface {
   }
 
   /**
-   * @inheritDoc
+   * {@inheritDoc}
    */
-  public function enqueue($field_name, $nodeList) {
-    // entities that have a text area field with a link.
+  public function enqueue($field_name, array $nodeList) {
+    // Entities that have a text area field with a link.
     // Just the body text field for now.
     if ($this->connection->schema()->tableExists('node__' . $field_name)) {
       $query = $this->connection->select('node__' . $field_name, 'b');
@@ -53,7 +59,7 @@ class CheckerQueriesManager implements CheckerQueriesManagerInterface {
       // Accurate link finding happens when the queue is processed.
       $query->condition($field_name . '_value', '%' . $query->escapeLike('<a') . '%', 'LIKE');
 
-      // Optionally limit the result set
+      // Optionally limit the result set.
       $nids = $nodeList;
 
       if (!empty($nids)) {
@@ -68,7 +74,7 @@ class CheckerQueriesManager implements CheckerQueriesManagerInterface {
   }
 
   /**
-   * @inheritDoc
+   * {@inheritDoc}
    */
   public function fieldGetDom($id, $type, $fieldName) {
     $values = [];
@@ -94,7 +100,7 @@ class CheckerQueriesManager implements CheckerQueriesManagerInterface {
   }
 
   /**
-   * @inheritDoc
+   * {@inheritDoc}
    */
   public function fieldSave($id, $type, $fieldName, $revisionId, $updatedText) {
     $updated = 0;
@@ -109,4 +115,5 @@ class CheckerQueriesManager implements CheckerQueriesManagerInterface {
 
     return $updated;
   }
+
 }

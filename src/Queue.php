@@ -6,7 +6,7 @@ use Drupal\Core\Queue\QueueInterface;
 use Drupal\Core\Queue\DatabaseQueue;
 
 /**
- * Class Queue
+ * Class Queue.
  *
  * @package Drupal\dennis_link_checker\Dennis\Link\Checker
  */
@@ -21,4 +21,5 @@ class Queue extends DatabaseQueue implements QueueInterface {
       ->condition('expire', 0, '>')
       ->execute();
   }
+
 }

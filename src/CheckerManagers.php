@@ -2,80 +2,96 @@
 
 namespace Drupal\dennis_link_checker;
 
-use Drupal\Core\Path\AliasManager;
+use Drupal\path_alias\AliasManagerInterface;
 use Drupal\redirect\RedirectRepository;
 use Drupal\Core\Language\LanguageManager;
 
 /**
- * Class CheckerManagers
+ * Class CheckerManagers.
  *
  * @package Drupal\dennis_link_checker\Dennis
  */
 class CheckerManagers implements CheckerManagersInterface {
 
   /**
-   * @var AliasManager
+   * Alias manager interface.
+   *
+   * @var \Drupal\path_alias\AliasManagerInterface
    */
-  protected $alias_manger;
+  protected $aliasManager;
 
   /**
-   * @var LanguageManager
+   * Language manager.
+   *
+   * @var \Drupal\Core\Language\LanguageManager
    */
-  protected $language_manger;
+  protected $languageManager;
 
   /**
-   * @var RedirectRepository
+   * Redirect repository.
+   *
+   * @var \Drupal\redirect\RedirectRepository
    */
-  protected $redirect_repository;
+  protected $redirectRepository;
 
   /**
+   * Checker queries manager.
+   *
    * @var CheckerQueriesManager
    */
-  protected $checker_queries_manager;
+  protected $checkerQueriesManager;
 
   /**
    * CheckerManagers constructor.
    *
-   * @param AliasManager $aliasManager
-   * @param LanguageManager $languageManager
-   * @param RedirectRepository $redirectRepository
+   * @param \Drupal\path_alias\AliasManagerInterface $aliasManager
+   *   Alias manager interface.
+   * @param \Drupal\Core\Language\LanguageManager $languageManager
+   *   Language manager.
+   * @param \Drupal\redirect\RedirectRepository $redirectRepository
+   *   Redirect repository.
    * @param CheckerQueriesManager $checkerQueriesManager
+   *   Checker queries manager.
    */
-  public function __construct(AliasManager $aliasManager,
+  public function __construct(AliasManagerInterface $aliasManager,
                               LanguageManager $languageManager,
                               RedirectRepository $redirectRepository,
                               CheckerQueriesManager $checkerQueriesManager) {
-    $this->alias_manger = $aliasManager;
-    $this->language_manger = $languageManager;
-    $this->redirect_repository = $redirectRepository;
-    $this->checker_queries_manager = $checkerQueriesManager;
+    $this->aliasManager = $aliasManager;
+    $this->languageManager = $languageManager;
+    $this->redirectRepository = $redirectRepository;
+    $this->checkerQueriesManager = $checkerQueriesManager;
   }
 
   /**
-   * @return AliasManager
+   * {@inheritDoc}
    */
   public function getAliasManager() {
-    return $this->alias_manger;
+    return $this->aliasManager;
   }
 
   /**
-   * @return LanguageManager
+   * {@inheritDoc}
    */
   public function getLanguageManager() {
-    return $this->language_manger;
+    return $this->languageManager;
   }
 
   /**
-   * @return RedirectRepository
+   * {@inheritDoc}
    */
   public function getRedirectRepository() {
-    return $this->redirect_repository;
+    return $this->redirectRepository;
   }
 
   /**
+   * Get checker queries manager.
+   *
    * @return CheckerQueriesManager
+   *   Returns the checker queries manager.
    */
   public function getCheckerQueriesManager() {
-    return  $this->checker_queries_manager;
+    return $this->checkerQueriesManager;
   }
+
 }

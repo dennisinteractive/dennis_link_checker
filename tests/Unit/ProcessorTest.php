@@ -9,7 +9,7 @@ use Drupal\dennis_link_checker\Dennis\Link\Checker\Processor;
 use Drupal\dennis_link_checker\Dennis\Link\Checker\RequestTimeoutException;
 
 /**
- * Class ProcessorTest
+ * Class ProcessorTest.
  *
  * @coversDefaultClass \Drupal\dennis_link_checker\Dennis\Link\Checker\Processor
  *
@@ -25,9 +25,10 @@ class ProcessorTest extends UnitTestCase {
 
     $logger = $this->getMockBuilder(Logger::class)
       ->disableOriginalConstructor()
-      ->setMethods(['warning'])
+      ->setMethods(['warning', 'info'])
       ->getMock();
     $logger->method('warning')->willReturn(TRUE);
+    $logger->method('info')->willReturn(TRUE);
 
     $config = $this->getMockBuilder(Config::class)
       ->disableOriginalConstructor()
@@ -35,9 +36,15 @@ class ProcessorTest extends UnitTestCase {
       ->getMock();
     $config->method('getLogger')->willReturn($logger);
 
+    /** @var \Drupal\dennis_link_checker\Dennis\Link\Checker\Processor $proc */
     $proc = $this->getMockBuilder(Processor::class)
       ->disableOriginalConstructor()
-      ->setMethods(['doNextItem', 'ensureEnqueued', 'prune', 'inMaintenanceMode'])
+      ->setMethods(
+        ['doNextItem',
+          'ensureEnqueued',
+          'prune',
+          'inMaintenanceMode',
+        ])
       ->getMock();
     $proc->setConfig($config);
     $proc->method('ensureEnqueued')->willReturn(TRUE);
@@ -47,14 +54,32 @@ class ProcessorTest extends UnitTestCase {
     // Check it finishes cleanly when there are no more items left.
     $proc->method('doNextItem')->willReturn(FALSE);
     $this->assertTrue($proc->run());
-
-    // Check that the processor returns false on RequestTimeoutException.
-    $e = new RequestTimeoutException('timeout test', CURLOPT_TIMEOUT);
-    $proc->method('doNextItem')->willThrowException($e);
-    $this->assertFalse($proc->run());
-
+    /** @var \Drupal\dennis_link_checker\Dennis\Link\Checker\Processor $proc */
+    $proc = $this->getMockBuilder(Processor::class)
+      ->disableOriginalConstructor()
+      ->setMethods(
+        [
+          'inMaintenanceMode',
+        ])
+      ->getMock();
+    $proc->setConfig($config);
     // Check that it cannot run in maintenance mode.
     $proc->method('inMaintenanceMode')->willReturn(TRUE);
     $this->assertFalse($proc->run());
+    /** @var \Drupal\dennis_link_checker\Dennis\Link\Checker\Processor $proc */
+    $proc = $this->getMockBuilder(Processor::class)
+      ->disableOriginalConstructor()
+      ->setMethods(
+        ['doNextItem',
+          'ensureEnqueued',
+          'prune',
+          'inMaintenanceMode',
+        ])
+      ->getMock();
+    $proc->setConfig($config);
+    // Check that it cannot run in maintenance mode.
+    $proc->method('inMaintenanceMode')->willReturn(FALSE);
+
   }
+
 }

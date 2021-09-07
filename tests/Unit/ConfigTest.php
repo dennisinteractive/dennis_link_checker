@@ -7,9 +7,8 @@ use Drupal\dennis_link_checker\Dennis\Link\Checker\Config;
 use Drupal\dennis_link_checker\Dennis\Link\Checker\Logger;
 use Drupal\dennis_link_checker\Dennis\Link\Checker\LinkLocalisation;
 
-
 /**
- * Class ConfigTest
+ * Class ConfigTest.
  *
  * @coversDefaultClass \Drupal\dennis_link_checker\Dennis\Link\Checker\Config
  *
@@ -78,8 +77,8 @@ class ConfigTest extends UnitTestCase {
    * @covers \Drupal\dennis_link_checker\Dennis\Link\Checker\Config::setNodeList
    */
   public function testGetNodeList() {
-    $config = $this->config()->setNodeList([1,2,3]);
-    $this->assertEquals([1,2,3], $config->getNodeList());
+    $config = $this->config()->setNodeList([1, 2, 3]);
+    $this->assertEquals([1, 2, 3], $config->getNodeList());
   }
 
   /**
@@ -95,8 +94,10 @@ class ConfigTest extends UnitTestCase {
    * Returns an Article object.
    *
    * @return \Drupal\dennis_link_checker\Dennis\Link\Checker\Config
+   *   Returns new config object.
    */
   protected function config() {
     return new Config();
   }
+
 }

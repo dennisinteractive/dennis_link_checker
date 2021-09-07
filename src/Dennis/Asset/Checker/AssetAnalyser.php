@@ -7,9 +7,8 @@ use Drupal\dennis_link_checker\Dennis\Link\Checker\TimeoutException;
 use Drupal\dennis_link_checker\Dennis\Link\Checker\ResourceFailException;
 use Drupal\dennis_link_checker\Dennis\Link\Checker\RequestTimeoutException;
 
-
 /**
- * Class AssetField
+ * Class AssetField.
  *
  * @package Dennis\Asset\Checker
  */
@@ -19,12 +18,15 @@ class AssetAnalyser extends Analyzer {
    * Checks an array of assets.
    *
    * @param array $assets
-   *   An array of Asset assets
+   *   An array of Asset assets.
+   *
    * @return mixed
-   * @throws RequestTimeoutException
-   * @throws TimeoutException
+   *   Returns an array of assets.
+   *
+   * @throws \Drupal\dennis_link_checker\Dennis\Link\Checker\RequestTimeoutException
+   * @throws \Drupal\dennis_link_checker\Dennis\Link\Checker\TimeoutException
    */
-  public function multipleAssets($assets) {
+  public function multipleAssets(array $assets) {
     $timeout = $this->linkTimeLimit + time();
 
     foreach ($assets as $asset) {
@@ -42,17 +44,20 @@ class AssetAnalyser extends Analyzer {
   }
 
   /**
-   * Borrowed heavily from Analyser link().
-   * If asset is a redirect or not secure update url.
+   * Borrowed heavily from Analyser link(). If asset is a redirect or not secure update url.
    *
    * @param Asset $asset
+   *   The asset object.
+   *
    * @return Asset
-   * @throws RequestTimeoutException
+   *   The asset object.
+   *
+   * @throws \Drupal\dennis_link_checker\Dennis\Link\Checker\RequestTimeoutException
    */
   public function asset(Asset $asset) {
     $this->throttle();
 
-    // Only redirect 301's so cannot use CURLOPT_FOLLOWLOCATION
+    // Only redirect 301's so cannot use CURLOPT_FOLLOWLOCATION.
     $this->redirectCount = 0;
 
     $src = trim($asset->originalSrc());
@@ -66,10 +71,11 @@ class AssetAnalyser extends Analyzer {
 
     // All assets must be in https.
     // Force it to use https.
-    if (substr( $url, 0, 2 ) === "//") {
+    if (substr($url, 0, 2) === "//") {
       $url = ltrim($url, '//');
       $url = 'https://' . $url;
-    } elseif (substr( $url, 0, 7 ) === "http://" ) {
+    }
+    elseif (substr($url, 0, 7) === "http://") {
       $url = ltrim($url, 'http://');
       $url = 'https://' . $url;
     }
@@ -79,7 +85,8 @@ class AssetAnalyser extends Analyzer {
       $asset->setFoundUrl($info['url'])
         ->setHttpCode($info['http_code'])
         ->setNumberOfRedirects($this->redirectCount);
-    } catch (ResourceFailException $e) {
+    }
+    catch (ResourceFailException $e) {
       $asset->setNumberOfRedirects($this->redirectCount)
         ->setError($e->getMessage(), $e->getCode());
 
@@ -92,4 +99,5 @@ class AssetAnalyser extends Analyzer {
 
     return $asset;
   }
+
 }

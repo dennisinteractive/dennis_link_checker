@@ -3,7 +3,7 @@
 namespace Drupal\dennis_link_checker\Dennis\Link\Checker;
 
 /**
- * Class LinkLocalisation
+ * Class LinkLocalisation.
  *
  * @package Drupal\dennis_link_checker\Dennis\Link\Checker
  */

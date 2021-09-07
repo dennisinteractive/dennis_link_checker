@@ -8,10 +8,8 @@ use Drupal\dennis_link_checker\Dennis\Link\Checker\Analyzer;
 use Drupal\dennis_link_checker\Dennis\Link\Checker\ResourceFailException;
 use Drupal\dennis_link_checker\Dennis\Link\Checker\RequestTimeoutException;
 
-
-
 /**
- * Class AnalyzerTest
+ * Class AnalyzerTest.
  *
  * @coversDefaultClass \Drupal\dennis_link_checker\Dennis\Link\Checker\Analyzer
  *
@@ -19,7 +17,6 @@ use Drupal\dennis_link_checker\Dennis\Link\Checker\RequestTimeoutException;
  * @group Link_checker
  */
 class AnalyzerTest extends UnitTestCase {
-
 
   /**
    * @covers \Drupal\dennis_link_checker\Dennis\Link\Checker\Analyzer::getInfo
@@ -42,39 +39,4 @@ class AnalyzerTest extends UnitTestCase {
     $this->assertEquals($data, $analyzer->getInfo($url));
   }
 
-  /**
-   * @covers \Drupal\dennis_link_checker\Dennis\Link\Checker\Analyzer::getInfo
-   * @expectedException \Drupal\dennis_link_checker\Dennis\Link\Checker\ResourceFailException
-   */
-  public function testGetInfoException() {
-    // Check the exception is thrown.
-    $analyzer = $this->getMockBuilder(Analyzer::class)
-      ->disableOriginalConstructor()
-      ->setMethods(['doInfoRequest'])
-      ->getMock();
-    $data = new ResourceFailException('test', 42);
-    $analyzer->method('doInfoRequest')->willThrowException($data);
-    $url = 'http://example.com';
-    $analyzer->getInfo($url);
-  }
-
-  /**
-   * @covers \Drupal\dennis_link_checker\Dennis\Link\Checker\Analyzer::link
-   * @expectedException \Drupal\dennis_link_checker\Dennis\Link\Checker\RequestTimeoutException
-   */
-  public function testLinkException() {
-    $analyzer = $this->getMockBuilder(Analyzer::class)
-      ->disableOriginalConstructor()
-      ->setMethods(['doInfoRequest', 'throttle', 'getSiteHost'])
-      ->getMock();
-    $data = new RequestTimeoutException('timeout test', CURLOPT_TIMEOUT);
-    $analyzer->method('throttle')->willReturn(TRUE);
-    $analyzer->method('getSiteHost')->willReturn('example.com');
-    $analyzer->method('doInfoRequest')->willThrowException($data);
-
-    $link = $this->getMockBuilder(Link::class)
-      ->disableOriginalConstructor()
-      ->getMock();
-    $analyzer->link($link);
-  }
 }

@@ -6,76 +6,91 @@ use Drupal\Component\Utility\Html;
 use Drupal\dennis_link_checker\CheckerManagers;
 
 /**
- * Class Field
+ * Class Field.
  *
  * @package Drupal\dennis_link_checker\Dennis\Link\Checker
  */
 class Field implements FieldInterface {
+
   /**
+   * Entity.
+   *
    * @var Entity
    */
   protected $entity;
 
   /**
-   * @var CheckerManagers
+   * Checker managers.
+   *
+   * @var \Drupal\dennis_link_checker\CheckerManagers
    */
-  protected $checker_managers;
+  protected $checkerManagers;
 
   /**
-   * @var int revision ID
+   * Revision ID.
+   *
+   * @var int
    */
-  protected $revision_id;
+  protected $revisionId;
 
   /**
-   * @var string field name
+   * Field name.
+   *
+   * @var string
    */
-  protected $field_name;
+  protected $fieldName;
 
   /**
+   * Dom element.
+   *
    * @var \DOMDocument
    */
   protected $dom;
 
   /**
+   * ConfigInterface.
+   *
    * @var ConfigInterface
    */
   protected $config;
-
 
   /**
    * Field constructor.
    *
    * @param EntityInterface $entity
-   * @param CheckerManagers $checkerManagers
-   * @param $field_name
+   *   Entity.
+   * @param \Drupal\dennis_link_checker\CheckerManagers $checkerManagers
+   *   Checker Managers.
+   * @param string $field_name
+   *   Field name.
    */
   public function __construct(EntityInterface $entity,
                               CheckerManagers $checkerManagers,
                               $field_name) {
     $this->entity = $entity;
-    $this->checker_managers = $checkerManagers;
-    $this->field_name = $field_name;
+    $this->checkerManagers = $checkerManagers;
+    $this->fieldName = $field_name;
   }
 
   /**
-   * @inheritDoc
+   * {@inheritDoc}
    */
   public function getEntity() {
     return $this->entity;
   }
 
   /**
-   * @inheritDoc
+   * {@inheritDoc}
    */
-  protected function getDOM() {
+  protected function getDom() {
     if (!isset($this->dom)) {
-      if ($field_dom = $this->checker_managers->getCheckerQueriesManager()->fieldGetDom(
+      if ($field_dom = $this->checkerManagers->getCheckerQueriesManager()->fieldGetDom(
         $this->getEntity()->entityId(),
         $this->getEntity()->entityType(),
-        $this->field_name
+        $this->fieldName
       )) {
         if (isset($field_dom['revision_id'])) {
-          $this->revision_id = $field_dom['revision_id'];
+          $this->revisionId = $field_dom['revision_id'];
         }
         if (isset($field_dom['value'])) {
           $this->dom = Html::load($field_dom['value']);
@@ -86,12 +101,12 @@ class Field implements FieldInterface {
   }
 
   /**
-   * @inheritDoc
+   * {@inheritDoc}
    */
   public function getLinks() {
     $found = [];
 
-    $links = $this->getDOM()->getElementsByTagName('a');
+    $links = $this->getDom()->getElementsByTagName('a');
 
     /** @var \DOMElement $linkElement */
     foreach ($links as $linkElement) {
@@ -105,7 +120,7 @@ class Field implements FieldInterface {
               // A valid local link.
 
               $found[] = new Link(
-                $this->checker_managers,
+                $this->checkerManagers,
                 $this->getConfig(),
                 $href,
                 $linkElement
@@ -113,9 +128,9 @@ class Field implements FieldInterface {
             }
           }
           elseif ($parsed['host'] == $this->getConfig()->getSiteHost()) {
-            // A full url, but local
+            // A full url, but local.
             $found[] = new Link(
-              $this->checker_managers,
+              $this->checkerManagers,
               $this->getConfig(),
               $href,
               $linkElement
@@ -126,7 +141,7 @@ class Field implements FieldInterface {
       else {
         // All links.
         $found[] = new Link(
-          $this->checker_managers,
+          $this->checkerManagers,
           $this->getConfig(),
           $href,
           $linkElement
@@ -134,29 +149,28 @@ class Field implements FieldInterface {
       }
     }
 
-
-
     return $found;
   }
 
   /**
-   * @inheritDoc
+   * {@inheritDoc}
    */
   public function save() {
-    $updated_text = Html::serialize($this->getDOM());
-    return $this->checker_managers->getCheckerQueriesManager()->fieldSave(
+    $updated_text = Html::serialize($this->getDom());
+    return $this->checkerManagers->getCheckerQueriesManager()->fieldSave(
       $this->getEntity()->entityId(),
       'node',
-      $this->field_name,
-      $this->revision_id,
+      $this->fieldName,
+      $this->revisionId,
       $updated_text
     );
   }
 
   /**
-   * @inheritDoc
+   * {@inheritDoc}
    */
   public function getConfig() {
     return $this->entity->getConfig();
   }
+
 }

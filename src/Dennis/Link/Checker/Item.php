@@ -3,16 +3,22 @@
 namespace Drupal\dennis_link_checker\Dennis\Link\Checker;
 
 /**
- * Class Item
+ * Class Item.
  *
  * @package Drupal\dennis_link_checker\Dennis\Link\Checker
  */
 class Item implements ItemInterface {
 
+
+  /**
+   * Protected data array.
+   *
+   * @var array
+   */
   protected $data = [];
 
   /**
-   * @inheritDoc
+   * {@inheritDoc}
    */
   public function __construct($entity_type, $entity_id, $field_name) {
     $this->data['entity_id'] = $entity_id;
@@ -21,24 +27,25 @@ class Item implements ItemInterface {
   }
 
   /**
-   * @inheritDoc
+   * {@inheritDoc}
    */
   public function entityType() {
     return $this->data['entity_type'];
   }
 
   /**
-   * @inheritDoc
+   * {@inheritDoc}
    */
   public function entityId() {
     return $this->data['entity_id'];
   }
 
   /**
-   * @inheritDoc
+   * {@inheritDoc}
    */
   public function fieldName() {
     // Return field name if specified, or body by default.
     return !empty($this->data['field_name']) ? $this->data['field_name'] : 'body';
   }
+
 }

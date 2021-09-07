@@ -3,9 +3,9 @@
 namespace Drupal\dennis_link_checker\Dennis\Link\Checker;
 
 /**
- * Class ResourceFailException
+ * Class ResourceFailException.
  *
- * @package Buyacar\Site\Search\Filter
+ * @package Drupal\dennis_link_checker\Dennis\Link\Checker
  */
 class ResourceFailException extends \OutOfRangeException {
 

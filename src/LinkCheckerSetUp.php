@@ -16,41 +16,52 @@ use Drupal\dennis_link_checker\Dennis\Link\Checker\Processor;
 use Drupal\dennis_link_checker\Dennis\Link\Checker\EntityHandler;
 use Drupal\dennis_link_checker\Dennis\Link\Checker\LinkLocalisation;
 
-
 /**
- * Class LinkCheckerSetUp
+ * Class LinkCheckerSetUp.
  *
  * @package Drupal\dennis_link_checker
  */
 class LinkCheckerSetUp implements LinkCheckerSetUpInterface {
 
   /**
-   * @var RequestStack
+   * Request stack.
+   *
+   * @var \Symfony\Component\HttpFoundation\RequestStack
    */
   protected $request;
 
   /***
-   * @var Connection
+   * Database connection.
+   *
+   * @var \Drupal\Core\Database\Connection
    */
   protected $connection;
 
   /**
-   * @var State
+   * State.
+   *
+   * @var \Drupal\Core\State\State
    */
   protected $state;
 
   /**
+   * Checker managers.
+   *
    * @var CheckerManagers
    */
-  protected $checker_managers;
+  protected $checkerManagers;
 
   /**
-   * @var LoggerChannelFactoryInterface
+   * Logger channel factory interface.
+   *
+   * @var \Drupal\Core\Logger\LoggerChannelFactoryInterface
    */
-  protected $logger_Factory;
+  protected $loggerFactory;
 
   /**
-   * @var ConfigFactoryInterface
+   * Config factory interface.
+   *
+   * @var \Drupal\Core\Config\ConfigFactoryInterface
    */
   protected $configFactory;
 
@@ -58,11 +69,17 @@ class LinkCheckerSetUp implements LinkCheckerSetUpInterface {
    * LinkCheckerSetUp constructor.
    *
    * @param \Drupal\Core\Database\Connection $connection
+   *   Database connection.
    * @param \Symfony\Component\HttpFoundation\RequestStack $request
+   *   Request stack.
    * @param \Drupal\Core\State\State $state
+   *   State.
    * @param \Drupal\dennis_link_checker\CheckerManagers $checkerManagers
+   *   Check managers.
    * @param \Drupal\Core\Logger\LoggerChannelFactoryInterface $loggerFactory
+   *   Logger factory.
    * @param \Drupal\Core\Config\ConfigFactoryInterface $configFactory
+   *   Config factory.
    */
   public function __construct(Connection $connection,
                               RequestStack $request,
@@ -73,25 +90,24 @@ class LinkCheckerSetUp implements LinkCheckerSetUpInterface {
     $this->connection = $connection;
     $this->request = $request;
     $this->state = $state;
-    $this->checker_managers = $checkerManagers;
-    $this->logger_Factory = $loggerFactory;
+    $this->checkerManagers = $checkerManagers;
+    $this->loggerFactory = $loggerFactory;
     $this->configFactory = $configFactory;
   }
 
   /**
-   * @param array $nids
+   * {@inheritDoc}
    */
   public function run(array $nids) {
     $this->setUp($nids)->run();
   }
 
   /**
-   * @param $nids
-   * @return Processor
+   * {@inheritDoc}
    */
-  public function setUp($nids) {
+  public function setUp(array $nids) {
     $config = (new Config())
-      ->setLogger((new Logger($this->logger_Factory))->setVerbosity(Logger::VERBOSITY_HIGH))
+      ->setLogger((new Logger($this->loggerFactory))->setVerbosity(Logger::VERBOSITY_HIGH))
       ->setSiteHost($this->siteUrl())
       ->setMaxRedirects(10)
       ->setInternalOnly(TRUE)
@@ -102,7 +118,7 @@ class LinkCheckerSetUp implements LinkCheckerSetUpInterface {
     $queue = new Queue('dennis_link_checker', $this->connection);
     $entity_handler = new EntityHandler(
       $config,
-      $this->checker_managers
+      $this->checkerManagers
     );
     // Make sure we don't request more than one page per second.
     $curl_throttler = new Throttler(1);
@@ -115,17 +131,19 @@ class LinkCheckerSetUp implements LinkCheckerSetUpInterface {
       $queue,
       $entity_handler,
       $analyzer,
-      $this->checker_managers,
+      $this->checkerManagers,
       $this->state
     );
   }
 
   /**
    * Return the configurable site url for checking.
+   *
    * @return mixed|null
+   *   Return the site url.
    */
   protected function siteUrl() {
-    $site_url = $this->configFactory->getEditable('dennis_link_checker.settings')->get('link_checker_site_url');
-    return $site_url;
+    return $this->configFactory->getEditable('dennis_link_checker.settings')->get('link_checker_site_url');
   }
+
 }
